@@ -1,0 +1,425 @@
+{
+ "updated": "2026-11-21",
+ "phases": [
+  {
+   "phase": 1,
+   "title": "FOUNDATION",
+   "batches": [
+    {
+     "id": "1A",
+     "title": "Environment audit",
+     "status": "VERIFIED"
+    },
+    {
+     "id": "1B",
+     "title": "Requirements, architecture, data contracts",
+     "status": "VERIFIED"
+    },
+    {
+     "id": "1C",
+     "title": "Monorepo, scripts, tests, git, checkpoints",
+     "status": "IMPLEMENTED"
+    }
+   ]
+  },
+  {
+   "phase": 2,
+   "title": "SUPABASE AND AUTH",
+   "batches": [
+    {
+     "id": "2A",
+     "title": "Schema, migrations, indexes, constraints",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "2B",
+     "title": "Auth, account management, sessions",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "2C",
+     "title": "RLS, private storage, authz tests",
+     "status": "NOT_STARTED"
+    }
+   ]
+  },
+  {
+   "phase": 3,
+   "title": "MASTER PROFILE",
+   "batches": [
+    {
+     "id": "3A",
+     "title": "Personal info forms",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "3B",
+     "title": "Experience/education/skills/projects/certs forms",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "3C",
+     "title": "Autosave, validation, versioning",
+     "status": "NOT_STARTED"
+    }
+   ]
+  },
+  {
+   "phase": 4,
+   "title": "COUNTRY RULES",
+   "batches": [
+    {
+     "id": "4A",
+     "title": "Country config schema + sources",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "4B",
+     "title": "Initial 30 country conventions",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "4C",
+     "title": "Connect country to forms/formatting",
+     "status": "NOT_STARTED"
+    }
+   ]
+  },
+  {
+   "phase": 5,
+   "title": "DOCUMENT ENGINE",
+   "batches": [
+    {
+     "id": "5A",
+     "title": "Canonical resume schema",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "5B",
+     "title": "Layout + pagination engine",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "5C",
+     "title": "Live preview + consistency tests",
+     "status": "NOT_STARTED"
+    }
+   ]
+  },
+  {
+   "phase": 6,
+   "title": "TEMPLATE LIBRARY",
+   "batches": [
+    {
+     "id": "6A",
+     "title": "35 templates",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "6B",
+     "title": "35 more templates",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "6C",
+     "title": "30+ more, gallery, visual tests",
+     "status": "NOT_STARTED"
+    }
+   ]
+  },
+  {
+   "phase": 7,
+   "title": "LOCAL AI",
+   "batches": [
+    {
+     "id": "7A",
+     "title": "Ollama discovery, benchmark, adapter",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "7B",
+     "title": "Job queue, health, retries, structured output",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "7C",
+     "title": "Cloud adapters, consent, cost limits",
+     "status": "NOT_STARTED"
+    }
+   ]
+  },
+  {
+   "phase": 8,
+   "title": "AI WRITING",
+   "batches": [
+    {
+     "id": "8A",
+     "title": "Summaries, experience rewriting",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "8B",
+     "title": "Achievements, grammar, job-specific",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "8C",
+     "title": "Fact verification, review, history",
+     "status": "NOT_STARTED"
+    }
+   ]
+  },
+  {
+   "phase": 9,
+   "title": "ATS ENGINE",
+   "batches": [
+    {
+     "id": "9A",
+     "title": "Formatting + completeness checks",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "9B",
+     "title": "JD matching",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "9C",
+     "title": "Explainable scoring + recommendations",
+     "status": "NOT_STARTED"
+    }
+   ]
+  },
+  {
+   "phase": 10,
+   "title": "EXPORT",
+   "batches": [
+    {
+     "id": "10A",
+     "title": "PDF",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "10B",
+     "title": "Editable DOCX",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "10C",
+     "title": "Rendering/Unicode/export regression tests",
+     "status": "NOT_STARTED"
+    }
+   ]
+  },
+  {
+   "phase": 11,
+   "title": "IMPORT",
+   "batches": [
+    {
+     "id": "11A",
+     "title": "Secure uploads",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "11B",
+     "title": "PDF/DOCX extraction",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "11C",
+     "title": "Import review + conflicts",
+     "status": "NOT_STARTED"
+    }
+   ]
+  },
+  {
+   "phase": 12,
+   "title": "CAREER TOOLS",
+   "batches": [
+    {
+     "id": "12A",
+     "title": "Cover letters",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "12B",
+     "title": "LinkedIn assistant",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "12C",
+     "title": "Interview prep + tailoring",
+     "status": "NOT_STARTED"
+    }
+   ]
+  },
+  {
+   "phase": 13,
+   "title": "LOCALIZATION",
+   "batches": [
+    {
+     "id": "13A",
+     "title": "i18n infra + initial languages",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "13B",
+     "title": "Arabic/Urdu RTL UI + docs",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "13C",
+     "title": "Remaining languages + validation",
+     "status": "NOT_STARTED"
+    }
+   ]
+  },
+  {
+   "phase": 14,
+   "title": "SUBSCRIPTIONS",
+   "batches": [
+    {
+     "id": "14A",
+     "title": "Plans, quotas, entitlements",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "14B",
+     "title": "Web billing + webhook verification",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "14C",
+     "title": "Mobile billing + restore",
+     "status": "NOT_STARTED"
+    }
+   ]
+  },
+  {
+   "phase": 15,
+   "title": "ADMIN",
+   "batches": [
+    {
+     "id": "15A",
+     "title": "Admin login, roles, dashboard",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "15B",
+     "title": "Templates/countries/users/content",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "15C",
+     "title": "AI ops, billing reports, analytics, audit",
+     "status": "NOT_STARTED"
+    }
+   ]
+  },
+  {
+   "phase": 16,
+   "title": "MOBILE",
+   "batches": [
+    {
+     "id": "16A",
+     "title": "RN app + shared UI",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "16B",
+     "title": "Profile builder, editor, previews",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "16C",
+     "title": "AI, exports, billing, device tests",
+     "status": "NOT_STARTED"
+    }
+   ]
+  },
+  {
+   "phase": 17,
+   "title": "SECURITY",
+   "batches": [
+    {
+     "id": "17A",
+     "title": "Threat model + authz hardening",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "17B",
+     "title": "Privacy, consent, deletion, export",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "17C",
+     "title": "Security, backup, recovery tests",
+     "status": "NOT_STARTED"
+    }
+   ]
+  },
+  {
+   "phase": 18,
+   "title": "QUALITY",
+   "batches": [
+    {
+     "id": "18A",
+     "title": "Unit/integration/e2e",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "18B",
+     "title": "A11y, perf, load, visual",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "18C",
+     "title": "Regression + real devices",
+     "status": "NOT_STARTED"
+    }
+   ]
+  },
+  {
+   "phase": 19,
+   "title": "DEPLOYMENT READINESS",
+   "batches": [
+    {
+     "id": "19A",
+     "title": "Hosting architecture",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "19B",
+     "title": "Authorized staging deploy",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "19C",
+     "title": "Android/iOS release candidates",
+     "status": "NOT_STARTED"
+    }
+   ]
+  },
+  {
+   "phase": 20,
+   "title": "FINAL DELIVERY",
+   "batches": [
+    {
+     "id": "20A",
+     "title": "E2E acceptance",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "20B",
+     "title": "Billing/security/AI/backup readiness",
+     "status": "NOT_STARTED"
+    },
+    {
+     "id": "20C",
+     "title": "Docs, reports, handover, approval gate",
+     "status": "NOT_STARTED"
+    }
+   ]
+  }
+ ]
+}
