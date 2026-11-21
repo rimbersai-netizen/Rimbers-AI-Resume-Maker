@@ -139,17 +139,20 @@
     {
      "id": "7A",
      "title": "Ollama discovery, benchmark, adapter",
-     "status": "NOT_STARTED"
+     "status": "IMPLEMENTED",
+     "notes": "OllamaProvider (loopback-only, timeouts, JSON/schema output, usage). Live health OK; live generation TIMED OUT (240s) while CPU saturated by Node compile \u2014 re-benchmark after."
     },
     {
      "id": "7B",
      "title": "Job queue, health, retries, structured output",
-     "status": "NOT_STARTED"
+     "status": "IN_PROGRESS",
+     "notes": "routeGenerate: retries/backoff, model fallback, safe user errors. Remaining: DB-backed ai_jobs worker loop (services/ai-worker), usage writes."
     },
     {
      "id": "7C",
      "title": "Cloud adapters, consent, cost limits",
-     "status": "NOT_STARTED"
+     "status": "IN_PROGRESS",
+     "notes": "Cloud fallback gated on admin enable + per-job consent (tested). Remaining: concrete cloud adapter, cost limits."
     }
    ]
   },
@@ -160,7 +163,8 @@
     {
      "id": "8A",
      "title": "Summaries, experience rewriting",
-     "status": "NOT_STARTED"
+     "status": "IN_PROGRESS",
+     "notes": "Summary + bullet-rewrite prompt contracts; contact details excluded from prompts."
     },
     {
      "id": "8B",
@@ -170,7 +174,8 @@
     {
      "id": "8C",
      "title": "Fact verification, review, history",
-     "status": "NOT_STARTED"
+     "status": "IN_PROGRESS",
+     "notes": "factCheck blocks new numbers/skills, flags new entities. Remaining: suggestion review UI + history table."
     }
    ]
   },

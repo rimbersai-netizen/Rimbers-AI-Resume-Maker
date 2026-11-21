@@ -34,3 +34,9 @@
 ## 2026-11-21 — 9A–9C engine (under Bun)
 - ats-engine first run 13/14: test wrongly matched "will pass" inside the disclaimer text itself; fixed the test scope.
 - Full suite: 5 files, **126/126 pass**; `tsc -b packages/ats-engine` OK.
+
+## 2026-11-21 — 7A/7B/8C engine (under Bun)
+- ai-engine first run: factCheck "Google" entity test failed — real bug: multi-word skill list split on spaces
+  ("google cloud" → "google"). Fixed (comma-delimited). Re-run: full suite **144/144 pass**, 2 live tests skipped.
+- Live Ollama (OLLAMA_LIVE=1): health **PASS**; generation with qwen3:4b **TIMED OUT at 240 s** — CPU saturated by
+  the Node source build (load avg 26–51). Timeout path behaved correctly. Re-run after build. NOT a model verification.
