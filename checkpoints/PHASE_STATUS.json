@@ -127,19 +127,19 @@
      "id": "6A",
      "title": "35 templates",
      "status": "IMPLEMENTED",
-     "notes": "105 templates: PDF verified per template (text, pages, no unmapped glyphs). Pending for VERIFIED: DOCX per template (10B) + visual regression snapshots (10C)."
+     "notes": "105 templates: PDF (114 Chromium tests) and DOCX (parity per template) verified. Pending for VERIFIED: visual regression snapshots (10C)."
     },
     {
      "id": "6B",
      "title": "35 more templates",
      "status": "IMPLEMENTED",
-     "notes": "105 templates: PDF verified per template (text, pages, no unmapped glyphs). Pending for VERIFIED: DOCX per template (10B) + visual regression snapshots (10C)."
+     "notes": "105 templates: PDF (114 Chromium tests) and DOCX (parity per template) verified. Pending for VERIFIED: visual regression snapshots (10C)."
     },
     {
      "id": "6C",
      "title": "30+ more, gallery, visual tests",
      "status": "IMPLEMENTED",
-     "notes": "105 templates: PDF verified per template (text, pages, no unmapped glyphs). Pending for VERIFIED: DOCX per template (10B) + visual regression snapshots (10C)."
+     "notes": "105 templates: PDF (114 Chromium tests) and DOCX (parity per template) verified. Pending for VERIFIED: visual regression snapshots (10C)."
     }
    ]
   },
@@ -227,7 +227,8 @@
     {
      "id": "10B",
      "title": "Editable DOCX",
-     "status": "NOT_STARTED"
+     "status": "VERIFIED",
+     "evidence": "DOCX from shared content model (@gars/template-engine buildContentModel): Heading1/Heading2 styles, numbered bullet list, hyperlinks, A4/Letter + margins, RTL (w:bidi/w:rtl only when RTL), per-script Office fonts, photo only if requested + template slot, no image-only output. Tests: 110 DOCX (mammoth \u2192 <h1>/<h2>/<li>, XML page size/RTL/rels; parity: every HTML/PDF word present in DOCX for all 105 templates); SUPABASE_IT DOCX export (Arabic, RTL); UI: Free blocked (plan feature) \u2192 one-time entitlement \u2192 8 KB .docx downloaded; independent parse with macOS textutil (en + ar) (2026-11-21)."
     },
     {
      "id": "10C",

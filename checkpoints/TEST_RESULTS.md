@@ -111,3 +111,12 @@
 - Preview fonts: Next bundling broke dynamic font resolution → fonts now copied to apps/web/public/fonts at prebuild
   (511 files, 13 MB, gitignored); iframe loads Inter + Noto Sans Arabic from the same files the PDF embeds.
 - Regression: unit 333/333, pgTAP 79/79, storage 16/16, web typecheck OK. Disk 29 GB free.
+
+## 2026-11-21 06:50–07:30 — 10B DOCX
+- New: buildContentModel (format-neutral, localized) + services/document-worker/src/docx.ts (`docx` 9.0.2).
+- DOCX tests: first run 100/110 failed parity — real inconsistency: DOCX dropped "https://" from credential links while PDF shows
+  full URL → fixed → **110/110**.
+- macOS textutil (independent parser) found: English DOCX lines prefixed with U+200F — library emits <w:bidi w:val="false"/>,
+  which Apple's reader treats as RTL → RTL flags now emitted only for RTL docs; test asserts none in LTR docs. Re-check clean.
+- SUPABASE_IT export 4/4 (incl. DOCX Arabic RTL). UI: Free → "DOCX included from Standard"; one-time entitlement → 8 KB .docx.
+- Regression: unit 443/443 (incl. DOCX), PDF 114/114, pgTAP 79/79, storage 16/16, integration 15/15, web typecheck OK.

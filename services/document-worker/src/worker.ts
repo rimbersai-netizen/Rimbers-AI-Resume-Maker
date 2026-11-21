@@ -3,9 +3,10 @@
  * converts to PDF, uploads to the private bucket under the owner's folder, and records the result.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { MasterProfile } from "@gars/resume-schema";
+import { MasterProfile, type ResumeDocument } from "@gars/resume-schema";
 import { toResumeDocument, type ResumeLayout } from "@gars/resume-builder";
-import { getTemplate, renderResumeHtml, TEMPLATES } from "@gars/template-engine";
+import { getTemplate, renderResumeHtml, TEMPLATES, type TemplateSpec } from "@gars/template-engine";
+import { buildDocx } from "./docx";
 import { renderPdf } from "./pdf";
 
 export interface ExportRow {
@@ -16,7 +17,14 @@ export interface ExportRow {
   attempts: number;
 }
 
-export async function buildResumeHtml(db: SupabaseClient, resumeId: string, userId: string): Promise<{ html: string; pageSize: "A4" | "Letter"; title: string }> {
+export interface ResumeInputs {
+  doc: ResumeDocument;
+  template: TemplateSpec;
+  photo?: { data: Buffer; mime: string };
+}
+
+/** Load everything an export needs (service role; scoped to the job's user). */
+export async function loadResumeInputs(db: SupabaseClient, resumeId: string, userId: string): Promise<ResumeInputs> {
   const { data: doc, error } = await db.from("resume_documents")
     .select("id,user_id,master_profile_id,title,country_code,locale,template_id,page_size,include_photo,settings")
     .eq("id", resumeId).eq("user_id", userId).is("deleted_at", null).single();
@@ -32,31 +40,42 @@ export async function buildResumeHtml(db: SupabaseClient, resumeId: string, user
     settings: { hiddenItemIds: s.hiddenItemIds ?? [], overridden: s.overridden ?? [], dateFormat: s.dateFormat },
     sections: (secs ?? []).map((x) => ({ key: x.section_key, visible: x.is_visible, heading: x.custom_heading ?? undefined })),
   };
-  // Photo is embedded as a data: URI (the renderer blocks all network fetches).
-  let photoSrc: string | undefined;
+  let photo: ResumeInputs["photo"];
   const photoPath = parsed.data.personal.photoPath;
   if (layout.includePhoto && photoPath?.startsWith(`${userId}/`)) {
     const { data: blob } = await db.storage.from("profile-photos").download(photoPath);
-    if (blob && blob.size <= 5 * 1024 * 1024) photoSrc = `data:${blob.type || "image/jpeg"};base64,${Buffer.from(await blob.arrayBuffer()).toString("base64")}`;
+    if (blob && blob.size <= 5 * 1024 * 1024) photo = { data: Buffer.from(await blob.arrayBuffer()), mime: blob.type || "image/jpeg" };
   }
-  const template = getTemplate(layout.templateId) ?? TEMPLATES[0]!;
-  return { html: renderResumeHtml(toResumeDocument(doc.id, layout, parsed.data), template, { photoSrc }), pageSize: layout.pageSize, title: layout.title };
+  return { doc: toResumeDocument(doc.id, layout, parsed.data), template: getTemplate(layout.templateId) ?? TEMPLATES[0]!, photo };
+}
+
+export async function renderExport(inputs: ResumeInputs, format: "pdf" | "docx"): Promise<{ bytes: Buffer; contentType: string; ext: string }> {
+  if (format === "docx") {
+    const type = inputs.photo?.mime === "image/png" ? "png" : "jpg";
+    const bytes = await buildDocx(inputs.doc, inputs.template, {
+      includePhoto: inputs.doc.includePhoto,
+      photo: inputs.photo && inputs.photo.mime !== "image/webp" ? { data: inputs.photo.data, type } : undefined, // Word lacks WebP support
+    });
+    return { bytes, contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", ext: "docx" };
+  }
+  // Photo as data: URI — the PDF renderer blocks all network fetches.
+  const photoSrc = inputs.photo ? `data:${inputs.photo.mime};base64,${inputs.photo.data.toString("base64")}` : undefined;
+  const bytes = await renderPdf(renderResumeHtml(inputs.doc, inputs.template, { photoSrc }), { pageSize: inputs.doc.pageSize, title: inputs.doc.title });
+  return { bytes, contentType: "application/pdf", ext: "pdf" };
 }
 
 export async function processExport(db: SupabaseClient, job: ExportRow): Promise<{ ok: boolean; path?: string; error?: string }> {
   try {
-    if (job.format !== "pdf") throw new Error("format not supported yet");
-    const { html, pageSize, title } = await buildResumeHtml(db, job.resume_id, job.user_id);
-    const pdf = await renderPdf(html, { pageSize, title });
-    const path = `${job.user_id}/${job.resume_id}/${job.id}.pdf`;
-    const up = await db.storage.from("resume-exports").upload(path, pdf, { contentType: "application/pdf", upsert: true });
+    const out = await renderExport(await loadResumeInputs(db, job.resume_id, job.user_id), job.format);
+    const path = `${job.user_id}/${job.resume_id}/${job.id}.${out.ext}`;
+    const up = await db.storage.from("resume-exports").upload(path, out.bytes, { contentType: out.contentType, upsert: true });
     if (up.error) throw new Error(`upload failed: ${up.error.message}`);
     await db.from("document_exports").update({ status: "succeeded", storage_path: path, completed_at: new Date().toISOString(), error: null }).eq("id", job.id);
     return { ok: true, path };
   } catch (e) {
     const msg = (e as Error).message.slice(0, 300);
     // Retry up to 3 attempts (claim function stops at 3); final failure is visible to the user.
-    const final = job.attempts >= 3 || /not found|incomplete|not supported/.test(msg);
+    const final = job.attempts >= 3 || /not found|incomplete/.test(msg);
     await db.from("document_exports").update({ status: final ? "failed" : "queued", error: msg, locked_at: null }).eq("id", job.id);
     return { ok: false, error: msg };
   }

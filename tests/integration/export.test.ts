@@ -71,6 +71,23 @@ describe.skipIf(!enabled)("export pipeline", () => {
     expect((await b.c.from("document_exports").select("id").eq("id", job!.id)).data).toEqual([]);
   }, 60_000);
 
+  it("DOCX export: worker renders an editable Word file with RTL for the Arabic resume", async () => {
+    const a = await userWithResume("docx");
+    const { data: job } = await a.c.from("document_exports").insert({ user_id: a.uid, resume_id: a.resumeId, format: "docx" }).select("id").single();
+    for (let i = 0; i < 10 && (await runOnce(admin)); i++);
+    const { data: row } = await a.c.from("document_exports").select("status,storage_path,error").eq("id", job!.id).single();
+    expect(row).toMatchObject({ status: "succeeded" });
+    expect(row!.storage_path).toMatch(/\.docx$/);
+    const signed = await a.c.storage.from("resume-exports").createSignedUrl(row!.storage_path!, 60);
+    const res = await fetch(signed.data!.signedUrl);
+    const bytes = Buffer.from(await res.arrayBuffer());
+    expect(bytes.subarray(0, 2).toString()).toBe("PK");
+    const JSZip = (await import("jszip")).default;
+    const xml = await (await JSZip.loadAsync(bytes)).file("word/document.xml")!.async("string");
+    expect(xml).toContain("<w:bidi/>");
+    expect(xml).toContain("Omar Haddad");
+  }, 60_000);
+
   it("a job for a deleted resume fails cleanly with a recorded error", async () => {
     const a = await userWithResume("c");
     const { data: job } = await a.c.from("document_exports").insert({ user_id: a.uid, resume_id: a.resumeId, format: "pdf" }).select("id").single();

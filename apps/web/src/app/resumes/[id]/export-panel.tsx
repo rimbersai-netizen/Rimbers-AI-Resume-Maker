@@ -40,13 +40,13 @@ export function ExportPanel({ resumeId, beforeExport }: { resumeId: string; befo
           <span className="badge pdf" aria-hidden>PDF</span><span><strong>Download as PDF</strong><br /><span className="muted small">Best for job applications</span></span>
         </button>
         <button type="button" className="export-opt" onClick={() => start("docx")} disabled={busy}>
-          <span className="badge docx" aria-hidden>DOCX</span><span><strong>Download as DOCX</strong><br /><span className="muted small">Editable in Microsoft Word · coming soon</span></span>
+          <span className="badge docx" aria-hidden>DOCX</span><span><strong>Download as DOCX</strong><br /><span className="muted small">Editable in Microsoft Word</span></span>
         </button>
       </div>
       <div aria-live="polite">
-        {busy && <p className="muted small">{state?.status === "running" ? "Creating your PDF…" : "Preparing…"}</p>}
+        {busy && <p className="muted small">{state?.status === "running" ? "Creating your file…" : "Preparing…"}</p>}
         {state?.status === "succeeded" && state.url && (
-          <div className="alert ok"><strong>Your resume is ready!</strong> <a href={state.url} download>Download PDF</a> <span className="muted small">(link valid for 5 minutes)</span></div>
+          <div className="alert ok"><strong>Your resume is ready!</strong> <a href={state.url} download>Download {state.format === "docx" ? "DOCX" : "PDF"}</a> <span className="muted small">(link valid for 5 minutes)</span></div>
         )}
         {state?.status === "failed" && <div className="alert error" role="alert">{state.error}</div>}
         {error && <div className="alert error" role="alert">{error.message}{error.upgrade && <> <Link href="/account">See plans</Link></>}</div>}

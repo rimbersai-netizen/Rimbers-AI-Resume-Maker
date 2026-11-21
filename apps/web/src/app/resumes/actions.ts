@@ -145,18 +145,19 @@ export async function deleteResume(id: string): Promise<ActionResult> {
   return { ok: true };
 }
 
-export interface ExportState { id: string; status: "queued" | "running" | "succeeded" | "failed"; url?: string; error?: string }
+export interface ExportState { id: string; status: "queued" | "running" | "succeeded" | "failed"; url?: string; error?: string; format?: "pdf" | "docx" }
 
 /** Queue a PDF export (quota checked server-side). The document worker renders it. */
 export async function requestExport(resumeId: string, format: "pdf" | "docx"): Promise<ActionResult<{ id: string }>> {
   const { supabase, user } = await ctx();
   if (!user) return { ok: false, kind: "auth", message: "Please sign in again." };
   if (!z.string().uuid().safeParse(resumeId).success) return { ok: false, kind: "invalid", message: "Unknown resume" };
-  if (format === "docx") return { ok: false, kind: "error", message: "Editable Word export is coming soon." };
-  const quota = await entitlement(supabase, "export_pdf");
+  const quota = await entitlement(supabase, format === "docx" ? "export_docx" : "export_pdf");
   if (!quota.allowed) {
     return { ok: false, kind: "entitlement", upgradeTo: quota.upgradeTo,
-      message: `You have used this month's downloads on the ${quota.plan === "FREE" ? "Free" : quota.plan} plan. Upgrade${quota.upgradeTo ? ` to ${PLAN_NAMES[quota.upgradeTo]}` : ""} for more.` };
+      message: quota.reason === "plan_feature"
+        ? `Editable Word (DOCX) downloads are included from the ${quota.upgradeTo ? PLAN_NAMES[quota.upgradeTo] : "Standard"} plan.`
+        : `You have used this month's downloads on the ${quota.plan === "FREE" ? "Free" : quota.plan} plan. Upgrade${quota.upgradeTo ? ` to ${PLAN_NAMES[quota.upgradeTo]}` : ""} for more.` };
   }
   const ins = await supabase.from("document_exports").insert({ user_id: user.id, resume_id: resumeId, format }).select("id").single();
   if (ins.error || !ins.data) return { ok: false, kind: "error", message: "Could not start the export." };
@@ -167,13 +168,13 @@ export async function requestExport(resumeId: string, format: "pdf" | "docx"): P
 export async function getExport(exportId: string): Promise<ExportState | null> {
   const { supabase, user } = await ctx();
   if (!user || !z.string().uuid().safeParse(exportId).success) return null;
-  const { data } = await supabase.from("document_exports").select("id,status,storage_path,error,resume_id").eq("id", exportId).maybeSingle();
+  const { data } = await supabase.from("document_exports").select("id,status,storage_path,error,resume_id,format").eq("id", exportId).maybeSingle();
   if (!data) return null;
   if (data.status !== "succeeded" || !data.storage_path) {
     return { id: data.id, status: data.status, error: data.status === "failed" ? "The export failed. Please try again." : undefined };
   }
   const { data: doc } = await supabase.from("resume_documents").select("title").eq("id", data.resume_id).maybeSingle();
-  const name = `${(doc?.title ?? "resume").replace(/[^\p{L}\p{N} _-]+/gu, "").trim().slice(0, 80) || "resume"}.pdf`;
+  const name = `${(doc?.title ?? "resume").replace(/[^\p{L}\p{N} _-]+/gu, "").trim().slice(0, 80) || "resume"}.${data.format}`;
   const { data: signed } = await supabase.storage.from("resume-exports").createSignedUrl(data.storage_path, 300, { download: name });
-  return { id: data.id, status: "succeeded", url: signed?.signedUrl };
+  return { id: data.id, status: "succeeded", url: signed?.signedUrl, format: data.format };
 }
