@@ -3,17 +3,21 @@
   "private": true,
   "version": "0.0.0",
   "packageManager": "pnpm@9.15.9",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc -b packages/shared-types packages/resume-schema packages/validation packages/country-rules packages/localization packages/ats-engine packages/ai-engine packages/template-engine packages/subscriptions",
-    "check": "pnpm typecheck && pnpm test"
+    "check": "pnpm typecheck && pnpm test",
+    "gen:catalog": "tsx scripts/src/gen-catalog.ts"
   },
   "devDependencies": {
     "typescript": "5.6.3",
     "vitest": "2.1.8",
     "@supabase/supabase-js": "2.47.10",
-    "@types/node": "22.10.2"
+    "@types/node": "22.10.2",
+    "tsx": "4.19.2"
   }
 }

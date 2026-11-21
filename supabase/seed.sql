@@ -6,8 +6,7 @@ insert into public.subscription_plans (id, name, currency, monthly_price_minor, 
   ('PREMIUM',      'Premium',      'SAR', 5900, 42900, null, 7, '{"resumes":null,"ai_requests_month":500,"exports_month":null,"docx":true,"premium_templates":true}', 3)
 on conflict (id) do nothing;
 
+-- Published templates come from migration 20261121000005_catalog.sql. One draft for RLS tests:
 insert into public.resume_templates (id, name, category, status, supports_rtl) values
-  ('ats-minimal-01', 'ATS Minimal', 'ats_minimal', 'published', true),
-  ('modern-pro-01',  'Modern Pro',  'modern',      'published', true),
-  ('draft-test-01',  'Draft Test',  'classic',     'draft',     false)
+  ('draft-test-01', 'Draft Test', 'classic', 'draft', false)
 on conflict (id) do nothing;

@@ -54,7 +54,7 @@ describe("template library", () => {
 describe("renderResumeHtml — every template renders", () => {
   it.each(TEMPLATES.map((t) => [t.id, t] as const))("%s", (_id, t: TemplateSpec) => {
     const html = renderResumeHtml(doc({ templateId: t.id }), t);
-    expect(html).toContain("<h1>Ayesha Khan</h1>");
+    expect(html).toContain("<h1><bdi>Ayesha Khan</bdi></h1>");
     expect(html).toMatch(/<h2 id="[^"]+">Work Experience<\/h2>/);
     expect(html).not.toContain("<table");
     expect(html).not.toContain("Hidden Corp");
@@ -100,6 +100,13 @@ describe("render details", () => {
     expect(renderResumeHtml(d, TEMPLATES[0]!)).not.toContain('href="javascript:');
   });
   it("custom sections render with their heading", () => expect(renderResumeHtml(doc(), TEMPLATES[0]!)).toContain(">Memberships</h2>"));
+  it("user text is bidi-isolated so English inside Arabic keeps punctuation in place", () => {
+    const html = renderResumeHtml(doc({ locale: "ar", country: "SA" }), TEMPLATES[0]!);
+    expect(html).toContain("<p><bdi>Engineer with five years of experience.</bdi></p>");
+    expect(html).toContain("<li><bdi>Led a team of 4 developers</bdi></li>");
+    expect(html).toContain("<h3><bdi>Senior Software Engineer</bdi><span class=\"org\">، <bdi>Tech Solutions</bdi></span>");
+    expect(renderResumeHtml(doc(), TEMPLATES[0]!)).toContain("<span class=\"org\">, <bdi>Tech Solutions</bdi></span>");
+  });
   it("declared ATS traits feed the ATS engine", () => {
     const r = analyzeResume({ profile: doc().profile, template: TEMPLATES[0]!.ats });
     expect(r.categories.find((c) => c.id === "formatting")!.score).toBe(100);

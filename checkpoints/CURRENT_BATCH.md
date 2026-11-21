@@ -1,3 +1,4 @@
-# Current Batch: 4C — Connect country selection to forms, formatting, recommendations (NOT_STARTED)
+# Current Batch: 10A — PDF generation (NOT_STARTED)
 
-Last verified: 3A–3C (2026-11-21 04:55). 14/60 VERIFIED.
+Rationale: 5B pagination, 5C consistency, 6A–6C (PDF/DOCX per template) and workflow A all depend on real PDF export.
+Last verified: 4C (2026-11-21 05:45). 15/60 VERIFIED.

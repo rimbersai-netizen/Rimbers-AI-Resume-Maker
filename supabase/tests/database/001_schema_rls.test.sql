@@ -41,7 +41,7 @@ set local role authenticated;
 set local request.jwt.claims = '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
 
 select is((select count(*)::int from public.master_profiles), 1, 'A sees only own master profile');
-select is((select count(*)::int from public.resume_templates), 2, 'authenticated sees only published templates');
+select is((select count(*)::int from public.resume_templates where id = 'draft-test-01'), 0, 'authenticated cannot see draft templates');
 
 select throws_ok($$insert into public.work_experiences (master_profile_id, user_id, employer, title)
   values ('bbbbbbbb-0000-0000-0000-000000000001','22222222-2222-2222-2222-222222222222','X','Y')$$,
@@ -84,7 +84,7 @@ select throws_ok($$truncate public.audit_logs$$, 'P0001', 'audit_logs is append-
 
 -- anon sees only published catalog, no user data
 set local role anon;
-select is((select count(*)::int from public.resume_templates), 2, 'anon sees only published templates');
+select ok((select count(*) from public.resume_templates) >= 100 and not exists (select 1 from public.resume_templates where status <> 'published'), 'anon sees only published templates (100+)');
 select is((select count(*)::int from public.subscription_plans), 4, 'anon sees active plans');
 select is((select count(*)::int from public.profiles), 0, 'anon sees no profiles');
 reset role;

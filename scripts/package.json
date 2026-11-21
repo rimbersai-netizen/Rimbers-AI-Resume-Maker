@@ -1,0 +1,7 @@
+{
+  "name": "@gars/scripts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {"@gars/country-rules": "workspace:*", "@gars/template-engine": "workspace:*"}
+}

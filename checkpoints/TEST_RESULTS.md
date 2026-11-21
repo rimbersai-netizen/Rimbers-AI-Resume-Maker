@@ -76,3 +76,19 @@
   skills, language), reload persistence, crash-recovery banner + restore, conflict (other-device bump) → keep mine, named version +
   restore, photo upload (signed URL; PDF rejected), 375 px no horizontal scroll.
 - SUPABASE_IT: auth 7 + profile 4 = **11/11**. Full: `pnpm check` **314/314**; storage 16/16; web typecheck 0 errors.
+
+## 2026-11-21 05:00–05:45 — 4C + 5C (new-resume flow, editor, live preview)
+- Migrations 0004 (resume settings + save_resume_layout), 0005 (GENERATED catalog: 105 templates published + versions,
+  30 country rules as draft + 49 sources; `pnpm gen:catalog`, sync test), 0006 (drop custom_needs_heading).
+- pgTAP: 001 assertions updated for 105-template catalog; 003 resume layout 9 → **79/79**.
+- Unit: resume-settings 14 (first run 13/14 — my expectation was wrong: DE accepts English so an English app keeps
+  English; added Arabic-app case). template-engine +2 (bdi isolation, Arabic comma). Full **331/331**.
+- Browser E2E found + fixed: (1) create failed: default 'custom' placeholder section violated custom_needs_heading →
+  constraint dropped + createResume now compensates (deletes half-created row so quota isn't consumed);
+  (2) bidi: English punctuation flipped inside Arabic resume → all user text wrapped in <bdi>; (3) Arabic-script
+  separators use "،".
+  Verified: SA preselected from profile; en app → en resume, Arabic offered; manual locale survives country switch;
+  Arabic resume renders RTL with Arabic headings, "حتى الآن", MM/YYYY, A4, bdi-isolated email; app stays LTR;
+  Free plan blocks 2nd resume with upgrade message (DB count stays 1). A real user changed locale/template/page in the
+  editor during testing — autosave stored them with `overridden` = [locale, templateId, pageSize]; left as the user set them.
+- Regression: storage 16/16; SUPABASE_IT 11/11; web typecheck + build OK.

@@ -90,7 +90,8 @@
     {
      "id": "4C",
      "title": "Connect country to forms/formatting",
-     "status": "NOT_STARTED"
+     "status": "VERIFIED",
+     "evidence": "New-resume flow: country search+flags, recommendations (page/photo/dates/sections/templates) with notes 'conventions not rules'; resume language independent of app language (SA+en app\u2192en, Arabic offered; manual choice survives country change; app stays LTR); overrides persist (real user changed locale/template/page \u2192 stored as overridden). Tests: resume-settings unit 14, pgTAP 003 (9), browser E2E (2026-11-21)."
     }
    ]
   },
@@ -113,7 +114,8 @@
     {
      "id": "5C",
      "title": "Live preview + consistency tests",
-     "status": "NOT_STARTED"
+     "status": "IMPLEMENTED",
+     "notes": "Live preview (same renderResumeHtml used for export), autosave, Edit/Preview tabs on mobile, template gallery w/ category filters + premium lock, section order/visibility, per-entry hiding. Not VERIFIED: preview\u2194PDF consistency test needs Phase 10A."
     }
    ]
   },
@@ -125,19 +127,19 @@
      "id": "6A",
      "title": "35 templates",
      "status": "IMPLEMENTED",
-     "notes": "105 parametric layouts (5\u00d721 categories), all structurally unique (layoutKey), AA contrast, all render in tests. PDF/DOCX/visual snapshots pending Phase 10 + Playwright. Gallery UI pending."
+     "notes": "105 templates seeded to DB via generated migration (sync test); gallery in editor. PDF/DOCX/visual tests pending Phase 10."
     },
     {
      "id": "6B",
      "title": "35 more templates",
      "status": "IMPLEMENTED",
-     "notes": "105 parametric layouts (5\u00d721 categories), all structurally unique (layoutKey), AA contrast, all render in tests. PDF/DOCX/visual snapshots pending Phase 10 + Playwright. Gallery UI pending."
+     "notes": "105 templates seeded to DB via generated migration (sync test); gallery in editor. PDF/DOCX/visual tests pending Phase 10."
     },
     {
      "id": "6C",
      "title": "30+ more, gallery, visual tests",
      "status": "IMPLEMENTED",
-     "notes": "105 parametric layouts (5\u00d721 categories), all structurally unique (layoutKey), AA contrast, all render in tests. PDF/DOCX/visual snapshots pending Phase 10 + Playwright. Gallery UI pending."
+     "notes": "105 templates seeded to DB via generated migration (sync test); gallery in editor. PDF/DOCX/visual tests pending Phase 10."
     }
    ]
   },
@@ -308,7 +310,7 @@
      "id": "14A",
      "title": "Plans, quotas, entitlements",
      "status": "IMPLEMENTED",
-     "notes": "Engine tested on Node (14 tests). Not VERIFIED: server-side DB wiring (entitlement checks in API/edge) pending."
+     "notes": "Engine tested. Server-side enforcement wired + verified for create_resume (Free=1, blocked in UI E2E) and premium templates (create/save). AI + export quota enforcement pending (Phases 7B/10A)."
     },
     {
      "id": "14B",

@@ -21,6 +21,11 @@ const ESC: Record<string, string> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"
 export const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ESC[c]!);
 const safeHref = (u: string) => (/^https?:\/\//i.test(u) ? esc(u) : "#");
 const ltr = (s: string, rtl: boolean) => (rtl ? `<bdi dir="ltr">${esc(s)}</bdi>` : esc(s));
+/**
+ * User-entered text: isolated in <bdi> so its direction comes from its own content. Without this, English
+ * text inside an Arabic/Urdu resume (or an Arabic name inside an English one) gets punctuation on the wrong side.
+ */
+const ut = (s: string) => `<bdi>${esc(s)}</bdi>`;
 
 function monthNames(locale: string): string[] {
   try {
@@ -113,7 +118,9 @@ function range(c: Ctx, start?: string, end?: string, current?: boolean): string 
 }
 
 function entry(c: Ctx, title: string, org: string | undefined, dates: string, extra: string, body: string): string {
-  const head = `<h3>${esc(title)}${org ? `<span class="org">, ${esc(org)}</span>` : ""}</h3>`;
+  // Arabic-script resumes use the Arabic comma.
+  const sep = /^(ar|ur|fa)\b/.test(c.doc.locale) ? "، " : ", ";
+  const head = `<h3>${ut(title)}${org ? `<span class="org">${sep}${ut(org)}</span>` : ""}</h3>`;
   const meta = [dates, extra].filter(Boolean).join(" · ");
   switch (c.spec.layout.datePlacement) {
     case "inline_end":
@@ -140,23 +147,23 @@ function hash(s: string): number {
 function renderSection(c: Ctx, key: SectionKey): string {
   const p = c.doc.profile;
   const vis = <T extends { id: string }>(xs: T[]) => xs.filter((x) => !c.hidden.has(x.id));
-  const bullets = (xs: string[]) => (xs.length ? `<ul class="bullets">${xs.map((b) => `<li>${esc(b)}</li>`).join("")}</ul>` : "");
+  const bullets = (xs: string[]) => (xs.length ? `<ul class="bullets">${xs.map((b) => `<li>${ut(b)}</li>`).join("")}</ul>` : "");
   switch (key) {
     case "summary":
-      return section(c, key, c.h.summary, p.summary ? `<p>${esc(p.summary)}</p>` : "");
+      return section(c, key, c.h.summary, p.summary ? `<p>${ut(p.summary)}</p>` : "");
     case "experience":
       return section(c, key, c.h.experience, vis(p.experience).map((w) =>
-        entry(c, w.title, w.employer, range(c, w.dates.start, w.dates.end, w.dates.current), w.location ? esc(w.location) : "",
-          (w.description ? `<p>${esc(w.description)}</p>` : "") + bullets(w.bullets.map((b) => b.text)))).join(""));
+        entry(c, w.title, w.employer, range(c, w.dates.start, w.dates.end, w.dates.current), w.location ? ut(w.location) : "",
+          (w.description ? `<p>${ut(w.description)}</p>` : "") + bullets(w.bullets.map((b) => b.text)))).join(""));
     case "education":
       return section(c, key, c.h.education, vis(p.education).map((e) =>
         entry(c, e.qualification + (e.field ? ` — ${e.field}` : ""), e.institution, range(c, e.dates.start, e.dates.end, e.dates.current),
-          e.grade ? esc(e.grade) : "", e.notes ? `<p>${esc(e.notes)}</p>` : "")).join(""));
+          e.grade ? ut(e.grade) : "", e.notes ? `<p>${ut(e.notes)}</p>` : "")).join(""));
     case "skills": {
       const s = vis(p.skills).map((x) => x.name);
       if (!s.length) return "";
       const style = c.spec.layout.skillsStyle;
-      const inner = style === "comma" ? `<p>${esc(s.join(", "))}</p>` : `<ul>${s.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`;
+      const inner = style === "comma" ? `<p>${s.map(ut).join(/^(ar|ur|fa)\b/.test(c.doc.locale) ? "، " : ", ")}</p>` : `<ul>${s.map((x) => `<li>${ut(x)}</li>`).join("")}</ul>`;
       return section(c, key, c.h.skills, `<div class="skills ${style}">${inner}</div>`);
     }
     case "certifications":
@@ -165,21 +172,21 @@ function renderSection(c: Ctx, key: SectionKey): string {
           x.credentialUrl ? `<p><a href="${safeHref(x.credentialUrl)}">${ltr(x.credentialUrl, c.rtl)}</a></p>` : "")).join(""));
     case "languages":
       return section(c, key, c.h.languages, vis(p.languages).length
-        ? `<ul class="bullets">${vis(p.languages).map((l) => `<li>${esc(l.language)}${l.proficiency ? ` — ${esc(l.proficiency)}` : ""}</li>`).join("")}</ul>` : "");
+        ? `<ul class="bullets">${vis(p.languages).map((l) => `<li>${ut(l.language)}${l.proficiency ? ` — ${esc(l.proficiency)}` : ""}</li>`).join("")}</ul>` : "");
     case "projects":
       return section(c, key, c.h.projects, vis(p.projects).map((x) =>
         entry(c, x.name, x.role, range(c, x.dates?.start, x.dates?.end, x.dates?.current), "",
-          (x.description ? `<p>${esc(x.description)}</p>` : "") + (x.url ? `<p><a href="${safeHref(x.url)}">${ltr(x.url, c.rtl)}</a></p>` : ""))).join(""));
+          (x.description ? `<p>${ut(x.description)}</p>` : "") + (x.url ? `<p><a href="${safeHref(x.url)}">${ltr(x.url, c.rtl)}</a></p>` : ""))).join(""));
     case "publications": case "awards": case "volunteer": case "references": {
       const list = vis(p[key]);
       return section(c, key, c.h[key], list.map((x) =>
         entry(c, x.title, x.subtitle, x.date ? `<span class="dates">${esc(c.fmt(x.date))}</span>` : "", "",
-          x.description ? `<p>${esc(x.description)}</p>` : "")).join(""));
+          x.description ? `<p>${ut(x.description)}</p>` : "")).join(""));
     }
     case "custom":
       return vis(p.customSections).map((cs) => section(c, "custom", cs.heading, vis(cs.entries).map((x) =>
         entry(c, x.title, x.subtitle, x.date ? `<span class="dates">${esc(c.fmt(x.date))}</span>` : "", "",
-          x.description ? `<p>${esc(x.description)}</p>` : "")).join(""))).join("");
+          x.description ? `<p>${ut(x.description)}</p>` : "")).join(""))).join("");
   }
 }
 
@@ -193,14 +200,14 @@ function headerHtml(c: Ctx, opts: RenderOptions): string {
   if (pd.email) item(L.email, `<a href="mailto:${esc(pd.email)}">${ltr(pd.email, c.rtl)}</a>`);
   if (pd.phone) item(L.phone, ltr(pd.phone, c.rtl));
   const loc = [pd.location.city, pd.location.region].filter(Boolean).join(", ");
-  if (loc) item(L.location, esc(loc));
+  if (loc) item(L.location, ut(loc));
   for (const [k, label] of [["linkedin", "LinkedIn"], ["website", L.web], ["portfolio", "Portfolio"]] as const) {
     const u = pd[k];
     if (u) item(label, `<a href="${safeHref(u)}">${ltr(u.replace(/^https?:\/\//, ""), c.rtl)}</a>`);
   }
   const showPhoto = c.doc.includePhoto && c.spec.layout.photo !== "none" && opts.photoSrc;
   const photo = showPhoto ? `<img class="photo" src="${esc(opts.photoSrc!)}" alt="${esc(pd.fullName)}">` : "";
-  return `<header class="top">${photo}<div><h1>${esc(pd.fullName)}</h1>${pd.professionalTitle ? `<p class="title">${esc(pd.professionalTitle)}</p>` : ""}` +
+  return `<header class="top">${photo}<div><h1>${ut(pd.fullName)}</h1>${pd.professionalTitle ? `<p class="title">${ut(pd.professionalTitle)}</p>` : ""}` +
     `${items.length ? `<ul class="contact" aria-label="${esc(c.h.contact)}">${items.join("")}</ul>` : ""}</div></header>`;
 }
 
