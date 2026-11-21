@@ -181,17 +181,20 @@
     {
      "id": "9A",
      "title": "Formatting + completeness checks",
-     "status": "NOT_STARTED"
+     "status": "IMPLEMENTED",
+     "notes": "packages/ats-engine: formatting/completeness/experience/readability checks. 14 tests pass under Bun; re-run on Node to verify. UI wiring pending."
     },
     {
      "id": "9B",
      "title": "JD matching",
-     "status": "NOT_STARTED"
+     "status": "IMPLEMENTED",
+     "notes": "packages/ats-engine: JD keyword extraction, required-term detection, matching. 14 tests pass under Bun; re-run on Node to verify. UI wiring pending."
     },
     {
      "id": "9C",
      "title": "Explainable scoring + recommendations",
-     "status": "NOT_STARTED"
+     "status": "IMPLEMENTED",
+     "notes": "packages/ats-engine: weighted explainable score, bands, findings w/ suggestions, before/after compare. 14 tests pass under Bun; re-run on Node to verify. UI wiring pending."
     }
    ]
   },

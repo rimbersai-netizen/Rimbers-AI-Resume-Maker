@@ -30,3 +30,7 @@
 ## 2026-11-21 — 13A (partial, under Bun)
 - `vitest run` → 4 files, **112/112 pass** (localization 26: en/ar/ur/de device, unsupported→en, SA/PK no forcing,
   manual persistence, country change, guest merge, fallback, coverage honesty). `tsc -b` 5 packages OK.
+
+## 2026-11-21 — 9A–9C engine (under Bun)
+- ats-engine first run 13/14: test wrongly matched "will pass" inside the disclaimer text itself; fixed the test scope.
+- Full suite: 5 files, **126/126 pass**; `tsc -b packages/ats-engine` OK.

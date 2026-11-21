@@ -6,7 +6,9 @@
 | 2 Supabase/Auth | 2A VERIFIED · 2B NOT_STARTED (needs Node) · 2C VERIFIED |
 | 3 | NOT_STARTED (needs web app → Node) |
 | 4 Country rules | 4A IMPLEMENTED · 4B IMPLEMENTED (Bun-tested; Node re-run pending) · 4C NOT_STARTED |
-| 5–12 | NOT_STARTED |
+| 5–8 | NOT_STARTED |
+| 9 ATS | 9A·9B·9C IMPLEMENTED (engine, Bun-tested; UI wiring pending) |
+| 10–12 | NOT_STARTED |
 | 13 Localization | 13A IN_PROGRESS (resolver + fallback done early, Bun-tested) |
 | 14–20 | NOT_STARTED |
 
