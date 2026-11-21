@@ -93,6 +93,36 @@ describe.skipIf(!enabled)("AI pipeline", () => {
     expect(cancel.data).toEqual([{ status: "cancelled" }]);
   });
 
+  it("tailor + grammar jobs run through the queue; tailoring reports matched/missing deterministically", async () => {
+    const a = await user("tailor");
+    const jd = "Site Engineer\nRequirements:\n- AutoCAD and Primavera\n- Revit\n- Supervise residential construction projects";
+    const t = (await a.c.from("ai_jobs").insert({ user_id: a.uid, kind: "tailor_resume", idempotency_key: randomUUID(),
+      input: { masterProfileId: a.mpId, jobDescription: jd, tone: "professional", locale: "en" } }).select("id").single()).data!.id;
+    await drain({ provider: fake("Site Engineer supervising residential construction with AutoCAD and Primavera at Al Bina Contracting."), route: { localModels: ["m"], sleep: async () => {} } });
+    const { data } = await a.c.from("ai_jobs").select("status,output").eq("id", t).single();
+    expect(data!.status).toBe("succeeded");
+    expect(data!.output).toMatchObject({ kind: "tailored_summary" });
+    expect(data!.output.matched).toEqual(expect.arrayContaining(["autocad", "primavera"]));
+    expect(data!.output.missingRequired).toContain("revit");
+    // grammar on a profile without a summary → invalid_input, not a model failure
+    const g = (await a.c.from("ai_jobs").insert({ user_id: a.uid, kind: "grammar", idempotency_key: randomUUID(),
+      input: { masterProfileId: a.mpId, locale: "en", target: { type: "summary" } } }).select("id").single()).data!.id;
+    await drain({ provider: fake("x".repeat(30)), route: { localModels: ["m"], sleep: async () => {} } });
+    expect((await a.c.from("ai_jobs").select("status,error_code").eq("id", g).single()).data).toMatchObject({ status: "failed", error_code: "invalid_input" });
+  });
+
+  it.skipIf(process.env.OLLAMA_LIVE !== "1")("live tailoring never claims the JD skill the user lacks", async () => {
+    const a = await user("live-tailor");
+    const jd = "Site Engineer\nRequirements:\n- AutoCAD\n- Revit and BIM coordination\n- Supervise residential construction projects";
+    const t = (await a.c.from("ai_jobs").insert({ user_id: a.uid, kind: "tailor_resume", idempotency_key: randomUUID(),
+      input: { masterProfileId: a.mpId, jobDescription: jd, tone: "professional", locale: "en" } }).select("id").single()).data!.id;
+    await drain(defaultDeps());
+    const { data } = await a.c.from("ai_jobs").select("status,error_code,output").eq("id", t).single();
+    console.log("LIVE-TAILOR", JSON.stringify(data));
+    if (data!.status === "succeeded") expect(data!.output.summary).not.toMatch(/revit|bim/i);
+    else expect(data!.error_code).toBe("unverified_facts");
+  }, 600_000);
+
   it.skipIf(process.env.OLLAMA_LIVE !== "1")("live local model produces a fact-checked summary", async () => {
     const a = await user("live");
     const id = await enqueue(a);

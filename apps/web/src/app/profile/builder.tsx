@@ -188,7 +188,7 @@ export function ProfileBuilder({ initial, userId }: { initial: Loaded; userId: s
             <div className="span2">
               <TextArea label="Professional summary" value={draft.summary} maxLength={1200} rows={4} placeholder="2–4 sentences about your experience and focus — or let the AI assistant draft one from your profile."
                 onChange={(v) => update((d) => { d.summary = v; return d; })} />
-              <SummaryAssistant masterProfileId={initial.id} locale={appLocale} prepare={saveNow}
+              <SummaryAssistant masterProfileId={initial.id} locale={appLocale} hasSummary={Boolean(draft.summary?.trim())} prepare={saveNow}
                 onAccept={(text) => update((d) => { d.summary = text; return d; })} />
             </div>
             <details className="span2">

@@ -37,7 +37,7 @@ export async function loadResumeInputs(db: SupabaseClient, resumeId: string, use
   const layout: ResumeLayout = {
     title: doc.title, countryCode: doc.country_code, locale: doc.locale, templateId: doc.template_id, pageSize: doc.page_size,
     includePhoto: doc.include_photo,
-    settings: { hiddenItemIds: s.hiddenItemIds ?? [], overridden: s.overridden ?? [], dateFormat: s.dateFormat },
+    settings: { hiddenItemIds: s.hiddenItemIds ?? [], overridden: s.overridden ?? [], dateFormat: s.dateFormat, summaryOverride: s.summaryOverride },
     sections: (secs ?? []).map((x) => ({ key: x.section_key, visible: x.is_visible, heading: x.custom_heading ?? undefined })),
   };
   let photo: ResumeInputs["photo"];

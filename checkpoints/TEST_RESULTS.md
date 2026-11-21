@@ -144,3 +144,17 @@
   faithful, 0 violations. (2) Accepting unchanged AI bullets re-marked user text as 'ai_accepted' (verified in DB) →
   mergeAcceptedBullets keeps id/provenance for unchanged text (unit test); UI re-run → provenance stays 'user'.
 - Regression: unit 451/451, pgTAP PASS, storage 16/16, integration 19/19 (+1 live skipped), worker 360/360, web typecheck OK.
+
+## 2026-11-21 (session resumed after usage limit) 09:35–10:15 — 8B
+- New job kinds: grammar, tone (summary/bullets; fact-checked vs original), tailor_resume (JD-tailored summary; matched/
+  missing from ATS engine). factCheck gains forbiddenTerms. Per-resume summaryOverride (profile never modified).
+- Live tailoring found a design defect: run 1 failed unverified_facts because ALL missing JD keywords were forbidden,
+  incl. ordinary words ("coordination", "supervise", "projects") the user had in other forms → (1) light stemming in ATS
+  matching (supervise≈supervised, coordination≈coordinated; also improves scores), (2) only skill-like missing terms
+  forbidden (known tools or name/acronym in JD: Revit, BIM). Live re-runs ×3: succeeded, faithful, no Revit/BIM.
+  Review: first-person "I have…" → prompt rule (no I/my/me); "projects" in missing list → filtered to skill-like.
+- UI E2E found "5+" listed as a missing keyword → numeric tokens excluded (test).
+- UI E2E passed: analyze 84/Good with categories + chips + disclaimer; tailor → "Not claimed: kubernetes, graphql" →
+  accept → preview updated, deltas +1 overall/+4 match, DB override set & master unchanged, ats_results/job_descriptions
+  rows; reset clears override; profile Fix grammar (experiance/product/leaded) corrected minimally.
+- Regression: unit 465/465, pgTAP PASS, storage 16/16, integration 20/20 (+2 live), worker 360/360, web typecheck + build OK.

@@ -20,6 +20,7 @@ const LayoutSchema = z.object({
     hiddenItemIds: z.array(z.string().max(64)).max(500),
     dateFormat: z.string().max(20).optional(),
     overridden: z.array(z.enum(["locale", "pageSize", "includePhoto", "sectionOrder", "templateId", "dateFormat"])),
+    summaryOverride: z.string().trim().max(1200).optional(),
   }),
   sections: z.array(z.object({ key: z.enum(SECTION_KEYS), visible: z.boolean(), heading: z.string().max(120).optional() })).min(1).max(40),
 });
@@ -97,7 +98,7 @@ export async function loadResume(id: string): Promise<LoadedResume | null> {
     layout: {
       title: doc.title, countryCode: doc.country_code, locale: doc.locale, templateId: doc.template_id,
       pageSize: doc.page_size, includePhoto: doc.include_photo,
-      settings: { hiddenItemIds: settings.hiddenItemIds ?? [], dateFormat: settings.dateFormat, overridden: settings.overridden ?? [] },
+      settings: { hiddenItemIds: settings.hiddenItemIds ?? [], dateFormat: settings.dateFormat, overridden: settings.overridden ?? [], summaryOverride: settings.summaryOverride },
       sections: (secs ?? []).map((s) => ({ key: s.section_key, visible: s.is_visible, heading: s.custom_heading ?? undefined })),
     },
   };

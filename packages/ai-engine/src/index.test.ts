@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { MasterProfile } from "@gars/resume-schema";
 import {
-  AiError, buildRewriteBulletsTask, buildSummaryTask, factCheck, OllamaProvider, parseJsonOutput, profileFacts,
+  AiError, buildRewriteBulletsTask, isSkillLikeTerm, buildSummaryTask, factCheck, OllamaProvider, parseJsonOutput, profileFacts,
   routeGenerate, userFacingAiError, type AiProvider,
 } from "./index";
 
@@ -115,6 +115,12 @@ describe("factCheck", () => {
   });
 });
 
+describe("isSkillLikeTerm", () => {
+  const jd = "Site Engineer\nRequirements:\n- Revit and BIM coordination\n- Manage projects with Kubernetes\nProjects are large.";
+  it.each([["revit", true], ["bim", true], ["kubernetes", true], ["projects", false], ["coordination", false], ["manage", false]])("%s → %s", (t, want) =>
+    expect(isSkillLikeTerm(t, jd)).toBe(want));
+});
+
 describe("task builders", () => {
   it("never send contact details to the model", () => {
     const f = profileFacts(profile).text;
@@ -126,6 +132,7 @@ describe("task builders", () => {
     expect(t.messages[0]!.content).toMatch(/Never invent/);
     expect(t.messages[1]!.content).toContain("Arabic");
     expect(t.messages[1]!.content).toMatch(/do not include dates/i);
+    expect(t.messages[1]!.content).toMatch(/no "I", "my" or "me"/);
     expect(t.check({ summary: "Senior engineer who increased revenue by 300%." }).ok).toBe(false);
   });
   it("bullet task rejects unknown experience", () => expect(() => buildRewriteBulletsTask(profile, "nope", { tone: "concise", locale: "en" })).toThrow());

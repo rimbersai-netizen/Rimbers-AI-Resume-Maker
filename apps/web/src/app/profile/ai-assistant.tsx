@@ -10,7 +10,7 @@ const TONES = ["professional", "confident", "friendly", "formal", "concise"] as 
 const MAX_WAIT_MS = 4 * 60_000;
 
 /** Queue → poll → result, with cancel on unmount/discard. `prepare` saves the profile first (the worker reads saved data). */
-function useAiJob(prepare: () => Promise<boolean>) {
+export function useAiJob(prepare: () => Promise<boolean>) {
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const job = useRef<string | null>(null);
@@ -43,7 +43,7 @@ function useAiJob(prepare: () => Promise<boolean>) {
   return { phase, start, reset };
 }
 
-function Violations({ output }: { output: AiJobOutput }) {
+export function Violations({ output }: { output: AiJobOutput }) {
   const review = (output.violations as { kind: string; value: string; severity: string }[]).filter((v) => v.severity === "review");
   if (!review.length) return null;
   return (
@@ -53,32 +53,47 @@ function Violations({ output }: { output: AiJobOutput }) {
   );
 }
 
-function Working({ since }: { since: number }) {
+export function Working({ since }: { since: number }) {
   const [, tick] = useState(0);
   useEffect(() => { const t = setInterval(() => tick((n) => n + 1), 1000); return () => clearInterval(t); }, []);
   const s = Math.round((Date.now() - since) / 1000);
   return <p className="muted small" role="status" aria-live="polite"><span className="spinner" aria-hidden /> Writing with the on-device AI… {s}s (usually under a minute)</p>;
 }
 
-const Notice = () => <p className="muted small">AI can make mistakes. It only uses your profile — check every detail is accurate before accepting.</p>;
+export const Notice = () => <p className="muted small">AI can make mistakes. It only uses your profile — check every detail is accurate before accepting.</p>;
 
-export function SummaryAssistant(p: { masterProfileId: string; locale: string; prepare: () => Promise<boolean>; onAccept: (text: string) => void }) {
+export function SummaryAssistant(p: { masterProfileId: string; locale: string; hasSummary: boolean; prepare: () => Promise<boolean>; onAccept: (text: string) => void }) {
   const { phase, start, reset } = useAiJob(p.prepare);
+  const [mode, setMode] = useState<"write" | "grammar" | "tone">("write");
   const [tone, setTone] = useState<(typeof TONES)[number]>("professional");
   const [length, setLength] = useState<"short" | "medium" | "long">("medium");
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false);
-  useEffect(() => { if (phase.kind === "ready" && phase.output.kind === "summary") setText(phase.output.summary); }, [phase]);
-  const go = () => start({ kind: "summary", masterProfileId: p.masterProfileId, tone, length, locale: p.locale as AiJobInput["locale"] });
+  useEffect(() => {
+    if (phase.kind !== "ready") return;
+    if (phase.output.kind === "summary") setText(phase.output.summary);
+    if (phase.output.kind === "polish" && phase.output.summary) setText(phase.output.summary);
+  }, [phase]);
+  const locale = p.locale as AiJobInput["locale"];
+  const go = () => start(
+    mode === "write" ? { kind: "summary", masterProfileId: p.masterProfileId, tone, length, locale }
+    : mode === "grammar" ? { kind: "grammar", masterProfileId: p.masterProfileId, locale, target: { type: "summary" } }
+    : { kind: "tone", masterProfileId: p.masterProfileId, locale, tone, target: { type: "summary" } });
 
   if (!open) return <button type="button" className="link ai-btn" onClick={() => setOpen(true)}>✨ Write with AI</button>;
   return (
     <section className="ai-panel" aria-label="AI writing assistant">
-      <div className="ai-controls">
-        <label>Writing tone<select value={tone} onChange={(e) => setTone(e.target.value as typeof tone)}>{TONES.map((t) => <option key={t} value={t}>{t[0]!.toUpperCase() + t.slice(1)}</option>)}</select></label>
-        <label>Length<select value={length} onChange={(e) => setLength(e.target.value as typeof length)}><option value="short">Short</option><option value="medium">Medium</option><option value="long">Long</option></select></label>
+      <div className="seg ai-modes" role="radiogroup" aria-label="What should the AI do?">
+        {([["write", "Write new"], ["grammar", "Fix grammar"], ["tone", "Change tone"]] as const).map(([m, label]) => (
+          <button key={m} type="button" role="radio" aria-checked={mode === m} disabled={m !== "write" && !p.hasSummary}
+            title={m !== "write" && !p.hasSummary ? "Write a summary first" : undefined} onClick={() => { reset(); setMode(m); }}>{label}</button>
+        ))}
       </div>
-      {phase.kind === "idle" && <button type="button" className="btn" onClick={go}>✨ Generate with AI</button>}
+      <div className="ai-controls">
+        {mode !== "grammar" && <label>Writing tone<select value={tone} onChange={(e) => setTone(e.target.value as typeof tone)}>{TONES.map((t) => <option key={t} value={t}>{t[0]!.toUpperCase() + t.slice(1)}</option>)}</select></label>}
+        {mode === "write" && <label>Length<select value={length} onChange={(e) => setLength(e.target.value as typeof length)}><option value="short">Short</option><option value="medium">Medium</option><option value="long">Long</option></select></label>}
+      </div>
+      {phase.kind === "idle" && <button type="button" className="btn" onClick={go}>✨ {mode === "write" ? "Generate with AI" : mode === "grammar" ? "Fix grammar" : "Rewrite in this tone"}</button>}
       {phase.kind === "working" && <Working since={phase.since} />}
       {phase.kind === "ready" && (
         <>
@@ -107,10 +122,24 @@ export function BulletsAssistant(p: { masterProfileId: string; experienceId: str
   const { phase, start, reset } = useAiJob(p.prepare);
   const [items, setItems] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
-  useEffect(() => { if (phase.kind === "ready" && phase.output.kind === "achievement_bullets") setItems(phase.output.bullets); }, [phase]);
-  const go = () => start({ kind: "achievement_bullets", masterProfileId: p.masterProfileId, experienceId: p.experienceId, tone: "professional", locale: p.locale as AiJobInput["locale"] });
+  useEffect(() => {
+    if (phase.kind !== "ready") return;
+    if (phase.output.kind === "achievement_bullets") setItems(phase.output.bullets);
+    if (phase.output.kind === "polish" && phase.output.bullets) setItems(phase.output.bullets);
+  }, [phase]);
+  const locale = p.locale as AiJobInput["locale"];
+  const run = (mode: "improve" | "grammar") => start(mode === "improve"
+    ? { kind: "achievement_bullets", masterProfileId: p.masterProfileId, experienceId: p.experienceId, tone: "professional", locale }
+    : { kind: "grammar", masterProfileId: p.masterProfileId, locale, target: { type: "bullets", experienceId: p.experienceId } });
+  const [lastMode, setLastMode] = useState<"improve" | "grammar">("improve");
+  const go = () => run(lastMode);
 
-  if (!open) return <button type="button" className="link ai-btn" onClick={() => { setOpen(true); void go(); }}>✨ Improve with AI</button>;
+  if (!open) return (
+    <span className="ai-btn-row">
+      <button type="button" className="link ai-btn" onClick={() => { setOpen(true); setLastMode("improve"); void run("improve"); }}>✨ Improve with AI</button>
+      <button type="button" className="link ai-btn" onClick={() => { setOpen(true); setLastMode("grammar"); void run("grammar"); }}>Fix grammar</button>
+    </span>
+  );
   return (
     <section className="ai-panel" aria-label="AI bullet suggestions">
       {phase.kind === "working" && <Working since={phase.since} />}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { MasterProfile } from "@gars/resume-schema";
-import { analyzeResume, compareAnalyses, DISCLAIMER, extractKeywords, matchKeywords, tokenize } from "./index";
+import { analyzeResume, compareAnalyses, DISCLAIMER, extractKeywords, matchKeywords, stem, tokenize } from "./index";
 
 const strong = MasterProfile.parse({
   schemaVersion: 1,
@@ -33,6 +33,11 @@ describe("tokenize/keywords", () => {
     const t = tokenize("JS, Node.js, C++, C#, k8s and CI/CD; postgres");
     expect(t).toEqual(expect.arrayContaining(["javascript", "node.js", "c++", "c#", "kubernetes", "ci/cd", "postgresql"]));
   });
+  it("numeric tokens (5+, 40%, 3.5) are not keywords", () => {
+    expect(extractKeywords("Requirements:\n- 5+ years with React\n- 40% travel\n- GPA 3.5").map((k) => k.term)).not.toEqual(expect.arrayContaining(["5+"]));
+    expect(tokenize("5+ years 40% 3.5 C++")).toEqual(expect.arrayContaining(["c++"]));
+    expect(tokenize("5+ years 40% 3.5")).not.toContain("5+");
+  });
   it("handles non-Latin text without crashing", () => expect(tokenize("مهندس برمجيات React")).toContain("react"));
   it("marks requirement-section terms as required, nice-to-have as optional", () => {
     const k = extractKeywords(JD);
@@ -46,6 +51,15 @@ describe("tokenize/keywords", () => {
     expect(m.matched.map((x) => x.term)).toEqual(expect.arrayContaining(["react", "node.js", "aws"]));
     expect(m.score).toBeGreaterThan(0);
     expect(m.score).toBeLessThan(100);
+  });
+});
+
+describe("word-form matching", () => {
+  it("matches supervise/supervised, coordination/coordinated, projects/project; tech tokens exact", () => {
+    const m = matchKeywords(extractKeywords("Requirements:\n- Supervise projects\n- Coordination of teams\n- Node.js"), "Supervised a project. Coordinated teams. Node.js");
+    expect(m.missing.map((k) => k.term)).toEqual([]);
+    expect(stem("node.js")).toBe("node.js");
+    expect(stem("engineer")).toBe("engineer");
   });
 });
 

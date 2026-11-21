@@ -180,7 +180,8 @@
     {
      "id": "8B",
      "title": "Achievements, grammar, job-specific",
-     "status": "NOT_STARTED"
+     "status": "VERIFIED",
+     "evidence": "Grammar + tone (summary or bullets, checked against original text), achievement rewrite (8A), job-specific tailoring (summary tailored to JD; matched/missing from ATS engine; skill-like missing JD terms forbidden; per-resume summaryOverride \u2014 master profile untouched, reset supported). Unit: ai-engine 36, ats-engine 16, resume-builder 15. SUPABASE_IT ai 5/5 (+tailor/grammar). Live qwen3:4b tailoring \u00d73 faithful, no Revit/BIM claimed. UI E2E: JD analyze (84, Good, 6 categories, matched/missing, disclaimer) \u2192 tailor \u2192 accept \u2192 preview + before/after deltas (+1, +4) \u2192 DB override set, master unchanged \u2192 reset; profile 'Fix grammar' corrected 3 errors minimally (2026-11-21)."
     },
     {
      "id": "8C",
@@ -198,19 +199,19 @@
      "id": "9A",
      "title": "Formatting + completeness checks",
      "status": "VERIFIED",
-     "evidence": "ats-engine 14 tests on Node: deterministic, explanations, required-term detection, no-guarantee wording"
+     "evidence": "ats-engine 14 tests on Node: deterministic, explanations, required-term detection, no-guarantee wording UI: Job Match & ATS panel in resume editor (score ring, category findings, matched/missing, history rows in job_descriptions/ats_results, before/after compare)."
     },
     {
      "id": "9B",
      "title": "JD matching",
      "status": "VERIFIED",
-     "evidence": "ats-engine 14 tests on Node: deterministic, explanations, required-term detection, no-guarantee wording"
+     "evidence": "ats-engine 14 tests on Node: deterministic, explanations, required-term detection, no-guarantee wording UI: Job Match & ATS panel in resume editor (score ring, category findings, matched/missing, history rows in job_descriptions/ats_results, before/after compare)."
     },
     {
      "id": "9C",
      "title": "Explainable scoring + recommendations",
      "status": "VERIFIED",
-     "evidence": "ats-engine 14 tests on Node: deterministic, explanations, required-term detection, no-guarantee wording"
+     "evidence": "ats-engine 14 tests on Node: deterministic, explanations, required-term detection, no-guarantee wording UI: Job Match & ATS panel in resume editor (score ring, category findings, matched/missing, history rows in job_descriptions/ats_results, before/after compare)."
     }
    ]
   },
@@ -276,7 +277,8 @@
     {
      "id": "12C",
      "title": "Interview prep + tailoring",
-     "status": "NOT_STARTED"
+     "status": "NOT_STARTED",
+     "notes": "Job-specific tailoring (summary) delivered in 8B via Job Match panel. Pending: interview preparation suggestions, bullet-level tailoring."
     }
    ]
   },

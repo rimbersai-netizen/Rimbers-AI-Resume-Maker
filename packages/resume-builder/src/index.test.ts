@@ -78,6 +78,16 @@ describe("toResumeDocument + render", () => {
   });
 });
 
+describe("summary override", () => {
+  it("tailored summary applies to this resume only; the master profile object is untouched", () => {
+    const l = { ...defaultLayout("US", "en"), settings: { ...defaultLayout("US", "en").settings, summaryOverride: "Tailored for ACME." } };
+    const doc = toResumeDocument("r1", l, profile);
+    expect(doc.profile.summary).toBe("Tailored for ACME.");
+    expect(profile.summary).toBe("Engineer.");
+    expect(toResumeDocument("r1", defaultLayout("US", "en"), profile).profile.summary).toBe("Engineer.");
+  });
+});
+
 describe("helpers", () => {
   it("flag emoji", () => expect(flag("sa")).toBe("🇸🇦"));
   it("notes describe conventions, not rules", () => {

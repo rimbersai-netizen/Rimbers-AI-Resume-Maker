@@ -15,6 +15,20 @@ const TECH_SKILLS = new Set(("javascript,typescript,python,java,go,rust,c++,c#,p
   "django,flask,spring,laravel,kubernetes,docker,terraform,aws,azure,google cloud,postgresql,mysql,mongodb,redis,graphql," +
   "excel,sap,salesforce,tableau,power bi,autocad,revit,primavera,sql,html,css,figma,photoshop,jira").split(","));
 
+/** Is this missing job keyword a *skill/tool/credential* (vs an ordinary word like "projects")? Only those are forbidden
+ * in tailored text: known tech/tools, or written in the job description as a name/acronym (Revit, BIM, PMP). */
+export function isSkillLikeTerm(term: string, jobDescription: string): boolean {
+  if (TECH_SKILLS.has(term)) return true;
+  const re = new RegExp(`(?<![\\p{L}\\p{N}])(${term.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&")})(?![\\p{L}\\p{N}])`, "giu");
+  for (const m of jobDescription.matchAll(re)) {
+    const w = m[1]!;
+    const lineStart = /(^|\n)[\s\-*•·]*$/.test(jobDescription.slice(0, m.index));
+    if (/^[A-Z0-9]{2,}$/.test(w)) return true;                 // acronym: BIM, PMP, AWS
+    if (/^[A-Z]/.test(w) && !lineStart && !/[.!?:]\s*$/.test(jobDescription.slice(0, m.index))) return true; // mid-sentence capital: Revit
+  }
+  return false;
+}
+
 export type ViolationKind = "new_number" | "new_skill" | "new_entity";
 export interface Violation {
   kind: ViolationKind;
@@ -57,6 +71,8 @@ export interface FactCheckInput {
   sourceTexts: string[];
   /** User's own skills (always allowed to appear). */
   knownSkills?: string[];
+  /** Terms that must NOT appear (e.g. job-description skills the user doesn't have) — blocking. */
+  forbiddenTerms?: string[];
 }
 
 export function factCheck(input: FactCheckInput): { ok: boolean; violations: Violation[] } {
@@ -70,6 +86,16 @@ export function factCheck(input: FactCheckInput): { ok: boolean; violations: Vio
 
   for (const tok of new Set(tokenize(input.output))) {
     if (TECH_SKILLS.has(tok) && !srcTokens.has(tok)) violations.push({ kind: "new_skill", value: tok, severity: "block" });
+  }
+
+  if (input.forbiddenTerms?.length) {
+    const outTokens = new Set(tokenize(input.output));
+    for (const term of input.forbiddenTerms) {
+      const t = tokenize(term);
+      if (t.length && t.every((x) => outTokens.has(x)) && !violations.some((v) => v.value === t.join(" "))) {
+        violations.push({ kind: "new_skill", value: t.join(" "), severity: "block" });
+      }
+    }
   }
 
   for (const e of entities(input.output)) {

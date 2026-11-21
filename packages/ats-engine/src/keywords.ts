@@ -48,7 +48,7 @@ export function tokenize(text: string): string[] {
   for (const w of words) {
     const clean = w.replace(/[./-]+$/, "");
     if (clean.length < 2 && !/^[cr]$/.test(clean)) continue;
-    if (/^\d+$/.test(clean)) continue;
+    if (/^\d+(\.\d+)?\+?%?$/.test(clean)) continue; // numbers like 5, 5+, 40%, 3.5 are not keywords
     if (STOPWORDS.has(clean)) continue;
     found.push(canonical(clean));
   }
@@ -99,10 +99,25 @@ export interface KeywordMatch {
   score: number;
 }
 
+/**
+ * Light English stemmer so word forms match: supervise/supervised, coordination/coordinated, projects/project.
+ * Only applied to plain alphabetic words (tech tokens like node.js, c++, ci/cd are matched exactly).
+ */
+const SUFFIXES: [string, string][] = [["ations", "at"], ["ation", "at"], ["ions", ""], ["ion", ""], ["ings", ""], ["ing", ""], ["ed", ""], ["es", ""], ["s", ""], ["e", ""]];
+export function stem(term: string): string {
+  if (!/^[a-z]+$/.test(term) || term.length <= 4) return term;
+  for (const [suf, rep] of SUFFIXES) {
+    if (term.endsWith(suf) && term.length - suf.length + rep.length >= 4) return term.slice(0, -suf.length) + rep;
+  }
+  return term;
+}
+
 export function matchKeywords(keywords: Keyword[], resumeText: string): KeywordMatch {
-  const have = new Set(tokenize(resumeText));
-  const matched = keywords.filter((k) => have.has(k.term));
-  const missing = keywords.filter((k) => !have.has(k.term));
+  const tokens = tokenize(resumeText);
+  const have = new Set([...tokens, ...tokens.map(stem)]);
+  const hit = (k: Keyword) => have.has(k.term) || have.has(stem(k.term));
+  const matched = keywords.filter(hit);
+  const missing = keywords.filter((k) => !hit(k));
   const total = keywords.reduce((s, k) => s + k.weight, 0);
   const got = matched.reduce((s, k) => s + k.weight, 0);
   return {

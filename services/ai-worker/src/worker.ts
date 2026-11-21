@@ -46,7 +46,8 @@ export async function processAiJob(db: SupabaseClient, job: AiJobRow, deps: Work
     });
     return { ok: true };
   } catch (e) {
-    const code = userFacingAiError(e).code;
+    // Non-AI errors come from request planning (e.g. nothing to polish) → invalid_input, not a model failure.
+    const code = e instanceof AiError ? userFacingAiError(e).code : "invalid_input";
     // Service down / timeout: requeue while attempts remain; otherwise fail with a safe code the UI can explain.
     const retry = e instanceof AiError && (e.code === "provider_unavailable" || e.code === "timeout") && job.attempts < job.max_attempts;
     if (retry) await db.from("ai_jobs").update({ status: "queued", locked_at: null, error_code: code }).eq("id", job.id);

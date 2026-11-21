@@ -3,7 +3,7 @@ import { MasterProfile } from "@gars/resume-schema";
 import { AiError, AiJobInput, runAiJob, userFacingAiError, type AiProvider, type ChatMessage } from "./index";
 
 const profile = MasterProfile.parse({
-  schemaVersion: 1, personal: { fullName: "Omar", professionalTitle: "Site Engineer" },
+  schemaVersion: 1, personal: { fullName: "Omar", professionalTitle: "Site Engineer" }, summary: "Site engineer who supervise residential construction projects.",
   experience: [{ id: "w1", employer: "Al Bina", title: "Site Engineer", dates: { start: "2019-03", current: true },
     bullets: [{ id: "b1", text: "Supervised construction of 3 residential buildings" }, { id: "b2", text: "Coordinated subcontractors" }] }],
   skills: [{ id: "s1", name: "AutoCAD" }],
@@ -71,5 +71,50 @@ describe("runAiJob fact-check gate", () => {
     expect(AiJobInput.safeParse({ kind: "write_novel" }).success).toBe(false);
     expect(AiJobInput.safeParse({ ...summaryInput, locale: "xx" }).success).toBe(false);
     expect(AiJobInput.safeParse({ ...summaryInput, masterProfileId: "nope" }).success).toBe(false);
+  });
+});
+
+describe("8B jobs: grammar, tone, tailoring", () => {
+  const id = "00000000-0000-4000-8000-000000000001";
+  it("grammar fix is checked against the original text and returns a polish output", async () => {
+    const { provider, seen } = scripted([{ summary: "Site engineer who supervises residential construction projects." }]);
+    const r = await runAiJob(AiJobInput.parse({ kind: "grammar", masterProfileId: id, locale: "en", target: { type: "summary" } }), profile, provider, cfg, { cloudConsent: false });
+    expect(r.output).toMatchObject({ kind: "polish", mode: "grammar", summary: "Site engineer who supervises residential construction projects." });
+    expect(seen[0]![1]!.content).toContain("Correct grammar");
+  });
+
+  it("tone change on bullets may not add numbers", async () => {
+    const { provider } = scripted([
+      { bullets: ["Oversaw construction of 3 residential buildings", "Coordinated 25 subcontractors"] },
+      { bullets: ["Oversaw construction of 3 residential buildings", "Coordinated subcontractors"] },
+    ]);
+    const r = await runAiJob(AiJobInput.parse({ kind: "tone", masterProfileId: id, locale: "en", tone: "confident", target: { type: "bullets", experienceId: "w1" } }), profile, provider, cfg, { cloudConsent: false });
+    expect(r.output.kind === "polish" && r.output.bullets).toEqual(["Oversaw construction of 3 residential buildings", "Coordinated subcontractors"]);
+  });
+
+  it("tailoring: matched/missing come from the ATS engine; a JD skill the user lacks is blocked", async () => {
+    const jd = "Site Engineer\nRequirements:\n- AutoCAD\n- Revit and BIM coordination\n- Supervise residential construction";
+    const { provider, seen } = scripted([
+      { summary: "Site Engineer skilled in AutoCAD and Revit supervising residential construction." },
+      { summary: "Site Engineer skilled in AutoCAD supervising construction of 3 residential buildings at Al Bina." },
+    ]);
+    const r = await runAiJob(AiJobInput.parse({ kind: "tailor_resume", masterProfileId: id, locale: "en", tone: "professional", jobDescription: jd }), profile, provider, cfg, { cloudConsent: false });
+    expect(r.output.kind).toBe("tailored_summary");
+    if (r.output.kind !== "tailored_summary") return;
+    expect(r.output.matched).toContain("autocad");
+    expect(r.output.missingRequired).toContain("revit");
+    expect(r.output.summary).not.toMatch(/revit/i);
+    expect(seen[1]!.at(-1)!.content).toMatch(/skill "revit"/);
+  });
+
+  it("polish without existing text is rejected before calling the model", async () => {
+    const { provider, seen } = scripted([]);
+    const empty = MasterProfile.parse({ ...profile, summary: undefined });
+    await expect(runAiJob(AiJobInput.parse({ kind: "grammar", masterProfileId: id, locale: "en", target: { type: "summary" } }), empty, provider, cfg, { cloudConsent: false })).rejects.toThrow(/No summary/);
+    expect(seen).toHaveLength(0);
+  });
+
+  it("tailoring input requires a real job description", () => {
+    expect(AiJobInput.safeParse({ kind: "tailor_resume", masterProfileId: id, locale: "en", tone: "professional", jobDescription: "short" }).success).toBe(false);
   });
 });

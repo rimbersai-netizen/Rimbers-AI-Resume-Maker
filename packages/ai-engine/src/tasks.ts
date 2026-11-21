@@ -50,7 +50,7 @@ export function buildSummaryTask(p: MasterProfile, opts: { tone: Tone; length: z
   const messages: ChatMessage[] = [
     { role: "system", content: SYSTEM_RULES },
     { role: "user", content: `Write a ${opts.tone} professional resume summary of ${words} words in ${lang(opts.locale)}${opts.targetRole ? ` aimed at a ${opts.targetRole} role` : ""}.
-Write 2–4 flowing sentences about overall experience, strengths and focus. Do not list jobs one by one and do not include dates.
+Write 2–4 flowing sentences about overall experience, strengths and focus, in the implied first person used on resumes (no "I", "my" or "me"). Do not list jobs one by one and do not include dates.
 Return {"summary": "..."}.
 SOURCE:
 <<<
@@ -89,4 +89,64 @@ export interface Suggestion<T> {
   sourceFieldIds: string[];
   violations: Violation[];
   status: "pending_review";
+}
+
+// ---------------------------------------------------------------- Phase 8B: polish (grammar / tone) and tailoring
+
+export type PolishTarget = { type: "summary" } | { type: "bullets"; experienceId: string };
+
+/** Fix grammar or change tone of existing text. Checked against the ORIGINAL text: wording may change, facts may not. */
+export function buildPolishTask(p: MasterProfile, target: PolishTarget, opts: { mode: "grammar" | "tone"; tone?: Tone; locale: string }) {
+  const instruction = opts.mode === "grammar"
+    ? `Correct grammar, spelling and punctuation in ${lang(opts.locale)}. Keep the meaning, facts and length; change as little as possible.`
+    : `Rewrite in a ${opts.tone ?? "professional"} tone in ${lang(opts.locale)}. Keep every fact; do not add or remove information.`;
+  if (target.type === "summary") {
+    const source = p.summary ?? "";
+    if (!source.trim()) throw new Error("No summary to improve");
+    return {
+      messages: [
+        { role: "system", content: SYSTEM_RULES },
+        { role: "user", content: `${instruction}\nReturn {"summary": "..."}.\nSOURCE:\n<<<\n${source}\n>>>` },
+      ] as ChatMessage[],
+      schema: SummaryOutput,
+      jsonSchema: { type: "object", properties: { summary: { type: "string" } }, required: ["summary"] },
+      check: (out: z.infer<typeof SummaryOutput>) => factCheck({ output: out.summary, sourceTexts: [source, ...p.skills.map((s) => s.name)], knownSkills: p.skills.map((s) => s.name) }),
+    };
+  }
+  const role = p.experience.find((w) => w.id === target.experienceId);
+  if (!role || !role.bullets.length) throw new Error("Unknown experience or no bullets");
+  const source = role.bullets.map((b) => `- ${b.text}`).join("\n");
+  return {
+    messages: [
+      { role: "system", content: SYSTEM_RULES },
+      { role: "user", content: `${instruction} Return exactly ${role.bullets.length} bullets in the same order as {"bullets": ["..."]}.\nSOURCE:\n<<<\n${source}\n>>>` },
+    ] as ChatMessage[],
+    schema: BulletsOutput,
+    jsonSchema: { type: "object", properties: { bullets: { type: "array", items: { type: "string" } } }, required: ["bullets"] },
+    check: (out: z.infer<typeof BulletsOutput>) => factCheck({ output: out.bullets.join("\n"), sourceTexts: [source, role.title, role.employer], knownSkills: p.skills.map((s) => s.name) }),
+  };
+}
+
+/**
+ * Job-specific summary. `matched` are JD keywords the user genuinely has (emphasise them); `missing` are JD keywords the
+ * user does NOT have — they are forbidden in the output, so tailoring can never claim a skill the user lacks.
+ */
+export function buildTailorSummaryTask(p: MasterProfile, opts: { matched: string[]; missing: string[]; tone: Tone; locale: string; targetRole?: string }) {
+  const facts = profileFacts(p);
+  const messages: ChatMessage[] = [
+    { role: "system", content: SYSTEM_RULES },
+    { role: "user", content: `Write a ${opts.tone} resume summary of 50-80 words in ${lang(opts.locale)} tailored to a job${opts.targetRole ? ` as ${opts.targetRole}` : ""}.
+Emphasise these job-relevant strengths the candidate actually has: ${opts.matched.join(", ") || "(none matched — focus on transferable experience)"}.
+Do NOT mention skills or qualifications that are not in SOURCE. Write 2–4 flowing sentences without dates, in the implied first person used on resumes (no "I", "my" or "me").
+Return {"summary": "..."}.
+SOURCE:
+<<<
+${facts.text}
+>>>` },
+  ];
+  return {
+    messages, schema: SummaryOutput,
+    jsonSchema: { type: "object", properties: { summary: { type: "string" } }, required: ["summary"] },
+    check: (out: z.infer<typeof SummaryOutput>) => factCheck({ output: out.summary, sourceTexts: [facts.text], knownSkills: facts.skills, forbiddenTerms: opts.missing }),
+  };
 }

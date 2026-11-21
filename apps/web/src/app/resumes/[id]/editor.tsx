@@ -11,6 +11,7 @@ import {
 } from "@/lib/resume-settings";
 import { saveLayout, type LoadedResume } from "../actions";
 import { ExportPanel } from "./export-panel";
+import { JobMatchPanel } from "./job-match";
 
 type Status = "idle" | "saving" | "saved" | "error" | "conflict";
 const CAT_LABEL = (c: string) => c.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase()).replace("Ats", "ATS");
@@ -102,6 +103,9 @@ export function ResumeEditor({ initial, appLocale }: { initial: LoadedResume; ap
       <div className={`editor-body show-${tab}`}>
         <aside className="panel" aria-label="Resume settings">
           <ExportPanel resumeId={initial.id} beforeExport={flush} />
+          <JobMatchPanel resumeId={initial.id} masterProfileId={initial.profile.id} locale={layout.locale} doc={toResumeDocument(initial.id, layout, profile)}
+            template={template} summaryOverride={layout.settings.summaryOverride}
+            onUseSummary={(text) => set((l) => ({ ...l, settings: { ...l.settings, summaryOverride: text } }))} />
           <section>
             <h2>Country &amp; language</h2>
             <label htmlFor="country">Target country</label>

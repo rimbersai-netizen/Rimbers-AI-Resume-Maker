@@ -18,7 +18,8 @@ export interface ResumeLayout {
   templateId: string;
   pageSize: "A4" | "Letter";
   includePhoto: boolean;
-  settings: { hiddenItemIds: string[]; dateFormat?: string; overridden: OverridableField[] };
+  /** summaryOverride: job-tailored summary for THIS resume only — the master profile is never modified. */
+  settings: { hiddenItemIds: string[]; dateFormat?: string; overridden: OverridableField[]; summaryOverride?: string };
   sections: SectionSetting[];
 }
 
@@ -101,7 +102,7 @@ export function toResumeDocument(id: string, layout: ResumeLayout, profile: Mast
     sectionOrder: visible.length ? visible : ["summary"],
     hiddenItemIds: layout.settings.hiddenItemIds,
     includePhoto: layout.includePhoto,
-    profile,
+    profile: layout.settings.summaryOverride?.trim() ? { ...profile, summary: layout.settings.summaryOverride.trim() } : profile,
   };
 }
 
