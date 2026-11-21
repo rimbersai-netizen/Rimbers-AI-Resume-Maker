@@ -7,7 +7,7 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc -b packages/shared-types packages/resume-schema packages/validation packages/country-rules",
+    "typecheck": "tsc -b packages/shared-types packages/resume-schema packages/validation packages/country-rules packages/localization",
     "check": "pnpm typecheck && pnpm test"
   },
   "devDependencies": {

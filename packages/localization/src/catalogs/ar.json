@@ -1,0 +1,19 @@
+{
+  "locale": "ar",
+  "status": "machine",
+  "messages": {
+    "app.name": "استوديو السيرة الذاتية العالمي بالذكاء الاصطناعي",
+    "common.continue": "متابعة",
+    "common.save": "حفظ",
+    "common.cancel": "إلغاء",
+    "common.back": "رجوع",
+    "auth.signIn": "تسجيل الدخول",
+    "auth.signUp": "إنشاء حساب",
+    "auth.email": "البريد الإلكتروني",
+    "auth.password": "كلمة المرور",
+    "home.greeting": "مرحبًا، {name}",
+    "settings.appLanguage": "لغة التطبيق",
+    "settings.resumeLanguage": "لغة السيرة الذاتية",
+    "settings.country": "الدولة"
+  }
+}

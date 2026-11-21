@@ -26,3 +26,7 @@
 ## 2026-11-21 — Batch 4A/4B (under Bun, Node still compiling)
 - `vitest run` → 3 files, **86/86 pass** (country-rules 50). `tsc -b` 4 packages → OK.
 - Country data honesty: all 30 entries `unreviewed`; sources are review entry points (gov/EU/editorial), not per-value proof.
+
+## 2026-11-21 — 13A (partial, under Bun)
+- `vitest run` → 4 files, **112/112 pass** (localization 26: en/ar/ur/de device, unsupported→en, SA/PK no forcing,
+  manual persistence, country change, guest merge, fallback, coverage honesty). `tsc -b` 5 packages OK.

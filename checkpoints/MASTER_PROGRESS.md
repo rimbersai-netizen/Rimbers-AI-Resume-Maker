@@ -6,7 +6,9 @@
 | 2 Supabase/Auth | 2A VERIFIED · 2B NOT_STARTED (needs Node) · 2C VERIFIED |
 | 3 | NOT_STARTED (needs web app → Node) |
 | 4 Country rules | 4A IMPLEMENTED · 4B IMPLEMENTED (Bun-tested; Node re-run pending) · 4C NOT_STARTED |
-| 5–20 | NOT_STARTED |
+| 5–12 | NOT_STARTED |
+| 13 Localization | 13A IN_PROGRESS (resolver + fallback done early, Bun-tested) |
+| 14–20 | NOT_STARTED |
 
 Mobile UI references + global language requirements recorded (2026-11-21) and mapped to batches 13A–C, 16A–C.
 Acceptance workflows A–L: none verified yet (H partially covered at DB level).

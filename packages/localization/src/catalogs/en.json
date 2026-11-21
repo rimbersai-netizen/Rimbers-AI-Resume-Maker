@@ -1,0 +1,26 @@
+{
+  "locale": "en",
+  "status": "source",
+  "messages": {
+    "app.name": "Global AI Resume Studio",
+    "common.continue": "Continue",
+    "common.save": "Save",
+    "common.cancel": "Cancel",
+    "common.back": "Back",
+    "common.loading": "Loading…",
+    "common.retry": "Try again",
+    "common.error.generic": "Something went wrong. Please try again.",
+    "auth.signIn": "Sign in",
+    "auth.signUp": "Sign up",
+    "auth.email": "Email address",
+    "auth.password": "Password",
+    "auth.forgotPassword": "Forgot password?",
+    "home.greeting": "Hi, {name}",
+    "home.createResume": "Create new resume",
+    "settings.appLanguage": "App language",
+    "settings.resumeLanguage": "Resume language",
+    "settings.country": "Country",
+    "settings.languageBeta": "{language} (beta translation)",
+    "resume.updatedAgo": "Updated {time}"
+  }
+}

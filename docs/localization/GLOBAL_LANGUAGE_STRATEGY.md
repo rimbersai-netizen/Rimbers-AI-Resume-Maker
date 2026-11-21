@@ -13,9 +13,11 @@ language; it never sets the app language.
 ## App-language resolution (first match wins)
 1. **Saved manual choice** (`app_locale_source = 'manual'`) — never overwritten on later launches.
 2. **Device locale**, if supported (match `ll-RR` exactly, then base `ll`; e.g. `pt-BR`→`pt-BR`/`pt`, `de-AT`→`de`).
-3. **Country preference** — only on first launch when the device locale is unsupported *and* the user
-   has picked a country whose primary language is supported. Saudi Arabia/Pakistan do **not** force ar/ur
-   when the device is English or another supported language.
+3. **Country preference** — only when the device reports **no language at all** (e.g. a web client with
+   no `Accept-Language`). An *unsupported* device language (e.g. Swahili speaker in Saudi Arabia) gets
+   English, not the country's language — guessing Arabic there would be forcing it. Multilingual countries
+   (IN, CH, CA, SG, MY, PH) never suggest a language. Saudi Arabia/Pakistan never force ar/ur.
+   Implemented in `packages/localization/src/resolve.ts`.
 4. **English** fallback.
 
 The resolved value is saved with its source (`device` / `country` / `default`); only an explicit user

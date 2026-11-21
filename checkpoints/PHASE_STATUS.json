@@ -265,8 +265,9 @@
     {
      "id": "13A",
      "title": "i18n infra + initial languages",
-     "status": "NOT_STARTED",
-     "requirements": "docs/localization/GLOBAL_LANGUAGE_STRATEGY.md"
+     "status": "IN_PROGRESS",
+     "requirements": "docs/localization/GLOBAL_LANGUAGE_STRATEGY.md",
+     "notes": "packages/localization: app-locale resolver (all language scenarios), per-key English fallback, coverage report. 26 tests pass under Bun. Remaining: catalogs for 10 more languages, ICU plurals, platform wiring."
     },
     {
      "id": "13B",
