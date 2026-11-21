@@ -120,3 +120,39 @@ export async function buildDocx(doc: ResumeDocument, spec: TemplateSpec, opts: D
   });
   return Packer.toBuffer(document);
 }
+
+// ---------------------------------------------------------------- cover letter DOCX (Phase 12A)
+import { letterParagraphs, type LetterInput } from "@gars/template-engine";
+
+export async function buildCoverLetterDocx(l: LetterInput): Promise<Buffer> {
+  const rtl = /^(ar|ur|fa)\b/.test(l.locale);
+  const RTL = rtl ? true : undefined;
+  const accent = (l.accent ?? "#1F2A5A").replace("#", "").toUpperCase();
+  const fonts = wordFonts(l.locale, l.fontStyle ?? "sans");
+  const page = PAGE[l.pageSize];
+  const run = (text: string, o: Partial<IRunOptions> = {}) => new TextRun({ text, rightToLeft: RTL, ...o });
+  const para = (children: ParagraphChild[], o: Record<string, unknown> = {}) => new Paragraph({ bidirectional: RTL, alignment: AlignmentType.START, children, ...o });
+  const contact = [l.sender.email, l.sender.phone, l.sender.city].filter(Boolean).join("   ·   ");
+  const children: Paragraph[] = [
+    new Paragraph({ heading: HeadingLevel.HEADING_1, bidirectional: RTL, children: [run(l.sender.fullName, { color: accent })] }),
+    ...(l.sender.professionalTitle ? [para([run(l.sender.professionalTitle, { color: "555555" })])] : []),
+    ...(contact ? [para([new TextRun({ text: contact, color: "555555" })], { border: { bottom: { style: BorderStyle.SINGLE, size: 12, color: accent, space: 6 } }, spacing: { after: 300 } })] : []),
+    ...(l.dateText ? [para([run(l.dateText, { color: "555555" })], { spacing: { after: 240 } })] : []),
+    ...letterParagraphs(l.body).map((p) => {
+      const lines = p.split("\n");
+      return para(lines.flatMap((line, i) => (i ? [run(line, { break: 1 })] : [run(line)])), { spacing: { after: 160 } });
+    }),
+  ];
+  const document = new Document({
+    creator: "Global AI Resume Studio",
+    title: `${l.sender.fullName} — Cover letter`,
+    styles: {
+      default: {
+        document: { run: { font: fonts, size: 22, language: languageTag(l.locale) }, paragraph: { spacing: { line: l.locale.startsWith("ur") ? 380 : 300 } } },
+        heading1: { run: { font: fonts, size: 36, bold: true } },
+      },
+    },
+    sections: [{ properties: { page: { size: page, margin: { top: 1247, bottom: 1247, left: 1134, right: 1134 } } }, children }],
+  });
+  return Packer.toBuffer(document);
+}

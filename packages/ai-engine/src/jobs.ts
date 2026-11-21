@@ -8,7 +8,8 @@ import { AiError, type AiProvider } from "./provider";
 import { routeGenerate, type RouteConfig } from "./router";
 import { extractKeywords, matchKeywords, profileToText } from "@gars/ats-engine";
 import { isSkillLikeTerm } from "./factcheck";
-import { buildPolishTask, buildRewriteBulletsTask, buildSummaryTask, buildTailorSummaryTask, Length, Tone } from "./tasks";
+import { withSignature } from "./tasks";
+import { buildCoverLetterTask, buildPolishTask, buildRewriteBulletsTask, buildSummaryTask, buildTailorSummaryTask, Length, Tone } from "./tasks";
 import type { Violation } from "./factcheck";
 
 const Target = z.discriminatedUnion("type", [z.object({ type: z.literal("summary") }), z.object({ type: z.literal("bullets"), experienceId: z.string().min(1).max(64) })]);
@@ -19,6 +20,8 @@ export const AiJobInput = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("grammar"), ...base, target: Target }),
   z.object({ kind: z.literal("tone"), ...base, target: Target, tone: Tone }),
   z.object({ kind: z.literal("tailor_resume"), ...base, jobDescription: z.string().trim().min(30).max(20000), tone: Tone, targetRole: z.string().max(120).optional() }),
+  z.object({ kind: z.literal("cover_letter"), ...base, tone: Tone, jobTitle: z.string().trim().min(2).max(200), company: z.string().trim().max(200).optional(),
+    keyPoints: z.string().trim().max(1000).optional(), jobDescription: z.string().trim().max(20000).optional() }),
 ]);
 export type AiJobInput = z.infer<typeof AiJobInput>;
 
@@ -29,6 +32,7 @@ export const AiJobOutput = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("polish"), mode: z.enum(["grammar", "tone"]), target: Target, summary: z.string().optional(), bullets: z.array(z.string()).optional(), ...meta }),
   /** matched/missingRequired are deterministic (ATS engine), never model-generated. */
   z.object({ kind: z.literal("tailored_summary"), summary: z.string(), matched: z.array(z.string()), missingRequired: z.array(z.string()), ...meta }),
+  z.object({ kind: z.literal("cover_letter"), letter: z.string(), matched: z.array(z.string()), missingRequired: z.array(z.string()), ...meta }),
 ]);
 export type AiJobOutput = z.infer<typeof AiJobOutput>;
 
@@ -50,7 +54,8 @@ const describe = (v: Violation[]) => v.filter((x) => x.severity === "block").map
  */
 type Built = { messages: import("./provider").ChatMessage[]; schema: unknown; jsonSchema: Record<string, unknown>; check: (v: unknown) => { ok: boolean; violations: Violation[] } };
 
-function plan(input: AiJobInput, profile: MasterProfile): { task: Built; toOutput: (value: { summary?: string; bullets?: string[] }, violations: Violation[]) => AiJobOutput } {
+type Value = { summary?: string; bullets?: string[]; letter?: string };
+function plan(input: AiJobInput, profile: MasterProfile): { task: Built; toOutput: (value: Value, violations: Violation[]) => AiJobOutput } {
   const allIds = [...profile.experience.map((w) => w.id), ...profile.education.map((e) => e.id), ...profile.skills.map((s) => s.id)];
   switch (input.kind) {
     case "summary": {
@@ -75,6 +80,14 @@ function plan(input: AiJobInput, profile: MasterProfile): { task: Built; toOutpu
       const task = buildTailorSummaryTask(profile, { matched, missing: forbidden, tone: input.tone, locale: input.locale, targetRole: input.targetRole }) as unknown as Built;
       return { task, toOutput: (v, violations) => ({ kind: "tailored_summary", summary: v.summary!, matched, missingRequired: km.missingRequired.map((k) => k.term).filter((t) => isSkillLikeTerm(t, input.jobDescription)), violations, sourceFieldIds: allIds }) };
     }
+    case "cover_letter": {
+      const jd = input.jobDescription ?? "";
+      const km = jd ? matchKeywords(extractKeywords(jd), profileToText(profile)) : { matched: [], missing: [], missingRequired: [] };
+      const matched = km.matched.map((k) => k.term);
+      const forbidden = km.missing.map((k) => k.term).filter((t) => isSkillLikeTerm(t, jd));
+      const task = buildCoverLetterTask(profile, { jobTitle: input.jobTitle, company: input.company, keyPoints: input.keyPoints, matched, forbidden, tone: input.tone, locale: input.locale }) as unknown as Built;
+      return { task, toOutput: (v, violations) => ({ kind: "cover_letter", letter: withSignature(v.letter!, profile.personal.fullName, input.locale), matched, missingRequired: km.missingRequired.map((k) => k.term).filter((t) => isSkillLikeTerm(t, jd)), violations, sourceFieldIds: allIds }) };
+    }
   }
 }
 
@@ -90,7 +103,7 @@ export async function runAiJob(input: AiJobInput, profile: MasterProfile, provid
     const r = await routeGenerate(provider, cfg, ctx, { messages, schema: task.schema as never, jsonSchema: task.jsonSchema, temperature: round ? 0.1 : 0.3, timeoutMs: 180_000 });
     totals = { promptTokens: totals.promptTokens + r.promptTokens, completionTokens: totals.completionTokens + r.completionTokens, durationMs: totals.durationMs + r.durationMs, attempts: totals.attempts + r.attempts };
     const check = task.check(r.value);
-    if (check.ok) return { output: toOutput(r.value as { summary?: string; bullets?: string[] }, check.violations), provider: r.provider, model: r.model, ...totals };
+    if (check.ok) return { output: toOutput(r.value as Value, check.violations), provider: r.provider, model: r.model, ...totals };
     messages = [...task.messages,
       { role: "assistant", content: JSON.stringify(r.value) },
       { role: "user", content: `Your answer introduced facts that are not in SOURCE: ${describe(check.violations)}. Rewrite it using ONLY facts from SOURCE. Reply with JSON only.` }];

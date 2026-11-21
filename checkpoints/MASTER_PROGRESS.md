@@ -1,4 +1,4 @@
-# Master Progress (2026-11-21 10:15)
+# Master Progress (2026-11-21 11:10)
 
 | Phase | Status |
 |---|---|
@@ -12,9 +12,11 @@
 | 8 AI writing | 8A, 8C IN_PROGRESS |
 | 9 ATS | 9A · 9B · 9C VERIFIED (engine + web Job Match panel) |
 | 13 Localization | 13A IN_PROGRESS |
-| 14 Subscriptions | 14A IMPLEMENTED (resume, premium-template, export limits enforced server-side; AI quota pending) |
+| 14 Subscriptions | 14A VERIFIED · 14B, 14C NOT_STARTED (payment provider accounts required) |
 | 10 Export | 10A · 10B · 10C VERIFIED |
-| 11–12, 15–20 | NOT_STARTED |
+| 11 Import | NOT_STARTED |
+| 12 Career tools | 12A VERIFIED · 12B NOT_STARTED · 12C partial (tailoring done; interview prep pending) |
+| 15–20 | NOT_STARTED |
 
-Verified batches: 26 of 60. Acceptance workflows exercised: D (JD → ATS → apply suggestion), I (Ollama down → safe error); A (register → profile → USA → PDF) exercisable in web. Acceptance workflow A (register → profile → USA → generate → download PDF) is now exercisable end-to-end in the web app. Acceptance workflows: H (cross-user isolation) covered at DB+storage level; others pending.
+Verified batches: 28 of 60. Acceptance workflows exercised: D (JD → ATS → apply suggestion), I (Ollama down → safe error); A (register → profile → USA → PDF) exercisable in web. Acceptance workflow A (register → profile → USA → generate → download PDF) is now exercisable end-to-end in the web app. Acceptance workflows: H (cross-user isolation) covered at DB+storage level; others pending.
 Source of truth: `PHASE_STATUS.json`.

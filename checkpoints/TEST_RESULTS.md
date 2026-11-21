@@ -158,3 +158,16 @@
   accept → preview updated, deltas +1 overall/+4 match, DB override set & master unchanged, ats_results/job_descriptions
   rows; reset clears override; profile Fix grammar (experiance/product/leaded) corrected minimally.
 - Regression: unit 465/465, pgTAP PASS, storage 16/16, integration 20/20 (+2 live), worker 360/360, web typecheck + build OK.
+
+## 2026-11-21 10:20–11:10 — 12A cover letters (+14A AI quota)
+- Migration 0009: cover_letters job_title/company/page_size + (id,user_id) unique; document_exports.cover_letter_id with
+  exactly-one-subject check + composite FK. pgTAP 004 (6) → **85/85**.
+- AI: cover_letter task; greeting words added to fact-check allow-list. Live run 1: faithful but signature mangled
+  ("Omar Hadd.") → sign-off now deterministic (localized closing + exact profile name; model sign-offs stripped). Live run 2: exact.
+- Letter docs: first run failed — test assumed "21 November 2026" but en→US format → letterDate now follows the target
+  country (en-GB/en-US/de/ja tests). DOCX/PDF letter tests 6/6; SUPABASE_IT cover-letter 1/1 + live 1/1.
+- UI E2E: test user had used 5 Free AI requests → 6th refused with upgrade message (verifies AI quota → 14A); granted a
+  local Standard subscription (test data, provider 'manual') → generate → save → edit autosave → PDF 26 KB / DOCX 8 KB.
+  Rendered letter reviewed visually.
+- Regression: unit 473/473, pgTAP 85/85, storage 16/16, integration 21/21 (+3 live), worker 366/366, web typecheck OK.
+- Note: local test user 57aa79ec… now has an active STANDARD subscription (manual, local only).

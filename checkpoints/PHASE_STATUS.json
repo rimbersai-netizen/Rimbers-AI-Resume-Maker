@@ -267,7 +267,8 @@
     {
      "id": "12A",
      "title": "Cover letters",
-     "status": "NOT_STARTED"
+     "status": "VERIFIED",
+     "evidence": "Cover letters: AI job (profile facts + user's job title/company/key points; skill-like missing JD terms forbidden; deterministic localized sign-off with exact profile name), cover_letters (RLS) + editor with autosave/copy, PDF (Chromium) + DOCX via worker with country-aware date and resume template accent. Tests: ai-engine unit (+4), letter DOCX/PDF 6, pgTAP 004 (6), SUPABASE_IT cover-letter 1/1 + live 1/1 (qwen3:4b faithful, no Revit/BIM, exact name). UI E2E: generate \u2192 save \u2192 edit autosave \u2192 PDF 26 KB + DOCX 8 KB downloads; layout reviewed (2026-11-21)."
     },
     {
      "id": "12B",
@@ -314,8 +315,8 @@
     {
      "id": "14A",
      "title": "Plans, quotas, entitlements",
-     "status": "IMPLEMENTED",
-     "notes": "Server-side enforcement verified in UI for create_resume, premium templates, export_pdf monthly, export_docx (plan feature + one-time entitlement). ai_request quota wired via same helper but limit not yet exercised end-to-end."
+     "status": "VERIFIED",
+     "evidence": "Server-side enforcement verified end-to-end for every quota/feature: create_resume (Free=1), premium templates, export_pdf monthly (Free=2), export_docx (plan feature + one-time entitlement), ai_request monthly (Free=5 \u2192 6th blocked with upgrade message in UI, DB count 5); Standard subscription lifted AI/DOCX limits (2026-11-21)."
     },
     {
      "id": "14B",

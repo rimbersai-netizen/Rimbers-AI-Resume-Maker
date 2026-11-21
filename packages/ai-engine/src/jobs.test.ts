@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { MasterProfile } from "@gars/resume-schema";
-import { AiError, AiJobInput, runAiJob, userFacingAiError, type AiProvider, type ChatMessage } from "./index";
+import { AiError, AiJobInput, runAiJob, userFacingAiError, withSignature, type AiProvider, type ChatMessage } from "./index";
 
 const profile = MasterProfile.parse({
   schemaVersion: 1, personal: { fullName: "Omar", professionalTitle: "Site Engineer" }, summary: "Site engineer who supervise residential construction projects.",
@@ -116,5 +116,51 @@ describe("8B jobs: grammar, tone, tailoring", () => {
 
   it("tailoring input requires a real job description", () => {
     expect(AiJobInput.safeParse({ kind: "tailor_resume", masterProfileId: id, locale: "en", tone: "professional", jobDescription: "short" }).success).toBe(false);
+  });
+});
+
+describe("12A cover letter", () => {
+  const id = "00000000-0000-4000-8000-000000000001";
+  const letter = (extra = "") => `Dear Hiring Manager,
+
+I am applying for the Site Engineer role at Red Sea Builders. At Al Bina I supervised construction of 3 residential buildings and coordinated subcontractors.${extra}
+
+I work daily with AutoCAD and would bring careful site supervision to your team.
+
+Sincerely,
+Omar`;
+  const input = (over: Record<string, unknown> = {}) => AiJobInput.parse({ kind: "cover_letter", masterProfileId: id, locale: "en", tone: "professional",
+    jobTitle: "Site Engineer", company: "Red Sea Builders", keyPoints: "Available to relocate to Jeddah", ...over });
+
+  it("faithful letter passes; company name and the user's key points are allowed facts; greeting words are not flagged", async () => {
+    const { provider } = scripted([{ letter: letter(" I am available to relocate to Jeddah.") }]);
+    const r = await runAiJob(input(), profile, provider, cfg, { cloudConsent: false });
+    expect(r.output.kind).toBe("cover_letter");
+    expect(r.output.violations).toEqual([]);
+  });
+
+  it("signature is deterministic: model sign-offs (even misspelled) are replaced by the exact profile name", async () => {
+    const { provider } = scripted([{ letter: "Dear Hiring Manager,\n\nI supervised construction of 3 residential buildings at Al Bina with AutoCAD for years.\n\nThank you for considering my application.\nOmr Hadd." }]);
+    const r = await runAiJob(input(), profile, provider, cfg, { cloudConsent: false });
+    const text = r.output.kind === "cover_letter" ? r.output.letter : "";
+    expect(text.endsWith("Sincerely,\nOmar")).toBe(true);
+    expect(text).not.toContain("Omr Hadd");
+    expect(withSignature("Body text here.", "Ayesha Khan", "de")).toBe("Body text here.\n\nMit freundlichen Grüßen\nAyesha Khan");
+  });
+
+  it("claiming a skill-like JD requirement the user lacks is blocked and retried", async () => {
+    const jd = "Requirements:\n- AutoCAD\n- Revit and BIM\n- Site supervision";
+    const { provider, seen } = scripted([{ letter: letter(" I also use Revit daily.") }, { letter: letter() }]);
+    const r = await runAiJob(input({ jobDescription: jd }), profile, provider, cfg, { cloudConsent: false });
+    expect(r.output.kind === "cover_letter" && r.output.letter).not.toMatch(/revit/i);
+    expect(seen[1]!.at(-1)!.content).toMatch(/revit/);
+    expect(r.output.kind === "cover_letter" && r.output.missingRequired).toEqual(expect.arrayContaining(["revit", "bim"]));
+  });
+
+  it("an invented person or organisation is flagged for the user to confirm", async () => {
+    const { provider } = scripted([{ letter: letter(" I also consulted for Bechtel on two projects.") }]);
+    const err = await runAiJob(input(), profile, provider, cfg, { cloudConsent: false }).catch((e) => e);
+    // "two" is a new number → blocked twice → withheld
+    expect(err).toBeInstanceOf(AiError);
   });
 });

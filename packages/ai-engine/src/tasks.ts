@@ -150,3 +150,54 @@ ${facts.text}
     check: (out: z.infer<typeof SummaryOutput>) => factCheck({ output: out.summary, sourceTexts: [facts.text], knownSkills: facts.skills, forbiddenTerms: opts.missing }),
   };
 }
+
+// ---------------------------------------------------------------- Phase 12A: cover letter
+
+const CLOSINGS: Record<string, string> = {
+  en: "Sincerely,", ar: "مع خالص التحية،", ur: "نیک تمناؤں کے ساتھ،", fr: "Veuillez agréer mes salutations distinguées,", de: "Mit freundlichen Grüßen",
+  es: "Atentamente,", it: "Cordiali saluti,", pt: "Atenciosamente,", hi: "सादर,", tr: "Saygılarımla,", zh: "此致敬礼", ja: "敬具",
+};
+/**
+ * The sign-off is deterministic (never model-written) so the applicant's name is always exactly right.
+ * Strips any closing the model added anyway, then appends the localized closing + the profile name.
+ */
+export function withSignature(letter: string, fullName: string, locale: string): string {
+  const closing = CLOSINGS[locale.split("-")[0]!] ?? CLOSINGS.en!;
+  const paras = letter.replace(/\r\n/g, "\n").trim().split(/\n\s*\n/);
+  const last = paras.at(-1) ?? "";
+  const looksLikeSignoff = last.length < 80 && (/^(sincerely|regards|best|kind regards|yours|thank you|thanks)\b/i.test(last) || last.includes(fullName.split(" ")[0]!));
+  const body = (looksLikeSignoff ? paras.slice(0, -1) : paras).join("\n\n").trim();
+  return `${body}\n\n${closing}\n${fullName}`;
+}
+
+export const CoverLetterOutput = z.object({ letter: z.string().min(80).max(6000) });
+
+/**
+ * Cover letter from profile facts + the user's own notes (job title, company, key points). Skill-like job terms the user
+ * lacks (`forbidden`) may not appear. Company/job title the user typed are allowed source facts.
+ */
+export function buildCoverLetterTask(p: MasterProfile, opts: {
+  jobTitle: string; company?: string; keyPoints?: string; matched: string[]; forbidden: string[]; tone: Tone; locale: string;
+}) {
+  const facts = profileFacts(p);
+  const userNotes = [`Applying for: ${opts.jobTitle}`, opts.company ? `Company: ${opts.company}` : "", opts.keyPoints ? `Candidate's own key points: ${opts.keyPoints}` : ""].filter(Boolean).join("\n");
+  const messages: ChatMessage[] = [
+    { role: "system", content: SYSTEM_RULES },
+    { role: "user", content: `Write a ${opts.tone} cover letter in ${lang(opts.locale)} for the role below, 180-260 words, 3-4 short paragraphs.
+Start with a greeting such as "Dear Hiring Manager," (use the company name only if given). Do NOT write a closing line or signature — it is added automatically.
+Emphasise relevant strengths the candidate actually has${opts.matched.length ? `: ${opts.matched.join(", ")}` : ""}. Do NOT claim skills, qualifications or achievements that are not in SOURCE.
+Do not invent a hiring manager's name, an address or a date. Return {"letter": "..."} with paragraphs separated by blank lines.
+SOURCE:
+<<<
+${facts.text}
+${userNotes}
+>>>` },
+  ];
+  return {
+    messages, schema: CoverLetterOutput,
+    jsonSchema: { type: "object", properties: { letter: { type: "string" } }, required: ["letter"] },
+    check: (out: z.infer<typeof CoverLetterOutput>) => factCheck({
+      output: out.letter, sourceTexts: [facts.text, userNotes, p.personal.fullName], knownSkills: facts.skills, forbiddenTerms: opts.forbidden,
+    }),
+  };
+}

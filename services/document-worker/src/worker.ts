@@ -5,14 +5,15 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { MasterProfile, type ResumeDocument } from "@gars/resume-schema";
 import { toResumeDocument, type ResumeLayout } from "@gars/resume-builder";
-import { getTemplate, renderResumeHtml, TEMPLATES, type TemplateSpec } from "@gars/template-engine";
-import { buildDocx } from "./docx";
+import { getTemplate, letterDate, renderCoverLetterHtml, renderResumeHtml, TEMPLATES, type LetterInput, type TemplateSpec } from "@gars/template-engine";
+import { buildCoverLetterDocx, buildDocx } from "./docx";
 import { renderPdf } from "./pdf";
 
 export interface ExportRow {
   id: string;
   user_id: string;
-  resume_id: string;
+  resume_id: string | null;
+  cover_letter_id?: string | null;
   format: "pdf" | "docx";
   attempts: number;
 }
@@ -64,10 +65,42 @@ export async function renderExport(inputs: ResumeInputs, format: "pdf" | "docx")
   return { bytes, contentType: "application/pdf", ext: "pdf" };
 }
 
+/** Cover letter export inputs (service role; scoped to the job's user). Accent follows the linked resume's template. */
+export async function loadLetterInputs(db: SupabaseClient, letterId: string, userId: string): Promise<LetterInput> {
+  const { data: cl } = await db.from("cover_letters").select("id,user_id,body,locale,page_size,resume_id,created_at").eq("id", letterId).eq("user_id", userId).maybeSingle();
+  if (!cl) throw new Error("cover letter not found");
+  const { data: mp } = await db.from("master_profiles").select("id").eq("user_id", userId).eq("is_primary", true).maybeSingle();
+  const { data: prof } = mp ? await db.rpc("get_master_profile", { p_id: mp.id }) : { data: null };
+  const pd = (prof?.profile?.personal ?? {}) as { fullName?: string; professionalTitle?: string; email?: string; phone?: string; location?: { city?: string } };
+  let spec: TemplateSpec | undefined;
+  let country: string | undefined;
+  if (cl.resume_id) {
+    const { data: r } = await db.from("resume_documents").select("template_id,country_code").eq("id", cl.resume_id).eq("user_id", userId).maybeSingle();
+    spec = r ? getTemplate(r.template_id) : undefined;
+    country = r?.country_code;
+  }
+  return {
+    body: cl.body, locale: cl.locale, pageSize: cl.page_size, dateText: letterDate(cl.locale, new Date(), country),
+    sender: { fullName: pd.fullName || "—", professionalTitle: pd.professionalTitle, email: pd.email, phone: pd.phone, city: pd.location?.city },
+    accent: spec?.accent, fontStyle: spec?.typography.fontStack,
+  };
+}
+
 export async function processExport(db: SupabaseClient, job: ExportRow): Promise<{ ok: boolean; path?: string; error?: string }> {
   try {
-    const out = await renderExport(await loadResumeInputs(db, job.resume_id, job.user_id), job.format);
-    const path = `${job.user_id}/${job.resume_id}/${job.id}.${out.ext}`;
+    let out: { bytes: Buffer; contentType: string; ext: string };
+    let subject: string;
+    if (job.cover_letter_id) {
+      const l = await loadLetterInputs(db, job.cover_letter_id, job.user_id);
+      out = job.format === "docx"
+        ? { bytes: await buildCoverLetterDocx(l), contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", ext: "docx" }
+        : { bytes: await renderPdf(renderCoverLetterHtml(l), { pageSize: l.pageSize }), contentType: "application/pdf", ext: "pdf" };
+      subject = `letters/${job.cover_letter_id}`;
+    } else {
+      out = await renderExport(await loadResumeInputs(db, job.resume_id!, job.user_id), job.format);
+      subject = job.resume_id!;
+    }
+    const path = `${job.user_id}/${subject}/${job.id}.${out.ext}`;
     const up = await db.storage.from("resume-exports").upload(path, out.bytes, { contentType: out.contentType, upsert: true });
     if (up.error) throw new Error(`upload failed: ${up.error.message}`);
     await db.from("document_exports").update({ status: "succeeded", storage_path: path, completed_at: new Date().toISOString(), error: null }).eq("id", job.id);

@@ -48,6 +48,7 @@ const COMMON_CAPS = new Set(("I The A An In On At For With And Or But Our We My 
   "Skilled Senior Junior Lead Software Engineer Manager Developer Professional Highly Dedicated Strong Passionate Collaborative Detail " +
   "Over Across During Responsible Led Built Designed Developed Delivered Improved Managed Created Using Since " +
   // Month names come from the user's own dates (e.g. 2019-03 → "March"); dates are checked as numbers instead.
+  "Dear Hiring Team Sincerely Regards Kind Best Thank Yours Respectfully Warm Thanks Please Looking Excited Attached Enclosed " +
   "January February March April May June July August September October November December Jan Feb Mar Apr Jun Jul Aug Sep Sept Oct Nov Dec").split(" "));
 
 /** Capitalised words not at the start of a sentence — a cheap proxy for organisation/product names. */
