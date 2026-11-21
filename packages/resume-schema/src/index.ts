@@ -49,6 +49,7 @@ export const WorkExperience = z.object({
   id: Id,
   employer: ShortText.min(1),
   title: ShortText.min(1),
+  employmentType: z.enum(["full_time", "part_time", "contract", "internship", "freelance", "temporary", "volunteer"]).optional(),
   location: ShortText.optional(),
   dates: DateRange,
   description: LongText.optional(),

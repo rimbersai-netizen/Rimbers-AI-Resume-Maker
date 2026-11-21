@@ -21,8 +21,8 @@ export default async function Dashboard() {
         <h2>My resumes ({resumes?.length ?? 0})</h2>
         {resumes?.length ? (
           <ul>{resumes.map((r) => <li key={r.id}>{r.title} · {r.country_code} · {r.locale}</li>)}</ul>
-        ) : <p className="muted">No resumes yet. The guided builder arrives in Phase 3.</p>}
-        <div className="row"><Link href="/account">Account settings</Link></div>
+        ) : <p className="muted">No resumes yet. Start by completing your profile — you enter it once and reuse it for every resume.</p>}
+        <div className="row"><Link href="/profile">Edit my profile</Link><Link href="/account">Account settings</Link></div>
         <form action={signOut}><Submit variant="secondary">Sign out</Submit></form>
       </section>
     </main>

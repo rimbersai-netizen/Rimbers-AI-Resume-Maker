@@ -54,17 +54,20 @@
     {
      "id": "3A",
      "title": "Personal info forms",
-     "status": "NOT_STARTED"
+     "status": "VERIFIED",
+     "evidence": "Personal step: required/email/link validation, focus-to-first-error, country select, optional photo (private bucket, signed URL, type/size checks). Tests: pgTAP 002 (16), unit profile-draft (31), SUPABASE_IT profile (4), browser E2E desktop+375px (2026-11-21)."
     },
     {
      "id": "3B",
      "title": "Experience/education/skills/projects/certs forms",
-     "status": "NOT_STARTED"
+     "status": "VERIFIED",
+     "evidence": "Experience (add/reorder/delete, current-role, date order, bullets w/ provenance, employment type), education, skills chips (dedupe), languages, certifications, projects. Tests: pgTAP 002 (16), unit profile-draft (31), SUPABASE_IT profile (4), browser E2E desktop+375px (2026-11-21)."
     },
     {
      "id": "3C",
      "title": "Autosave, validation, versioning",
-     "status": "NOT_STARTED"
+     "status": "VERIFIED",
+     "evidence": "Debounced autosave via atomic save_master_profile RPC; optimistic concurrency (conflict \u2192 load latest / keep mine); local crash-recovery (restore / restore_conflict); named versions + restore; beforeunload guard. Tests: pgTAP 002 (16), unit profile-draft (31), SUPABASE_IT profile (4), browser E2E desktop+375px (2026-11-21)."
     }
    ]
   },

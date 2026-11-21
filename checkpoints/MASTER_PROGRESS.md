@@ -1,10 +1,10 @@
-# Master Progress (2026-11-21 04:15)
+# Master Progress (2026-11-21 04:55)
 
 | Phase | Status |
 |---|---|
 | 1 Foundation | 1A · 1B · 1C VERIFIED |
 | 2 Supabase/Auth | 2A · 2B · 2C VERIFIED |
-| 3 Master profile | NOT_STARTED ← next |
+| 3 Master profile | 3A · 3B · 3C VERIFIED |
 | 4 Country rules | 4A VERIFIED · 4B IMPLEMENTED (needs human review) · 4C NOT_STARTED |
 | 5 Document engine | 5A IMPLEMENTED · 5B IN_PROGRESS · 5C NOT_STARTED |
 | 6 Templates | 6A–6C IMPLEMENTED (105 layouts render HTML; PDF/DOCX/visual pending) |
@@ -15,5 +15,5 @@
 | 14 Subscriptions | 14A IMPLEMENTED (DB wiring pending) |
 | 10–12, 15–20 | NOT_STARTED |
 
-Verified batches: 11 of 60. Acceptance workflows: H (cross-user isolation) covered at DB+storage level; others pending.
+Verified batches: 14 of 60. Acceptance workflows: H (cross-user isolation) covered at DB+storage level; others pending.
 Source of truth: `PHASE_STATUS.json`.

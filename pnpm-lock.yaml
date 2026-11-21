@@ -23,6 +23,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@gars/country-rules':
+        specifier: workspace:*
+        version: link:../../packages/country-rules
       '@gars/localization':
         specifier: workspace:*
         version: link:../../packages/localization
@@ -32,6 +35,9 @@ importers:
       '@gars/shared-types':
         specifier: workspace:*
         version: link:../../packages/shared-types
+      '@gars/validation':
+        specifier: workspace:*
+        version: link:../../packages/validation
       '@supabase/ssr':
         specifier: 0.5.2
         version: 0.5.2(@supabase/supabase-js@2.47.10)

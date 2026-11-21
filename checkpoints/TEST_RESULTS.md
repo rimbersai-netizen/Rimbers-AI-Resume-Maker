@@ -63,3 +63,16 @@
   deletion request + duplicate blocked + audit log rows, sign-out, wrong password generic error, sign-in, guest mode: all pass.
 - Live Ollama (CPU idle): llama3.2:3b 21 s — **invented "4+ years"; factCheck blocked it**. qwen3:4b 32 s — faithful.
   Fixed 2 factCheck false positives (month names, trailing period). Re-run qwen3:4b: ok, no violations. Full suite 298/298.
+
+## 2026-11-21 04:20–04:55 — Phase 3 (master profile)
+- Migration 0003: master_profiles.extras, master_profile_versions (+RLS), get_master_profile / save_master_profile (SECURITY INVOKER,
+  atomic, optimistic concurrency). pgTAP 002 first run 14/16 — my test's JSON expression was wrong (not the function); fixed → **70/70**.
+- Unit (apps/web profile-draft): first run 25/28 — real bug: cleanEmpty stripped blank bullet text before the blank-bullet filter →
+  validation failure. Fixed ordering → 28/28; +3 toDraft tests → 31/31.
+- Browser E2E found + fixed: (1) crash on new profile (DB returns personal without location; raw object used) → toDraft normaliser;
+  (2) focus-to-first-error ran before render; (3) empty email could pass "Continue" (schema-optional) → step-level check;
+  (4) mobile: stepper clipped, button wrapped → small-screen CSS.
+  Verified in UI: validation + focus, invalid link blocks save, autosave → DB rows correct (order, current role, bullets, type, dedupe
+  skills, language), reload persistence, crash-recovery banner + restore, conflict (other-device bump) → keep mine, named version +
+  restore, photo upload (signed URL; PDF rejected), 375 px no horizontal scroll.
+- SUPABASE_IT: auth 7 + profile 4 = **11/11**. Full: `pnpm check` **314/314**; storage 16/16; web typecheck 0 errors.

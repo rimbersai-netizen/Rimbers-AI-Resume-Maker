@@ -8,7 +8,7 @@ const securityHeaders = [
 export default {
   reactStrictMode: true,
   poweredByHeader: false,
-  transpilePackages: ["@gars/localization", "@gars/resume-schema", "@gars/shared-types"],
+  transpilePackages: ["@gars/localization", "@gars/resume-schema", "@gars/shared-types", "@gars/validation", "@gars/country-rules"],
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
