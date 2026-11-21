@@ -26,7 +26,9 @@
     "@gars/template-engine": "workspace:*",
     "@gars/subscriptions": "workspace:*",
     "@gars/ats-engine": "workspace:*",
-    "@gars/resume-builder": "workspace:*"
+    "@gars/resume-builder": "workspace:*",
+    "@gars/ai-engine": "workspace:*",
+    "server-only": "0.0.1"
   },
   "devDependencies": {
     "@types/react": "19.0.7",

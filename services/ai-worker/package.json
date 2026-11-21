@@ -1,0 +1,13 @@
+{
+  "name": "@gars/ai-worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": { "start": "tsx src/main.ts" },
+  "dependencies": {
+    "@gars/ai-engine": "workspace:*",
+    "@gars/resume-schema": "workspace:*",
+    "@supabase/supabase-js": "2.47.10"
+  }
+}

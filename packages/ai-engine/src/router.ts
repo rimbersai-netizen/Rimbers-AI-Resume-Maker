@@ -60,10 +60,12 @@ export function userFacingAiError(e: unknown): { code: string; message: string; 
     provider_unavailable: "The AI writing assistant is temporarily unavailable. Your data is safe — you can keep editing and try again later.",
     timeout: "The AI assistant took too long to respond. Please try again.",
     invalid_output: "The AI assistant returned an unusable answer. Please try again.",
+    unverified_facts: "The AI suggestion included details that aren't in your profile, so we didn't show it. Try again, or add more detail to your profile first.",
     model_missing: "The AI assistant is being updated. Please try again later.",
     cloud_not_permitted: "The local AI assistant is unavailable. Cloud processing is off unless you allow it in Privacy settings.",
     quota_exceeded: "You have reached your AI usage limit for this period.",
     unknown: "Something went wrong with the AI assistant. Please try again.",
   };
+  if (err.message === "unverified_facts") return { code: "unverified_facts", message: messages.unverified_facts!, canRetry: true };
   return { code: err.code, message: messages[err.code]!, canRetry: err.retryable || err.code === "provider_unavailable" };
 }

@@ -148,3 +148,16 @@ export function move<T>(xs: T[], from: number, to: number): T[] {
   copy.splice(to, 0, item!);
   return copy;
 }
+
+type Bullet = Draft["experience"][number]["bullets"][number];
+/**
+ * Accepting AI bullets: text identical to an existing bullet keeps its id and provenance (the user wrote it);
+ * only new or changed text is marked "ai_accepted" — so provenance never over-attributes the user's own words to AI.
+ */
+export function mergeAcceptedBullets(existing: Bullet[], accepted: string[]): Bullet[] {
+  const byText = new Map(existing.map((b) => [b.text.trim(), b]));
+  return accepted.map((t) => t.trim()).filter(Boolean).map((text) => {
+    const same = byText.get(text);
+    return same ? { ...same, text } : { id: newId(), text, provenance: "ai_accepted" as const };
+  });
+}

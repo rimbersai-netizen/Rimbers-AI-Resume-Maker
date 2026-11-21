@@ -1,3 +1,3 @@
-# Current Batch: 7B — AI job queue worker (IN_PROGRESS: router/retries done; DB-backed worker pending)
+# Current Batch: 8B — achievement writing, grammar, job-specific tailoring (NOT_STARTED)
 
-Last verified: 6A–6C, 10C (2026-11-21 08:20). 23/60 VERIFIED.
+Last verified: 7B, 8A (2026-11-21 09:00). 25/60 VERIFIED.

@@ -5,11 +5,12 @@ import Link from "next/link";
 import { LAUNCH_COUNTRIES } from "@gars/shared-types";
 import {
   issuesForStep, move, newId, prepareForSave, recoveryDecision, stepComplete, STEPS,
-  toDraft, type Draft, type Issues, type LocalDraft, type Step,
+  mergeAcceptedBullets, toDraft, type Draft, type Issues, type LocalDraft, type Step,
 } from "@/lib/profile-draft";
 import { createClient as createBrowserClient } from "@/lib/supabase/client";
 import { getVersionSnapshot, listVersions, saveProfile, type Loaded } from "./actions";
 import { Checkbox, MonthField, Select, TextArea, TextField } from "./fields";
+import { BulletsAssistant, SummaryAssistant } from "./ai-assistant";
 
 type Status = "idle" | "saving" | "saved" | "invalid" | "offline" | "conflict" | "error";
 const STEP_LABEL: Record<Step, string> = { personal: "Personal", experience: "Experience", education: "Education", skills: "Skills", review: "Review" };
@@ -81,6 +82,17 @@ export function ProfileBuilder({ initial, userId }: { initial: Loaded; userId: s
       if (pending.current) { pending.current = false; void runSave(); }
     }
   }, [initial.id]);
+
+  /** Save immediately (AI reads the saved profile). Resolves false if the draft is invalid or saving failed. */
+  const saveNow = async (): Promise<boolean> => {
+    if (!prepareForSave(latest.current).ok) { setShowAll(true); return false; }
+    if (dirty.current || saving.current) {
+      await runSave();
+      for (let i = 0; i < 40 && saving.current; i++) await new Promise((r) => setTimeout(r, 100));
+    }
+    return !dirty.current;
+  };
+  const appLocale = typeof document !== "undefined" ? document.documentElement.lang || "en" : "en";
 
   // ---- autosave: local copy immediately, server after a pause
   useEffect(() => {
@@ -174,8 +186,10 @@ export function ProfileBuilder({ initial, userId }: { initial: Loaded; userId: s
             <TextField label="LinkedIn" type="url" dir="ltr" value={draft.personal.linkedin} maxLength={500} placeholder="https://linkedin.com/in/…" error={err("personal.linkedin")} onBlur={touch("personal.linkedin")} onChange={(v) => update((d) => { d.personal.linkedin = v; return d; })} />
             <TextField label="Website / Portfolio" type="url" dir="ltr" value={draft.personal.website} maxLength={500} placeholder="https://…" error={err("personal.website")} onBlur={touch("personal.website")} onChange={(v) => update((d) => { d.personal.website = v; return d; })} />
             <div className="span2">
-              <TextArea label="Professional summary" value={draft.summary} maxLength={1200} rows={4} placeholder="2–4 sentences about your experience and focus. The AI assistant can help later."
+              <TextArea label="Professional summary" value={draft.summary} maxLength={1200} rows={4} placeholder="2–4 sentences about your experience and focus — or let the AI assistant draft one from your profile."
                 onChange={(v) => update((d) => { d.summary = v; return d; })} />
+              <SummaryAssistant masterProfileId={initial.id} locale={appLocale} prepare={saveNow}
+                onAccept={(text) => update((d) => { d.summary = text; return d; })} />
             </div>
             <details className="span2">
               <summary>More personal details (optional)</summary>
@@ -213,6 +227,10 @@ export function ProfileBuilder({ initial, userId }: { initial: Loaded; userId: s
                     </div>
                   ))}
                   {w.bullets.length < 12 && <button type="button" className="link" onClick={() => update((d) => { d.experience[i]!.bullets.push({ id: newId(), text: "", provenance: "user" }); return d; })}>+ Add bullet</button>}
+                  {w.employer && w.title && w.bullets.some((b) => b.text.trim()) && (
+                    <BulletsAssistant masterProfileId={initial.id} experienceId={w.id} locale={appLocale} prepare={saveNow}
+                      onAccept={(bullets) => update((d) => { d.experience[i]!.bullets = mergeAcceptedBullets(d.experience[i]!.bullets, bullets); return d; })} />
+                  )}
                 </fieldset>
               </ItemCard>
             ))}

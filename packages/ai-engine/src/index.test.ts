@@ -125,6 +125,7 @@ describe("task builders", () => {
     const t = buildSummaryTask(profile, { tone: "professional", length: "medium", locale: "ar" });
     expect(t.messages[0]!.content).toMatch(/Never invent/);
     expect(t.messages[1]!.content).toContain("Arabic");
+    expect(t.messages[1]!.content).toMatch(/do not include dates/i);
     expect(t.check({ summary: "Senior engineer who increased revenue by 300%." }).ok).toBe(false);
   });
   it("bullet task rejects unknown experience", () => expect(() => buildRewriteBulletsTask(profile, "nope", { tone: "concise", locale: "en" })).toThrow());

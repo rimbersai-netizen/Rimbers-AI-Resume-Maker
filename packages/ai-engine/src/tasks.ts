@@ -50,6 +50,7 @@ export function buildSummaryTask(p: MasterProfile, opts: { tone: Tone; length: z
   const messages: ChatMessage[] = [
     { role: "system", content: SYSTEM_RULES },
     { role: "user", content: `Write a ${opts.tone} professional resume summary of ${words} words in ${lang(opts.locale)}${opts.targetRole ? ` aimed at a ${opts.targetRole} role` : ""}.
+Write 2–4 flowing sentences about overall experience, strengths and focus. Do not list jobs one by one and do not include dates.
 Return {"summary": "..."}.
 SOURCE:
 <<<

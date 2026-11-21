@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cleanEmpty, emptyDraft, toDraft, issuesForStep, move, normalizeIds, prepareForSave, recoveryDecision, stepComplete, type Draft } from "./profile-draft";
+import { cleanEmpty, emptyDraft, mergeAcceptedBullets, toDraft, issuesForStep, move, normalizeIds, prepareForSave, recoveryDecision, stepComplete, type Draft } from "./profile-draft";
 
 const valid = (): Draft => ({
   ...emptyDraft(),
@@ -106,5 +106,15 @@ describe("toDraft", () => {
   it("returns valid profiles unchanged", () => {
     const v = valid();
     expect(toDraft(v).personal.fullName).toBe("Ayesha Khan");
+  });
+});
+
+describe("mergeAcceptedBullets", () => {
+  const existing = [{ id: "b1", text: "Led a team of 4", provenance: "user" as const }, { id: "b2", text: "Built APIs", provenance: "import" as const }];
+  it("unchanged text keeps id + original provenance; new/changed text is ai_accepted", () => {
+    const r = mergeAcceptedBullets(existing, ["Led a team of 4", "Designed and built REST APIs", "  "]);
+    expect(r[0]).toEqual({ id: "b1", text: "Led a team of 4", provenance: "user" });
+    expect(r[1]).toMatchObject({ text: "Designed and built REST APIs", provenance: "ai_accepted" });
+    expect(r).toHaveLength(2);
   });
 });

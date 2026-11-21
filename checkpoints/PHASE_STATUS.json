@@ -156,14 +156,14 @@
     {
      "id": "7B",
      "title": "Job queue, health, retries, structured output",
-     "status": "IN_PROGRESS",
-     "notes": "routeGenerate: retries/backoff, model fallback, safe user errors. Remaining: DB-backed ai_jobs worker loop (services/ai-worker), usage writes."
+     "status": "VERIFIED",
+     "evidence": "services/ai-worker: claim_ai_job (service role, skip-locked, lock expiry), Ollama health on start, routeGenerate retries/model fallback, structured JSON output validated, requeue on provider_unavailable/timeout up to max_attempts, ai_usage rows. SUPABASE_IT ai 4/4 + live 1/1 (qwen3:4b ~32 s faithful summary); workflow I: dead Ollama \u2192 3 attempts \u2192 failed provider_unavailable, safe message (2026-11-21)."
     },
     {
      "id": "7C",
      "title": "Cloud adapters, consent, cost limits",
      "status": "IN_PROGRESS",
-     "notes": "Cloud fallback gated on admin enable + per-job consent (tested). Remaining: concrete cloud adapter, cost limits."
+     "notes": "Cloud fallback gated (admin enable + per-job consent; tested). Not implemented: concrete cloud provider adapter (requires paid API + user authorization). AI cost control: monthly AI quota enforced server-side."
     }
    ]
   },
@@ -174,8 +174,8 @@
     {
      "id": "8A",
      "title": "Summaries, experience rewriting",
-     "status": "IN_PROGRESS",
-     "notes": "Summary + bullet-rewrite prompt contracts; contact details excluded from prompts."
+     "status": "VERIFIED",
+     "evidence": "Summary + bullet rewrite tasks end-to-end in UI (B-6 style assistant): generate \u2192 edit \u2192 accept \u2192 autosave; live qwen3:4b outputs faithful; prompt revised (no dates/job lists) after UI review."
     },
     {
      "id": "8B",
@@ -185,8 +185,8 @@
     {
      "id": "8C",
      "title": "Fact verification, review, history",
-     "status": "IN_PROGRESS",
-     "notes": "factCheck live-validated: blocked llama3.2 invented '4+ years'; fixed false positives (months, trailing dots). Remaining: review UI + history."
+     "status": "IMPLEMENTED",
+     "notes": "Fact-check gate verified (one corrective retry, then unverified_facts withheld; review-level entities highlighted); Accept/Edit/Reject UI; provenance preserved (unchanged bullets stay 'user', new text 'ai_accepted'). Pending: suggestion history view."
     }
    ]
   },
@@ -313,7 +313,7 @@
      "id": "14A",
      "title": "Plans, quotas, entitlements",
      "status": "IMPLEMENTED",
-     "notes": "Server-side enforcement verified for create_resume, premium templates, export_pdf (monthly). AI request quota pending (7B)."
+     "notes": "Server-side enforcement verified in UI for create_resume, premium templates, export_pdf monthly, export_docx (plan feature + one-time entitlement). ai_request quota wired via same helper but limit not yet exercised end-to-end."
     },
     {
      "id": "14B",

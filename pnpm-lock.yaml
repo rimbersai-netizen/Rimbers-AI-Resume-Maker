@@ -29,6 +29,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@gars/ai-engine':
+        specifier: workspace:*
+        version: link:../../packages/ai-engine
       '@gars/ats-engine':
         specifier: workspace:*
         version: link:../../packages/ats-engine
@@ -71,6 +74,9 @@ importers:
       react-dom:
         specifier: 19.0.0
         version: 19.0.0(react@19.0.0)
+      server-only:
+        specifier: 0.0.1
+        version: 0.0.1
       zod:
         specifier: 3.24.1
         version: 3.24.1
@@ -93,6 +99,9 @@ importers:
       '@gars/resume-schema':
         specifier: workspace:*
         version: link:../resume-schema
+      '@gars/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
       zod:
         specifier: 3.24.1
         version: 3.24.1
@@ -221,6 +230,18 @@ importers:
       '@gars/template-engine':
         specifier: workspace:*
         version: link:../packages/template-engine
+
+  services/ai-worker:
+    dependencies:
+      '@gars/ai-engine':
+        specifier: workspace:*
+        version: link:../../packages/ai-engine
+      '@gars/resume-schema':
+        specifier: workspace:*
+        version: link:../../packages/resume-schema
+      '@supabase/supabase-js':
+        specifier: 2.47.10
+        version: 2.47.10
 
   services/document-worker:
     dependencies:
@@ -1316,6 +1337,9 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  server-only@0.0.1:
+    resolution: {integrity: sha512-qepMx2JxAa5jjfzxG79yPPq+8BuFToHd1hm7kI+Z4zAq1ftQiP7HcxMhDDItrbtwVeLg/cY2JnKnrcFkmiswNA==}
+
   setimmediate@1.0.5:
     resolution: {integrity: sha512-MATJdZp8sLqDl/68LfQmbP8zKPLQNV6BIZoIgrscFDQ+RsvK/BxeDQOgyxKKoh0y/8h3BqVFnCqQ/gd+reiIXA==}
 
@@ -2359,6 +2383,8 @@ snapshots:
 
   semver@7.8.6:
     optional: true
+
+  server-only@0.0.1: {}
 
   setimmediate@1.0.5: {}
 

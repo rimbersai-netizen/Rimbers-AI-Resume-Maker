@@ -3,9 +3,9 @@
 import { z } from "zod";
 import { SECTION_KEYS } from "@gars/resume-schema";
 import { SUPPORTED_LOCALES } from "@gars/shared-types";
-import { evaluate, type Feature, type SubscriptionRow, type EntitlementRow } from "@gars/subscriptions";
 import { getTemplate } from "@gars/template-engine";
 import { createClient } from "@/lib/supabase/server";
+import { entitlement, PLAN_NAMES } from "@/lib/entitlements";
 import { isPremiumTemplate, type ResumeLayout } from "@/lib/resume-settings";
 import { loadPrimaryProfile, type Loaded } from "../profile/actions";
 
@@ -33,26 +33,6 @@ async function ctx() {
   const { data: { user } } = await supabase.auth.getUser();
   return { supabase, user };
 }
-
-/** Server-side entitlement decision (never trust the client). */
-async function entitlement(supabase: Awaited<ReturnType<typeof createClient>>, feature: Feature) {
-  const now = new Date();
-  const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
-  const [subs, ents, resumes, exportsMonth] = await Promise.all([
-    supabase.from("subscriptions").select("plan_id,status,current_period_end,cancel_at_period_end"),
-    supabase.from("entitlements").select("feature,source,valid_from,valid_until"),
-    supabase.from("resume_documents").select("id", { count: "exact", head: true }).is("deleted_at", null),
-    supabase.from("document_exports").select("id", { count: "exact", head: true }).gte("created_at", monthStart).in("status", ["queued", "running", "succeeded"]),
-  ]);
-  return evaluate(feature, {
-    subscriptions: (subs.data ?? []) as SubscriptionRow[],
-    entitlements: (ents.data ?? []) as EntitlementRow[],
-    usage: { resumes: resumes.count ?? 0, ai_requests_month: 0, exports_month: exportsMonth.count ?? 0 },
-    now,
-  });
-}
-
-const PLAN_NAMES: Record<string, string> = { STANDARD: "Standard", PROFESSIONAL: "Professional", PREMIUM: "Premium" };
 
 export async function createResume(input: ResumeLayout): Promise<ActionResult<{ id: string }>> {
   const parsed = LayoutSchema.safeParse(input);

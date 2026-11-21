@@ -132,3 +132,15 @@
 - Hardening: bidi override/isolate controls (U+202A–202E, U+2066–2069) stripped in renderer + content model (unit test).
 - Final worker suites **360/360** (PDF 114, DOCX 110, visual 112, Unicode 24). unit 445/445, pgTAP PASS, storage 16/16,
   integration 15/15, web typecheck OK.
+
+## 2026-11-21 08:25–09:00 — 7B + 8A (AI worker, writing assistant)
+- Migration 0008: claim_ai_job (service role), AI monthly index, owner cancel policy for queued jobs.
+- ai-engine jobs: AiJobInput/Output contract + runAiJob with fact-check gate (1 corrective retry naming invented facts;
+  then unverified_facts withheld). Unit 25 (scripted fake model).
+- SUPABASE_IT ai: success + usage (owner-only), **workflow I** dead Ollama → requeue ×3 → failed provider_unavailable,
+  forged other-user profile → not_found, clients can't claim/forge/write outputs, cancel queued. Live qwen3:4b 32 s → faithful.
+- UI E2E (background tab, ai-worker running): Write with AI → suggestion (faithful) → user edit → accept → autosaved.
+  Review found: (1) summary listed jobs with raw ISO dates → prompt revised (no dates/job list); live re-run: flowing,
+  faithful, 0 violations. (2) Accepting unchanged AI bullets re-marked user text as 'ai_accepted' (verified in DB) →
+  mergeAcceptedBullets keeps id/provenance for unchanged text (unit test); UI re-run → provenance stays 'user'.
+- Regression: unit 451/451, pgTAP PASS, storage 16/16, integration 19/19 (+1 live skipped), worker 360/360, web typecheck OK.

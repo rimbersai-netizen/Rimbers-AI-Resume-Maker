@@ -5,5 +5,10 @@
   "type": "module",
   "main": "src/index.ts",
   "types": "src/index.ts",
-  "dependencies": {"@gars/resume-schema": "workspace:*", "@gars/ats-engine": "workspace:*", "zod": "3.24.1"}
+  "dependencies": {
+    "@gars/resume-schema": "workspace:*",
+    "@gars/ats-engine": "workspace:*",
+    "zod": "3.24.1",
+    "@gars/shared-types": "workspace:*"
+  }
 }
