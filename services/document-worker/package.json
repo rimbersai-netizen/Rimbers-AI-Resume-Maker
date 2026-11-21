@@ -21,6 +21,9 @@
     "pdfjs-dist": "4.10.38",
     "playwright": "1.49.1",
     "mammoth": "1.8.0",
-    "jszip": "3.10.1"
+    "jszip": "3.10.1",
+    "pixelmatch": "6.0.0",
+    "pngjs": "7.0.0",
+    "@types/pngjs": "6.0.5"
   }
 }

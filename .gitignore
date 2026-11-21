@@ -12,3 +12,4 @@ test-results/
 .DS_Store
 supabase/.temp/
 apps/web/public/fonts/
+tests/visual/__diff__/

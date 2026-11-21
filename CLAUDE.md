@@ -15,7 +15,7 @@ Languages: `docs/localization/GLOBAL_LANGUAGE_STRATEGY.md` — app language ≠ 
 ## Commands
 - `pnpm install` · `pnpm test` (vitest) · `pnpm typecheck` (tsc -b) · `pnpm check` (both)
 - DB: `supabase start -x studio,realtime,edge-runtime,imgproxy,vector,logflare,supavisor,postgres-meta` · `supabase db reset` · `supabase test db` (pgTAP in `supabase/tests/database`) · `bash supabase/tests/storage/storage-rls.test.sh`
-- PDF: `PDF_IT=1 pnpm vitest run services/document-worker` (real Chromium). Worker: `cd services/document-worker && set -a && . ./.env.local && set +a && pnpm start`. Integration: `SUPABASE_IT=1 PDF_IT=1 pnpm vitest run tests/integration`.
+- PDF/DOCX/visual/Unicode: `PDF_IT=1 pnpm vitest run services/document-worker` (real Chromium). Update visual baselines ONLY after reviewing diffs: `UPDATE_SNAPSHOTS=1 PDF_IT=1 pnpm vitest run services/document-worker/src/visual.test.ts -t "<name>"`. Worker: `cd services/document-worker && set -a && . ./.env.local && set +a && pnpm start`. Integration: `SUPABASE_IT=1 PDF_IT=1 pnpm vitest run tests/integration`.
 - Catalog/fonts are generated: `pnpm gen:catalog` (migration from template/country sources), `pnpm gen:fonts` (web preview fonts; runs on prebuild).
 - This project's local Supabase uses ports 554xx (API 55421, DB 55422). Another local project uses 543xx — never stop it.
 

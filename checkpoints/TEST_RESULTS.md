@@ -120,3 +120,15 @@
   which Apple's reader treats as RTL → RTL flags now emitted only for RTL docs; test asserts none in LTR docs. Re-check clean.
 - SUPABASE_IT export 4/4 (incl. DOCX Arabic RTL). UI: Free → "DOCX included from Standard"; one-time entitlement → 8 KB .docx.
 - Regression: unit 443/443 (incl. DOCX), PDF 114/114, pgTAP 79/79, storage 16/16, integration 15/15, web typecheck OK.
+
+## 2026-11-21 07:35–08:20 — 10C (+6A–6C)
+- Visual harness (renderPng: print media, bundled fonts, JS off, 0.5 scale; pixelmatch threshold 0.1, ≤0.2% pixels):
+  111 baselines created → **reviewed** (en sidebar, ar, ur, ja) before trusting. Comparator self-test (identical → pass,
+  accent/heading change → fail). Review found English contact labels in ja/hi/zh resumes → localized labels for 12 languages;
+  harness flagged exactly those 3 snapshots; diff reviewed (contact line only) → updated.
+- Unicode/overflow probe found real defect: long URLs/words overflowed the page by 399–602 px (content clipped in PDF) →
+  overflow-wrap:anywhere, min-width:0, minmax(0,…) grid columns, nowrap dates. Harness then flagged 9 sidebar templates;
+  diffs reviewed (sidebar certification title now wraps beside a right-aligned date) → accepted, 9 baselines updated.
+- Hardening: bidi override/isolate controls (U+202A–202E, U+2066–2069) stripped in renderer + content model (unit test).
+- Final worker suites **360/360** (PDF 114, DOCX 110, visual 112, Unicode 24). unit 445/445, pgTAP PASS, storage 16/16,
+  integration 15/15, web typecheck OK.

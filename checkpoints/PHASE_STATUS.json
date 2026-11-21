@@ -126,20 +126,20 @@
     {
      "id": "6A",
      "title": "35 templates",
-     "status": "IMPLEMENTED",
-     "notes": "105 templates: PDF (114 Chromium tests) and DOCX (parity per template) verified. Pending for VERIFIED: visual regression snapshots (10C)."
+     "status": "VERIFIED",
+     "evidence": "105 structurally distinct layouts (unique layoutKey, 21 categories, AA contrast); each verified in automated tests for HTML, PDF (Chromium text/pages/glyphs), DOCX (word parity) and visual baseline (reviewed snapshots, pixel diff \u22640.2%); editor gallery with category filters + premium lock (2026-11-21)."
     },
     {
      "id": "6B",
      "title": "35 more templates",
-     "status": "IMPLEMENTED",
-     "notes": "105 templates: PDF (114 Chromium tests) and DOCX (parity per template) verified. Pending for VERIFIED: visual regression snapshots (10C)."
+     "status": "VERIFIED",
+     "evidence": "105 structurally distinct layouts (unique layoutKey, 21 categories, AA contrast); each verified in automated tests for HTML, PDF (Chromium text/pages/glyphs), DOCX (word parity) and visual baseline (reviewed snapshots, pixel diff \u22640.2%); editor gallery with category filters + premium lock (2026-11-21)."
     },
     {
      "id": "6C",
      "title": "30+ more, gallery, visual tests",
-     "status": "IMPLEMENTED",
-     "notes": "105 templates: PDF (114 Chromium tests) and DOCX (parity per template) verified. Pending for VERIFIED: visual regression snapshots (10C)."
+     "status": "VERIFIED",
+     "evidence": "105 structurally distinct layouts (unique layoutKey, 21 categories, AA contrast); each verified in automated tests for HTML, PDF (Chromium text/pages/glyphs), DOCX (word parity) and visual baseline (reviewed snapshots, pixel diff \u22640.2%); editor gallery with category filters + premium lock (2026-11-21). Gallery/filtering in /resumes/[id]."
     }
    ]
   },
@@ -233,7 +233,8 @@
     {
      "id": "10C",
      "title": "Rendering/Unicode/export regression tests",
-     "status": "NOT_STARTED"
+     "status": "VERIFIED",
+     "evidence": "Visual regression: 112 page-1 baselines (105 templates + ar/ur/ja/hi/zh samples), comparator self-test proves detection; harness caught 2 real changes (localized contact labels; sidebar date wrapping) which were reviewed and accepted. Unicode/overflow/export regression 24/24: NFD combining marks, Vietnamese/Turkish/German diacritics in PDF+DOCX, emoji, mixed bidi, long URLs/words wrap on one template per category (layout overflowX=0), 60 skills not lost, PDF+DOCX per category. Found + fixed: content overflow of 400\u2013600 px with long unbroken strings; English contact labels in non-English resumes; bidi override controls stripped (Trojan Source)."
     }
    ]
   },

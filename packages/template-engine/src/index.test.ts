@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ResumeDocument } from "@gars/resume-schema";
 import { analyzeResume } from "@gars/ats-engine";
 import { getCountryRule } from "@gars/country-rules";
-import { fontStack, layoutKey, recommendTemplates, renderResumeHtml, RESUME_HEADINGS, TEMPLATE_CATEGORIES, TEMPLATES, type TemplateSpec } from "./index";
+import { buildContentModel, fontStack, layoutKey, recommendTemplates, renderResumeHtml, RESUME_HEADINGS, TEMPLATE_CATEGORIES, TEMPLATES, type TemplateSpec } from "./index";
 
 const doc = (over: Record<string, unknown> = {}) => ResumeDocument.parse({
   schemaVersion: 1, id: "r1", title: "CV", country: "US", locale: "en", templateId: "ats-minimal-01", pageSize: "Letter",
@@ -88,6 +88,17 @@ describe("render details", () => {
     expect(fontStack("sans", "ur").indexOf("Nastaliq")).toBeLessThan(fontStack("sans", "ur").indexOf("Noto Sans Arabic"));
     expect(fontStack("sans", "ja").indexOf("Noto Sans JP")).toBeLessThan(fontStack("sans", "ja").indexOf("Noto Sans SC"));
     expect(fontStack("serif", "zh").startsWith('"Source Serif 4", "Noto Sans SC"')).toBe(true);
+  });
+  it("strips bidi override controls from user text (HTML + content model)", () => {
+    const d = doc();
+    d.profile.skills[0]!.name = "Re\u202Etca\u202C";
+    expect(renderResumeHtml(d, TEMPLATES[0]!)).not.toMatch(/[\u202A-\u202E\u2066-\u2069]/);
+    expect(JSON.stringify(buildContentModel(d))).not.toMatch(/[\u202A-\u202E\u2066-\u2069]/);
+  });
+  it("contact labels follow the resume language", () => {
+    expect(renderResumeHtml(doc({ locale: "ja", country: "JP" }), TEMPLATES[0]!)).toContain(">メール:</span>");
+    expect(renderResumeHtml(doc({ locale: "de", country: "DE" }), TEMPLATES[0]!)).toContain(">Telefon:</span>");
+    expect(renderResumeHtml(doc(), TEMPLATES[0]!)).toContain(">Email:</span>");
   });
   it("Urdu gets taller line height for Nastaliq", () => expect(renderResumeHtml(doc({ locale: "ur" }), TEMPLATES[0]!)).toMatch(/line-height: 1\.9/));
   it("country date convention: DE uses MM.YYYY, JP uses 年月", () => {

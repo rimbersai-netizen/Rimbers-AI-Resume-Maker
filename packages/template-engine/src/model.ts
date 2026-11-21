@@ -31,14 +31,35 @@ function monthNames(locale: string): string[] {
   }
 }
 
+/** Contact labels in the RESUME language (machine-drafted, pending native review; English fallback). */
+const CONTACT_LABELS: Record<string, { email: string; phone: string; location: string; web: string }> = {
+  en: { email: "Email", phone: "Phone", location: "Location", web: "Web" },
+  ar: { email: "البريد", phone: "الهاتف", location: "الموقع", web: "الموقع الإلكتروني" },
+  ur: { email: "ای میل", phone: "فون", location: "مقام", web: "ویب سائٹ" },
+  fr: { email: "E-mail", phone: "Téléphone", location: "Lieu", web: "Site web" },
+  de: { email: "E-Mail", phone: "Telefon", location: "Ort", web: "Website" },
+  es: { email: "Correo", phone: "Teléfono", location: "Ubicación", web: "Sitio web" },
+  it: { email: "E-mail", phone: "Telefono", location: "Località", web: "Sito web" },
+  pt: { email: "E-mail", phone: "Telefone", location: "Localização", web: "Site" },
+  hi: { email: "ईमेल", phone: "फ़ोन", location: "स्थान", web: "वेबसाइट" },
+  tr: { email: "E-posta", phone: "Telefon", location: "Konum", web: "Web sitesi" },
+  zh: { email: "邮箱", phone: "电话", location: "所在地", web: "网站" },
+  ja: { email: "メール", phone: "電話", location: "所在地", web: "ウェブサイト" },
+};
 export function contactLabels(locale: string) {
-  return locale.startsWith("ar") ? { email: "البريد", phone: "الهاتف", location: "الموقع", web: "الموقع الإلكتروني" }
-    : locale.startsWith("ur") ? { email: "ای میل", phone: "فون", location: "مقام", web: "ویب سائٹ" }
-    : { email: "Email", phone: "Phone", location: "Location", web: "Web" };
+  return CONTACT_LABELS[locale.split("-")[0]!] ?? CONTACT_LABELS.en!;
+}
+
+/** Deep-copy strings without explicit bidi override/isolate controls (same rule as the HTML renderer). */
+function stripControlsDeep<T>(v: T): T {
+  if (typeof v === "string") return v.replace(/[\u202A-\u202E\u2066-\u2069]/g, "") as T;
+  if (Array.isArray(v)) return v.map(stripControlsDeep) as T;
+  if (v && typeof v === "object") return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, stripControlsDeep(x)])) as T;
+  return v;
 }
 
 export function buildContentModel(doc: ResumeDocument, opts: { dateFormat?: Parameters<typeof formatResumeDate>[1] } = {}): ContentModel {
-  const p = doc.profile;
+  const p = stripControlsDeep(doc.profile);
   const h = headingsFor(doc.locale);
   const df = opts.dateFormat ?? recommendResumeSettings(doc.country).dateFormat;
   const months = monthNames(doc.locale);

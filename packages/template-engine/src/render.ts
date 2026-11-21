@@ -8,6 +8,7 @@ import type { ResumeDocument, SectionKey } from "@gars/resume-schema";
 import { formatResumeDate, recommendResumeSettings } from "@gars/country-rules";
 import { textDirection } from "@gars/localization";
 import { headingsFor } from "./headings";
+import { contactLabels } from "./model";
 import type { TemplateSpec } from "./spec";
 
 export interface RenderOptions {
@@ -18,7 +19,9 @@ export interface RenderOptions {
 }
 
 const ESC: Record<string, string> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
-export const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ESC[c]!);
+/** Explicit bidi embedding/override/isolate controls can visually reorder text ("Trojan Source"); <bdi> handles direction. */
+export const stripBidiControls = (s: string) => s.replace(/[\u202A-\u202E\u2066-\u2069]/g, "");
+export const esc = (s: string) => stripBidiControls(s).replace(/[&<>"']/g, (c) => ESC[c]!);
 const safeHref = (u: string) => (/^https?:\/\//i.test(u) ? esc(u) : "#");
 const ltr = (s: string, rtl: boolean) => (rtl ? `<bdi dir="ltr">${esc(s)}</bdi>` : esc(s));
 /**
@@ -91,9 +94,9 @@ function css(spec: TemplateSpec, pageSize: "A4" | "Letter", locale: string): str
     boxed: `border: 1.5px solid var(--accent); padding: 12px 16px;`,
   }[spec.layout.header];
   const columns = {
-    single: `grid-template-columns: 1fr;`,
-    sidebar_start: `grid-template-columns: 32% 1fr;`,
-    sidebar_end: `grid-template-columns: 1fr 32%;`,
+    single: `grid-template-columns: minmax(0, 1fr);`,
+    sidebar_start: `grid-template-columns: minmax(0, 32%) minmax(0, 1fr);`,
+    sidebar_end: `grid-template-columns: minmax(0, 1fr) minmax(0, 32%);`,
   }[spec.layout.columns];
   return `
 @page { size: ${pageSize}; margin: 14mm 14mm 16mm; }
@@ -103,6 +106,8 @@ html { font-family: ${fontStack(spec.typography.fontStack, locale)}; font-size: 
 ${/^(ar|ur|fa)\b/.test(locale) ? "" : "/* Ligatures (fi, ft) and contextual alternates (Inter's +/– next to digits) become glyphs with no Unicode mapping,\n   so PDF text extraction / ATS parsers can't read them. Arabic-script\n   documents keep their required joining forms. */\nhtml { font-variant-ligatures: no-common-ligatures no-discretionary-ligatures no-contextual; font-feature-settings: \"liga\" 0, \"dlig\" 0, \"calt\" 0; }"}
 body { margin: 0; }
 .resume { max-width: 100%; }
+/* Long unbroken text (URLs, compound words) must wrap instead of running off the page. */
+main, main * { overflow-wrap: anywhere; min-width: 0; }
 header.top { ${header} margin-block-end: ${gap + 4}px; }
 header.top h1 { margin: 0; font-size: 1.9em; line-height: 1.15; }
 header.top .title { margin: 2px 0 0; font-size: 1.1em; ${spec.layout.header === "banner" ? "" : "color: var(--accent);"} }
@@ -118,7 +123,9 @@ h2 { margin: 0 0 ${Math.round(gap / 2)}px; font-size: 1.12em; ${h2} break-after:
 .entry .org { font-weight: 400; }
 .entry .meta { margin: 1px 0 3px; color: var(--muted); font-size: .92em; }
 .entry.inline-dates .head { display: flex; justify-content: space-between; gap: 12px; }
-.entry.start-dates { display: grid; grid-template-columns: 7.5em 1fr; gap: 10px; }
+.entry.inline-dates .head h3 { flex: 1 1 auto; }
+.entry.inline-dates .head .dates { flex: none; white-space: nowrap; }
+.entry.start-dates { display: grid; grid-template-columns: 7.5em minmax(0, 1fr); gap: 10px; }
 ul.bullets { margin: 2px 0 0; padding-inline-start: 1.1em; }
 ul.bullets li { margin-block-end: 2px; }
 .skills.comma p { margin: 0; }
@@ -223,9 +230,7 @@ function headerHtml(c: Ctx, opts: RenderOptions): string {
   const pd = c.doc.profile.personal;
   const items: string[] = [];
   const item = (label: string, value: string) => items.push(`<li><span class="lbl">${esc(label)}:</span> ${value}</li>`);
-  const L = c.doc.locale.startsWith("ar") ? { email: "البريد", phone: "الهاتف", location: "الموقع", web: "الموقع الإلكتروني" }
-    : c.doc.locale.startsWith("ur") ? { email: "ای میل", phone: "فون", location: "مقام", web: "ویب سائٹ" }
-    : { email: "Email", phone: "Phone", location: "Location", web: "Web" };
+  const L = contactLabels(c.doc.locale);
   if (pd.email) item(L.email, `<a href="mailto:${esc(pd.email)}">${ltr(pd.email, c.rtl)}</a>`);
   if (pd.phone) item(L.phone, ltr(pd.phone, c.rtl));
   const loc = [pd.location.city, pd.location.region].filter(Boolean).join(", ");
