@@ -13,7 +13,8 @@
 | 9 ATS | 9A·9B·9C IMPLEMENTED (engine, Bun-tested; UI wiring pending) |
 | 10–12 | NOT_STARTED |
 | 13 Localization | 13A IN_PROGRESS (resolver + fallback done early, Bun-tested) |
-| 14–20 | NOT_STARTED |
+| 14 Subscriptions | 14A IMPLEMENTED (engine, Bun-tested) |
+| 15–20 | NOT_STARTED |
 
 Mobile UI references + global language requirements recorded (2026-11-21) and mapped to batches 13A–C, 16A–C.
 Acceptance workflows A–L: none verified yet (H partially covered at DB level).

@@ -303,7 +303,8 @@
     {
      "id": "14A",
      "title": "Plans, quotas, entitlements",
-     "status": "NOT_STARTED"
+     "status": "IMPLEMENTED",
+     "notes": "packages/subscriptions: effective plan (active/trial/past_due grace/canceled-until-period-end/expired), quotas, one-time entitlements, coupons. 14 tests (Bun). DB wiring pending."
     },
     {
      "id": "14B",
