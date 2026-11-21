@@ -7,7 +7,7 @@ import { Brand, Submit } from "../form-bits";
 export default async function Dashboard() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/sign-in");
+  if (!user) redirect("/sign-in?next=/dashboard");
   const { data: resumes } = await supabase.from("resume_documents").select("id,title,country_code,locale,updated_at")
     .is("deleted_at", null).order("updated_at", { ascending: false }).limit(20);
   return (

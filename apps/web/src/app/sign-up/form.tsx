@@ -9,7 +9,7 @@ export function SignUpForm() {
     <form action={action} noValidate>
       <Alerts state={state} />
       <label htmlFor="email">Email address</label>
-      <input id="email" name="email" type="email" autoComplete="email" required aria-describedby="email-error" />
+      <input id="email" name="email" type="email" autoComplete="email" required defaultValue={state.values?.email} key={state.values?.email} aria-describedby="email-error" />
       <FieldError state={state} name="email" />
       <label htmlFor="password">Password</label>
       <input id="password" name="password" type="password" autoComplete="new-password" required aria-describedby="password-error password-hint" />

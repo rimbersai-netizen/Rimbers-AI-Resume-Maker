@@ -97,6 +97,18 @@ describe("factCheck", () => {
     const r = factCheck({ output: "Built services with React and Kubernetes.", sourceTexts: src });
     expect(r.violations).toContainEqual({ kind: "new_skill", value: "kubernetes", severity: "block" });
   });
+  it("no false positives for month names or trailing punctuation (live qwen3:4b regression)", () => {
+    const r = factCheck({
+      output: "Site Engineer at Al Bina Contracting since March 2019. Coordinated work using AutoCAD and Primavera.",
+      sourceTexts: ["Role: Site Engineer at Al Bina Contracting (2019-03 – present)", "Skills: AutoCAD, Primavera"],
+      knownSkills: ["AutoCAD", "Primavera"],
+    });
+    expect(r.violations).toEqual([]);
+  });
+  it("blocks invented experience length (live llama3.2:3b regression)", () => {
+    const r = factCheck({ output: "Site Engineer with 4+ years of experience.", sourceTexts: ["Role: Site Engineer (2019-03 – present)"] });
+    expect(r.ok).toBe(false);
+  });
   it("flags unknown organisations for review", () => {
     const r = factCheck({ output: "Previously consulted for Google on cloud projects.", sourceTexts: src });
     expect(r.violations.some((v) => v.kind === "new_entity" && v.value === "google")).toBe(true);

@@ -6,8 +6,8 @@
 | CPU | Intel Core i7-9750H, x86_64, 6C/12T | No Apple Silicon / Metal acceleration for LLMs |
 | RAM | 16 GB | Run at most ONE local LLM at a time; no parallel heavy builds |
 | Disk | 26 GB free of 466 GB (95% used) | **Risk**: Expo/Android/iOS builds + Playwright browsers need ~10–15 GB. Keep caches lean. |
-| Node | Homebrew node 25.8.1 — was broken (llhttp dylib mismatch); reinstalled in 1A | See TEST_RESULTS for post-fix version |
-| npm / pnpm | npm with node; pnpm via corepack | |
+| Node | Homebrew node **26.13.1** (compiled from source 02:33–04:00; no bottle for Intel + macOS 26) | Working |
+| npm / pnpm | npm 11.20.0; **pnpm 9.15.9** via `npm i -g` (Node 26 has no corepack) | |
 | Git | 2.50.1 | NOTE: `/Users/mak` is itself a git repo. This project has its **own** repo at `global-ai-resume-studio/` — never commit to the home repo. |
 | Python | 3.15.2 | |
 | Docker | 29.9.2 CLI; daemon **not running** | Needed for `supabase start` (local Postgres). Start Docker Desktop manually. |
@@ -22,3 +22,9 @@
 - Fallback small model: `llama3.2:3b`.
 - Embeddings (keyword/semantic matching): `qwen3-embedding:0.6b`.
 - Expect slow CPU inference (several tokens/s) → all AI calls must be async jobs with timeouts.
+
+## Model benchmark (2026-11-21, CPU idle, short summary task)
+| Model | Time | Faithful? | Decision |
+|---|---|---|---|
+| qwen3:4b | ~32 s | yes | **primary** |
+| llama3.2:3b | ~21 s | no — invented "4+ years" (blocked by factCheck) | fallback only |

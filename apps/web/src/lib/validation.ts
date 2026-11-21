@@ -15,7 +15,8 @@ export function safeNext(next: unknown, fallback = "/dashboard"): string {
   return next;
 }
 
-export type FormState = { error?: string; fieldErrors?: Record<string, string>; message?: string };
+/** `values` echoes non-secret fields so inputs keep them after React resets the form (never passwords). */
+export type FormState = { error?: string; fieldErrors?: Record<string, string>; message?: string; values?: Record<string, string> };
 
 export function fieldErrors(e: z.ZodError): Record<string, string> {
   const out: Record<string, string> = {};

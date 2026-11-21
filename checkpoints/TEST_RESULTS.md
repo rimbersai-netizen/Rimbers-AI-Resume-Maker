@@ -48,3 +48,18 @@
   21 categories, AA contrast ≥4.5, every template renders (no tables, XSS escaped, hidden items excluded),
   RTL/Arabic headings + bdi isolation, Urdu line-height, DE/JP date formats, photo rules, javascript: links blocked.
 - Typecheck: all 8 packages OK.
+
+## 2026-11-21 04:00–04:15 — Node available (Homebrew node 26.13.1, pnpm 9.15.9)
+- `pnpm install && pnpm check`: typecheck 9 packages OK; **296/296 pass** (9 skipped: live/integration gated) → 1C VERIFIED.
+  All earlier Bun-only results reproduced on Node.
+- Regression: `supabase db reset && supabase test db` 54/54; `storage-rls.test.sh` 16/16 (now creates pre-confirmed users).
+- 2B: `SUPABASE_IT=1 vitest run tests/integration` **7/7**; `apps/web` typecheck + `next build` OK (11 routes).
+- 2B browser E2E (in-app browser, prod server): defects found + fixed:
+  1. React 19 form reset cleared email after validation errors → echo email in form state.
+  2. Redirects went to `localhost` instead of `127.0.0.1` (Next rewrites absolute same-origin redirects; host-bound cookies) →
+     relative Location in route handlers; protection moved to pages (middleware refreshes session only).
+  3. Deletion message promised a confirmation email that doesn't exist yet → reworded.
+  After fixes: sign-up validation, verify link → signed-in dashboard, export (200, attachment, 26 keys, own data),
+  deletion request + duplicate blocked + audit log rows, sign-out, wrong password generic error, sign-in, guest mode: all pass.
+- Live Ollama (CPU idle): llama3.2:3b 21 s — **invented "4+ years"; factCheck blocked it**. qwen3:4b 32 s — faithful.
+  Fixed 2 factCheck false positives (month names, trailing period). Re-run qwen3:4b: ok, no violations. Full suite 298/298.

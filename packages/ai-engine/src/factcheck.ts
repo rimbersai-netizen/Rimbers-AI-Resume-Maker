@@ -32,7 +32,9 @@ function numbers(text: string): Set<string> {
 
 const COMMON_CAPS = new Set(("I The A An In On At For With And Or But Our We My As By To Of From This That It Results Proven Experienced " +
   "Skilled Senior Junior Lead Software Engineer Manager Developer Professional Highly Dedicated Strong Passionate Collaborative Detail " +
-  "Over Across During Responsible Led Built Designed Developed Delivered Improved Managed Created").split(" "));
+  "Over Across During Responsible Led Built Designed Developed Delivered Improved Managed Created Using Since " +
+  // Month names come from the user's own dates (e.g. 2019-03 → "March"); dates are checked as numbers instead.
+  "January February March April May June July August September October November December Jan Feb Mar Apr Jun Jul Aug Sep Sept Oct Nov Dec").split(" "));
 
 /** Capitalised words not at the start of a sentence — a cheap proxy for organisation/product names. */
 function entities(text: string): Set<string> {
@@ -40,7 +42,8 @@ function entities(text: string): Set<string> {
   for (const sentence of text.split(/(?<=[.!?])\s+|\n+/)) {
     const ws = sentence.trim().split(/\s+/);
     ws.forEach((w, i) => {
-      const clean = w.replace(/^[^\p{L}]+|[^\p{L}\p{N}.+#]+$/gu, "");
+      // Strip leading punctuation and trailing sentence punctuation (keep internal dots: "Node.js").
+      const clean = w.replace(/^[^\p{L}]+/u, "").replace(/[^\p{L}\p{N}+#]+$/u, "");
       if (i === 0 || clean.length < 2) return;
       if (/^\p{Lu}/u.test(clean) && !COMMON_CAPS.has(clean)) out.add(clean.toLowerCase());
     });

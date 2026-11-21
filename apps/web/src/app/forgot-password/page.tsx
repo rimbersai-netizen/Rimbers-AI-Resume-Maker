@@ -15,7 +15,7 @@ export default function ForgotPasswordPage() {
         <form action={action} noValidate>
           <Alerts state={state} />
           <label htmlFor="email">Email address</label>
-          <input id="email" name="email" type="email" autoComplete="email" required />
+          <input id="email" name="email" type="email" autoComplete="email" required defaultValue={state.values?.email} key={state.values?.email} />
           <FieldError state={state} name="email" />
           <Submit>Send reset link</Submit>
         </form>

@@ -1,9 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PROTECTED = ["/dashboard", "/account"];
-
-/** Refresh the session cookie on every request and gate protected routes. */
+/**
+ * Refresh the session cookie on every request. Route protection lives in each protected page/route
+ * (server-side getUser() + redirect), so access control never depends on middleware alone.
+ */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
   const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
@@ -16,14 +17,6 @@ export async function updateSession(request: NextRequest) {
       },
     },
   });
-  // getUser() validates the JWT with the auth server (never trust getSession() alone on the server).
-  const { data: { user } } = await supabase.auth.getUser();
-  const path = request.nextUrl.pathname;
-  if (!user && PROTECTED.some((p) => path === p || path.startsWith(`${p}/`))) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/sign-in";
-    url.search = `?next=${encodeURIComponent(path)}`;
-    return NextResponse.redirect(url);
-  }
+  await supabase.auth.getUser(); // validates JWT with the auth server and refreshes cookies if needed
   return response;
 }

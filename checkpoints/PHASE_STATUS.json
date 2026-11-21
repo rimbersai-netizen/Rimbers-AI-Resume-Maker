@@ -18,8 +18,8 @@
     {
      "id": "1C",
      "title": "Monorepo, scripts, tests, git, checkpoints",
-     "status": "IMPLEMENTED",
-     "notes": "36/36 tests + typecheck pass under Bun; awaiting pnpm on Homebrew Node (still compiling from source)"
+     "status": "VERIFIED",
+     "evidence": "Node 26.13.1 + pnpm 9.15.9: pnpm install && pnpm check \u2192 typecheck 9 pkgs OK, 298 tests pass (2026-11-21)"
     }
    ]
   },
@@ -36,8 +36,8 @@
     {
      "id": "2B",
      "title": "Auth, account management, sessions",
-     "status": "IN_PROGRESS",
-     "notes": "apps/web Next.js auth written (sign-up w/ verification, sign-in, reset, guest+upgrade, sign-out, export, deletion request). Tests written (unit + SUPABASE_IT integration). Not yet installed/run \u2014 needs Node."
+     "status": "VERIFIED",
+     "evidence": "SUPABASE_IT auth integration 7/7; web typecheck+build OK; manual browser E2E: validation, sign-up\u2192Mailpit link\u2192dashboard, export JSON, deletion request (dup blocked), sign-out, wrong/right sign-in, guest mode (2026-11-21)"
     },
     {
      "id": "2C",
@@ -75,14 +75,14 @@
     {
      "id": "4A",
      "title": "Country config schema + sources",
-     "status": "IMPLEMENTED",
-     "notes": "packages/country-rules: 50 tests pass under Bun (86/86 total); re-run under Node/pnpm to mark VERIFIED. All 30 rules reviewStatus=unreviewed (needs human review before DB status 'published')."
+     "status": "VERIFIED",
+     "evidence": "country-rules schema/source/reviewDate tests pass on Node"
     },
     {
      "id": "4B",
      "title": "Initial 30 country conventions",
      "status": "IMPLEMENTED",
-     "notes": "packages/country-rules: 50 tests pass under Bun (86/86 total); re-run under Node/pnpm to mark VERIFIED. All 30 rules reviewStatus=unreviewed (needs human review before DB status 'published')."
+     "notes": "Implemented + tested on Node. Not VERIFIED: acceptance requires human review of conventions (all 30 reviewStatus=unreviewed)."
     },
     {
      "id": "4C",
@@ -145,8 +145,8 @@
     {
      "id": "7A",
      "title": "Ollama discovery, benchmark, adapter",
-     "status": "IMPLEMENTED",
-     "notes": "OllamaProvider (loopback-only, timeouts, JSON/schema output, usage). Live health OK; live generation TIMED OUT (240s) while CPU saturated by Node compile \u2014 re-benchmark after."
+     "status": "VERIFIED",
+     "evidence": "Unit tests + live Ollama: qwen3:4b 32s/llama3.2:3b 21s summaries, structured output validated; Ollama-down \u2192 safe error (2026-11-21)"
     },
     {
      "id": "7B",
@@ -181,7 +181,7 @@
      "id": "8C",
      "title": "Fact verification, review, history",
      "status": "IN_PROGRESS",
-     "notes": "factCheck blocks new numbers/skills, flags new entities. Remaining: suggestion review UI + history table."
+     "notes": "factCheck live-validated: blocked llama3.2 invented '4+ years'; fixed false positives (months, trailing dots). Remaining: review UI + history."
     }
    ]
   },
@@ -192,20 +192,20 @@
     {
      "id": "9A",
      "title": "Formatting + completeness checks",
-     "status": "IMPLEMENTED",
-     "notes": "packages/ats-engine: formatting/completeness/experience/readability checks. 14 tests pass under Bun; re-run on Node to verify. UI wiring pending."
+     "status": "VERIFIED",
+     "evidence": "ats-engine 14 tests on Node: deterministic, explanations, required-term detection, no-guarantee wording"
     },
     {
      "id": "9B",
      "title": "JD matching",
-     "status": "IMPLEMENTED",
-     "notes": "packages/ats-engine: JD keyword extraction, required-term detection, matching. 14 tests pass under Bun; re-run on Node to verify. UI wiring pending."
+     "status": "VERIFIED",
+     "evidence": "ats-engine 14 tests on Node: deterministic, explanations, required-term detection, no-guarantee wording"
     },
     {
      "id": "9C",
      "title": "Explainable scoring + recommendations",
-     "status": "IMPLEMENTED",
-     "notes": "packages/ats-engine: weighted explainable score, bands, findings w/ suggestions, before/after compare. 14 tests pass under Bun; re-run on Node to verify. UI wiring pending."
+     "status": "VERIFIED",
+     "evidence": "ats-engine 14 tests on Node: deterministic, explanations, required-term detection, no-guarantee wording"
     }
    ]
   },
@@ -305,7 +305,7 @@
      "id": "14A",
      "title": "Plans, quotas, entitlements",
      "status": "IMPLEMENTED",
-     "notes": "packages/subscriptions: effective plan (active/trial/past_due grace/canceled-until-period-end/expired), quotas, one-time entitlements, coupons. 14 tests (Bun). DB wiring pending."
+     "notes": "Engine tested on Node (14 tests). Not VERIFIED: server-side DB wiring (entitlement checks in API/edge) pending."
     },
     {
      "id": "14B",

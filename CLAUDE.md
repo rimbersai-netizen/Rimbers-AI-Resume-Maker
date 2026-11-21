@@ -24,7 +24,7 @@ Languages: `docs/localization/GLOBAL_LANGUAGE_STRATEGY.md` — app language ≠ 
 - Sensitive fields (photo, DOB, nationality) always optional.
 - Every public table has RLS; child rows use composite FK (parent_id, user_id). New tables need RLS + pgTAP tests.
 - Entitlements server-side only. Webhooks verified + idempotent.
-- Machine: Intel i7, 16 GB RAM, ~26 GB free disk. One LLM at a time; no parallel heavy builds.
+- Machine: Intel i7, 16 GB RAM, ~35 GB free disk. One LLM at a time; no parallel heavy builds. AI: qwen3:4b primary, llama3.2:3b fallback.
 
 ## Testing
 - Each batch: targeted tests; phase boundaries: full `pnpm check`. Record real output in `checkpoints/TEST_RESULTS.md`.

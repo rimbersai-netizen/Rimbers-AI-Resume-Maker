@@ -1,4 +1,5 @@
-import { NextResponse, type NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
+import { relativeRedirect } from "@/lib/redirect";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { safeNext } from "@/lib/validation";
@@ -16,5 +17,5 @@ export async function GET(req: NextRequest) {
     : tokenHash && type
       ? await supabase.auth.verifyOtp({ token_hash: tokenHash, type })
       : { error: new Error("missing token") };
-  return NextResponse.redirect(new URL(error ? "/sign-in?error=link_invalid" : next, url.origin));
+  return relativeRedirect(error ? "/sign-in?error=link_invalid" : next);
 }

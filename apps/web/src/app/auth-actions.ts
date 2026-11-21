@@ -11,21 +11,23 @@ const site = () => process.env.NEXT_PUBLIC_SITE_URL ?? "http://127.0.0.1:3100";
 const SIGN_IN_FAILED = "Email or password is incorrect, or the email is not verified yet.";
 const CHECK_EMAIL = "Check your email for a link to continue.";
 
+const echo = (form: FormData) => ({ email: String(form.get("email") ?? "").slice(0, 254) });
+
 export async function signIn(_: FormState, form: FormData): Promise<FormState> {
   const parsed = z.object({ email: Email, password: z.string().min(1, "Enter your password") }).safeParse({
     email: form.get("email"), password: form.get("password"),
   });
-  if (!parsed.success) return { fieldErrors: fieldErrors(parsed.error) };
+  if (!parsed.success) return { fieldErrors: fieldErrors(parsed.error), values: echo(form) };
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
-  if (error) return { error: error.status === 429 ? "Too many attempts. Please wait and try again." : SIGN_IN_FAILED };
+  if (error) return { error: error.status === 429 ? "Too many attempts. Please wait and try again." : SIGN_IN_FAILED, values: echo(form) };
   redirect(safeNext(form.get("next")));
 }
 
 export async function signUp(_: FormState, form: FormData): Promise<FormState> {
   const parsed = z.object({ email: Email, password: Password, terms: z.literal("on", { errorMap: () => ({ message: "Please accept the terms and privacy policy" }) }) })
     .safeParse({ email: form.get("email"), password: form.get("password"), terms: form.get("terms") });
-  if (!parsed.success) return { fieldErrors: fieldErrors(parsed.error) };
+  if (!parsed.success) return { fieldErrors: fieldErrors(parsed.error), values: echo(form) };
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -45,7 +47,7 @@ export async function signUp(_: FormState, form: FormData): Promise<FormState> {
     options: { emailRedirectTo: `${site()}/auth/confirm?next=/dashboard` },
   });
   if (error && error.status === 429) return { error: "Too many attempts. Please wait and try again." };
-  if (error && /password/i.test(error.message)) return { fieldErrors: { password: error.message } };
+  if (error && /password/i.test(error.message)) return { fieldErrors: { password: error.message }, values: echo(form) };
   // Same response whether or not the email already exists.
   return { message: CHECK_EMAIL };
 }
@@ -62,7 +64,7 @@ export async function continueAsGuest(): Promise<void> {
 
 export async function requestPasswordReset(_: FormState, form: FormData): Promise<FormState> {
   const parsed = Email.safeParse(form.get("email"));
-  if (!parsed.success) return { fieldErrors: { email: parsed.error.issues[0]!.message } };
+  if (!parsed.success) return { fieldErrors: { email: parsed.error.issues[0]!.message }, values: echo(form) };
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(parsed.data, { redirectTo: `${site()}/auth/confirm?next=/reset-password` });
   if (error?.status === 429) return { error: "Too many attempts. Please wait and try again." };
@@ -97,5 +99,5 @@ export async function requestAccountDeletion(_: FormState, form: FormData): Prom
   if (error?.code === "23505") return { message: "A deletion request is already being processed." };
   if (error) return { error: "Could not submit the request. Please try again." };
   await supabase.rpc("write_audit_log", { p_action: "account.deletion_requested", p_entity_type: "user", p_entity_id: user.id, p_metadata: {} });
-  return { message: "Deletion requested. Your account and data will be removed; you will receive a confirmation email." };
+  return { message: "Deletion requested. We will process it and permanently remove your account, resumes and files." };
 }
