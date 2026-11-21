@@ -3,7 +3,9 @@
 | Phase | Status |
 |---|---|
 | 1 Foundation | 1A VERIFIED · 1B VERIFIED · 1C IMPLEMENTED (awaiting pnpm on Node) |
-| 2–20 | NOT_STARTED |
+| 2 Supabase/Auth | 2A VERIFIED · 2B NOT_STARTED (needs Node) · 2C IMPLEMENTED (storage tests pending) |
+| 3–20 | NOT_STARTED |
 
-Acceptance workflows A–L: none verified yet.
-Source of truth for per-batch status: `PHASE_STATUS.json`.
+Mobile UI references + global language requirements recorded (2026-11-21) and mapped to batches 13A–C, 16A–C.
+Acceptance workflows A–L: none verified yet (H partially covered at DB level).
+Source of truth: `PHASE_STATUS.json`.

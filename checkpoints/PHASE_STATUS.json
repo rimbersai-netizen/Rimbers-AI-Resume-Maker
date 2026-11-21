@@ -18,7 +18,8 @@
     {
      "id": "1C",
      "title": "Monorepo, scripts, tests, git, checkpoints",
-     "status": "IMPLEMENTED"
+     "status": "IMPLEMENTED",
+     "notes": "36/36 tests + typecheck pass under Bun; awaiting pnpm on Homebrew Node (still compiling from source)"
     }
    ]
   },
@@ -29,7 +30,8 @@
     {
      "id": "2A",
      "title": "Schema, migrations, indexes, constraints",
-     "status": "NOT_STARTED"
+     "status": "VERIFIED",
+     "evidence": "supabase db reset + supabase test db: 54/54 pgTAP pass (2026-11-21)"
     },
     {
      "id": "2B",
@@ -39,7 +41,8 @@
     {
      "id": "2C",
      "title": "RLS, private storage, authz tests",
-     "status": "NOT_STARTED"
+     "status": "IMPLEMENTED",
+     "notes": "Table RLS + storage policies in migration 0002; table RLS tested in 2A suite. Storage policy tests + signed URLs pending."
     }
    ]
   },
@@ -260,17 +263,20 @@
     {
      "id": "13A",
      "title": "i18n infra + initial languages",
-     "status": "NOT_STARTED"
+     "status": "NOT_STARTED",
+     "requirements": "docs/localization/GLOBAL_LANGUAGE_STRATEGY.md"
     },
     {
      "id": "13B",
      "title": "Arabic/Urdu RTL UI + docs",
-     "status": "NOT_STARTED"
+     "status": "NOT_STARTED",
+     "requirements": "docs/localization/GLOBAL_LANGUAGE_STRATEGY.md"
     },
     {
      "id": "13C",
      "title": "Remaining languages + validation",
-     "status": "NOT_STARTED"
+     "status": "NOT_STARTED",
+     "requirements": "docs/localization/GLOBAL_LANGUAGE_STRATEGY.md"
     }
    ]
   },
@@ -323,17 +329,20 @@
     {
      "id": "16A",
      "title": "RN app + shared UI",
-     "status": "NOT_STARTED"
+     "status": "NOT_STARTED",
+     "requirements": "docs/design/MOBILE_UI_REFERENCE.md, docs/design/MOBILE_DESIGN_SYSTEM.md"
     },
     {
      "id": "16B",
      "title": "Profile builder, editor, previews",
-     "status": "NOT_STARTED"
+     "status": "NOT_STARTED",
+     "requirements": "docs/design/MOBILE_UI_REFERENCE.md, docs/design/MOBILE_DESIGN_SYSTEM.md"
     },
     {
      "id": "16C",
      "title": "AI, exports, billing, device tests",
-     "status": "NOT_STARTED"
+     "status": "NOT_STARTED",
+     "requirements": "docs/design/MOBILE_UI_REFERENCE.md, docs/design/MOBILE_DESIGN_SYSTEM.md"
     }
    ]
   },

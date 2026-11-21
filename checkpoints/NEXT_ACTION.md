@@ -1,7 +1,11 @@
 # Next Action
 
-1. Confirm `node --version` works (Homebrew source build of node 26 may still be running: `pgrep -fl "brew.rb reinstall node"`).
-2. `corepack enable && corepack prepare pnpm@9.15.9 --activate` (or `npm i -g pnpm@9.15.9`).
-3. In repo root: `pnpm install && pnpm check`. Fix failures; record output in TEST_RESULTS.md.
-4. Mark 1B + 1C VERIFIED, commit.
-5. Start Phase 2A: `supabase init` in repo, write migration `0001_core.sql` for tables listed in docs/ARCHITECTURE + master prompt §20. Requires Docker running to verify with `supabase start` + `supabase db reset`.
+1. `node --version` — if missing, check `pgrep -f "brew.rb reinstall node"` (source build in progress).
+2. `corepack enable && corepack prepare pnpm@9.15.9 --activate`; `pnpm install && pnpm check` → mark 1C VERIFIED.
+3. 2C: add storage policy tests (curl/supabase-js: user A upload to own folder OK, to B's folder denied; signed URL works only for owner), mark VERIFIED.
+4. 2B: scaffold `apps/web` (Next.js) with @supabase/ssr: sign-up, email verify (local Mailpit — currently excluded from `supabase start`; include it), sign-in, reset password, sign-out, guest session, account deletion request, data export request. Tests.
+5. Then Phase 3A.
+
+Local Supabase for THIS project: ports 554xx (API 55421, DB 55422). Start with:
+`supabase start -x studio,realtime,edge-runtime,imgproxy,vector,logflare,supavisor,mailpit,postgres-meta`
+Another project (chef-orhan-ai-recipes) uses the default 543xx ports — do not stop it.
