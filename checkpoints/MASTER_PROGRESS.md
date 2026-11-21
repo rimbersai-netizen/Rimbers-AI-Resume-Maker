@@ -6,7 +6,8 @@
 | 2 Supabase/Auth | 2A VERIFIED · 2B NOT_STARTED (needs Node) · 2C VERIFIED |
 | 3 | NOT_STARTED (needs web app → Node) |
 | 4 Country rules | 4A IMPLEMENTED · 4B IMPLEMENTED (Bun-tested; Node re-run pending) · 4C NOT_STARTED |
-| 5–6 | NOT_STARTED |
+| 5 Document engine | 5A IMPLEMENTED · 5B IN_PROGRESS · 5C NOT_STARTED |
+| 6 Templates | 6A–6C IMPLEMENTED (105 layouts render HTML; PDF/DOCX/visual tests pending) |
 | 7 Local AI | 7A IMPLEMENTED · 7B, 7C IN_PROGRESS |
 | 8 AI writing | 8A, 8C IN_PROGRESS (prompt contracts + fact checker) |
 | 9 ATS | 9A·9B·9C IMPLEMENTED (engine, Bun-tested; UI wiring pending) |

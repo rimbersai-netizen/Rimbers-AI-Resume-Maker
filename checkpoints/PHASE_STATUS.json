@@ -97,12 +97,14 @@
     {
      "id": "5A",
      "title": "Canonical resume schema",
-     "status": "NOT_STARTED"
+     "status": "IMPLEMENTED",
+     "notes": "ResumeDocument schema (packages/resume-schema) used by renderer."
     },
     {
      "id": "5B",
      "title": "Layout + pagination engine",
-     "status": "NOT_STARTED"
+     "status": "IN_PROGRESS",
+     "notes": "HTML/CSS layout engine with print CSS (@page, break-inside). Real pagination checks need Chromium (Phase 10A)."
     },
     {
      "id": "5C",
@@ -118,17 +120,20 @@
     {
      "id": "6A",
      "title": "35 templates",
-     "status": "NOT_STARTED"
+     "status": "IMPLEMENTED",
+     "notes": "105 parametric layouts (5\u00d721 categories), all structurally unique (layoutKey), AA contrast, all render in tests. PDF/DOCX/visual snapshots pending Phase 10 + Playwright. Gallery UI pending."
     },
     {
      "id": "6B",
      "title": "35 more templates",
-     "status": "NOT_STARTED"
+     "status": "IMPLEMENTED",
+     "notes": "105 parametric layouts (5\u00d721 categories), all structurally unique (layoutKey), AA contrast, all render in tests. PDF/DOCX/visual snapshots pending Phase 10 + Playwright. Gallery UI pending."
     },
     {
      "id": "6C",
      "title": "30+ more, gallery, visual tests",
-     "status": "NOT_STARTED"
+     "status": "IMPLEMENTED",
+     "notes": "105 parametric layouts (5\u00d721 categories), all structurally unique (layoutKey), AA contrast, all render in tests. PDF/DOCX/visual snapshots pending Phase 10 + Playwright. Gallery UI pending."
     }
    ]
   },

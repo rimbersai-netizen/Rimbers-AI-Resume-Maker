@@ -40,3 +40,11 @@
   ("google cloud" → "google"). Fixed (comma-delimited). Re-run: full suite **144/144 pass**, 2 live tests skipped.
 - Live Ollama (OLLAMA_LIVE=1): health **PASS**; generation with qwen3:4b **TIMED OUT at 240 s** — CPU saturated by
   the Node source build (load avg 26–51). Timeout path behaved correctly. Re-run after build. NOT a model verification.
+
+## 2026-11-21 — 5A/5B/6A–6C template engine (under Bun)
+- Removed `split_header` column mode before counting (rendered identically to `single` → would inflate layout count).
+- tsc caught duplicate `label` key in library rules; fixed.
+- Full suite: 8 files, **267/267 pass** (+2 live skipped). template-engine 123: 105 templates, unique layoutKeys,
+  21 categories, AA contrast ≥4.5, every template renders (no tables, XSS escaped, hidden items excluded),
+  RTL/Arabic headings + bdi isolation, Urdu line-height, DE/JP date formats, photo rules, javascript: links blocked.
+- Typecheck: all 8 packages OK.
