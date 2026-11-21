@@ -16,3 +16,9 @@
 - `supabase db reset && supabase test db` run 2: **54/54 PASS**. Covers: 34 tables exist, RLS on all tables,
   profile auto-create, date constraint, cross-user select/insert/update/delete denial, composite-FK cross-attach
   denial, AI job enqueue-only, append-only audit log (update/delete/truncate), anon catalog-only access.
+
+## 2026-11-21 — Batch 2C storage
+- `bash supabase/tests/storage/storage-rls.test.sh` → **16/16 PASS**: own-folder upload/read/delete; cross-user
+  upload/read/sign/delete denied; client writes to resume-exports denied; MIME allowlist; 10 MB limit; public URL
+  disabled; owner signed URL downloads; REST cross-user profile read returns []. Test users cleaned up.
+- Node build check 03:10: progressing (~20 objects/min, 906/1803), allowed to continue per instruction.

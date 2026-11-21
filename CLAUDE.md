@@ -14,7 +14,7 @@ Languages: `docs/localization/GLOBAL_LANGUAGE_STRATEGY.md` — app language ≠ 
 
 ## Commands
 - `pnpm install` · `pnpm test` (vitest) · `pnpm typecheck` (tsc -b) · `pnpm check` (both)
-- DB: `supabase start -x studio,realtime,edge-runtime,imgproxy,vector,logflare,supavisor,mailpit,postgres-meta` · `supabase db reset` · `supabase test db` (pgTAP in `supabase/tests/database`)
+- DB: `supabase start -x studio,realtime,edge-runtime,imgproxy,vector,logflare,supavisor,mailpit,postgres-meta` · `supabase db reset` · `supabase test db` (pgTAP in `supabase/tests/database`) · `bash supabase/tests/storage/storage-rls.test.sh`
 - This project's local Supabase uses ports 554xx (API 55421, DB 55422). Another local project uses 543xx — never stop it.
 
 ## Rules

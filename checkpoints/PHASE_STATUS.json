@@ -41,8 +41,8 @@
     {
      "id": "2C",
      "title": "RLS, private storage, authz tests",
-     "status": "IMPLEMENTED",
-     "notes": "Table RLS + storage policies in migration 0002; table RLS tested in 2A suite. Storage policy tests + signed URLs pending."
+     "status": "VERIFIED",
+     "evidence": "pgTAP 54/54 (table RLS) + storage-rls.test.sh 16/16 (2026-11-21)"
     }
    ]
   },

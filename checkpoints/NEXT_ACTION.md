@@ -2,7 +2,7 @@
 
 1. `node --version` — if missing, check `pgrep -f "brew.rb reinstall node"` (source build in progress).
 2. `corepack enable && corepack prepare pnpm@9.15.9 --activate`; `pnpm install && pnpm check` → mark 1C VERIFIED.
-3. 2C: add storage policy tests (curl/supabase-js: user A upload to own folder OK, to B's folder denied; signed URL works only for owner), mark VERIFIED.
+3. (2C done.) Regression: `supabase test db && bash supabase/tests/storage/storage-rls.test.sh`.
 4. 2B: scaffold `apps/web` (Next.js) with @supabase/ssr: sign-up, email verify (local Mailpit — currently excluded from `supabase start`; include it), sign-in, reset password, sign-out, guest session, account deletion request, data export request. Tests.
 5. Then Phase 3A.
 

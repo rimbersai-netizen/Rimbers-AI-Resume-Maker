@@ -3,7 +3,7 @@
 | Phase | Status |
 |---|---|
 | 1 Foundation | 1A VERIFIED · 1B VERIFIED · 1C IMPLEMENTED (awaiting pnpm on Node) |
-| 2 Supabase/Auth | 2A VERIFIED · 2B NOT_STARTED (needs Node) · 2C IMPLEMENTED (storage tests pending) |
+| 2 Supabase/Auth | 2A VERIFIED · 2B NOT_STARTED (needs Node) · 2C VERIFIED |
 | 3–20 | NOT_STARTED |
 
 Mobile UI references + global language requirements recorded (2026-11-21) and mapped to batches 13A–C, 16A–C.
