@@ -16,9 +16,11 @@ check() { # name expected actual
 }
 
 RUN=$(date +%s)$RANDOM
-PW="T3st-$(openssl rand -hex 8)"   # throwaway local test password
-signup() {
-  curl -s "$API/auth/v1/signup" -H "apikey: $ANON" -H "Content-Type: application/json" \
+PW="T3st-Aa$(openssl rand -hex 8)"   # throwaway local test password (meets upper/lower/digit rule)
+signup() { # create a pre-confirmed user via admin API (email confirmations are on), then sign in
+  curl -s -o /dev/null "$API/auth/v1/admin/users" -H "apikey: $SERVICE" -H "Authorization: Bearer $SERVICE" \
+    -H "Content-Type: application/json" -d "{\"email\":\"$1\",\"password\":\"$PW\",\"email_confirm\":true}"
+  curl -s "$API/auth/v1/token?grant_type=password" -H "apikey: $ANON" -H "Content-Type: application/json" \
     -d "{\"email\":\"$1\",\"password\":\"$PW\"}"
 }
 jget() { python3 -c "import json,sys;d=json.load(sys.stdin);print(d$1)"; }

@@ -3,7 +3,7 @@
 | Phase | Status |
 |---|---|
 | 1 Foundation | 1A VERIFIED · 1B VERIFIED · 1C IMPLEMENTED (awaiting pnpm on Node) |
-| 2 Supabase/Auth | 2A VERIFIED · 2B NOT_STARTED (needs Node) · 2C VERIFIED |
+| 2 Supabase/Auth | 2A VERIFIED · 2B IN_PROGRESS (code + tests written; needs Node to run) · 2C VERIFIED |
 | 3 | NOT_STARTED (needs web app → Node) |
 | 4 Country rules | 4A IMPLEMENTED · 4B IMPLEMENTED (Bun-tested; Node re-run pending) · 4C NOT_STARTED |
 | 5 Document engine | 5A IMPLEMENTED · 5B IN_PROGRESS · 5C NOT_STARTED |

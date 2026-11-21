@@ -36,7 +36,8 @@
     {
      "id": "2B",
      "title": "Auth, account management, sessions",
-     "status": "NOT_STARTED"
+     "status": "IN_PROGRESS",
+     "notes": "apps/web Next.js auth written (sign-up w/ verification, sign-in, reset, guest+upgrade, sign-out, export, deletion request). Tests written (unit + SUPABASE_IT integration). Not yet installed/run \u2014 needs Node."
     },
     {
      "id": "2C",
