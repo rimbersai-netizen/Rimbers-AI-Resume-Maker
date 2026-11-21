@@ -7,7 +7,9 @@
     "dev": "next dev -p 3100 -H 127.0.0.1",
     "build": "next build",
     "start": "next start -p 3100 -H 127.0.0.1",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prebuild": "pnpm -w gen:fonts",
+    "predev": "pnpm -w gen:fonts"
   },
   "dependencies": {
     "@gars/localization": "workspace:*",
@@ -23,7 +25,8 @@
     "@gars/country-rules": "workspace:*",
     "@gars/template-engine": "workspace:*",
     "@gars/subscriptions": "workspace:*",
-    "@gars/ats-engine": "workspace:*"
+    "@gars/ats-engine": "workspace:*",
+    "@gars/resume-builder": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "19.0.7",

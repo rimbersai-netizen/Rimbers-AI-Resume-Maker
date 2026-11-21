@@ -10,6 +10,7 @@ import {
   toResumeDocument, type ResumeLayout, type SectionSetting,
 } from "@/lib/resume-settings";
 import { saveLayout, type LoadedResume } from "../actions";
+import { ExportPanel } from "./export-panel";
 
 type Status = "idle" | "saving" | "saved" | "error" | "conflict";
 const CAT_LABEL = (c: string) => c.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase()).replace("Ats", "ATS");
@@ -29,7 +30,9 @@ export function ResumeEditor({ initial, appLocale }: { initial: LoadedResume; ap
 
   const html = useMemo(() => {
     try {
-      return renderResumeHtml(toResumeDocument(initial.id, layout, profile), template, { photoSrc: initial.photoUrl ?? undefined });
+      // Same bundled fonts as the PDF renderer → preview glyphs match the export.
+      return renderResumeHtml(toResumeDocument(initial.id, layout, profile), template, { photoSrc: initial.photoUrl ?? undefined })
+        .replace("<head>", '<head><link rel="stylesheet" href="/fonts/fonts.css">');
     } catch {
       return "<p style='font-family:sans-serif;padding:24px'>Preview unavailable — complete your profile (name is required).</p>";
     }
@@ -48,6 +51,14 @@ export function ResumeEditor({ initial, appLocale }: { initial: LoadedResume; ap
   }, [layout, initial.id]);
 
   const set = (fn: (l: ResumeLayout) => ResumeLayout) => { dirty.current = true; setLayout(fn); };
+  const latest = useRef(layout);
+  latest.current = layout;
+  /** Save now (used before export so the file matches what the user sees). */
+  const flush = async () => {
+    if (!dirty.current) return;
+    const r = await saveLayout(initial.id, latest.current, updatedAt.current).catch(() => null);
+    if (r?.ok) { updatedAt.current = r.value.updatedAt; dirty.current = false; setStatus("saved"); setMessage("All changes saved"); }
+  };
   const moveSection = (i: number, to: number) => set((l) => {
     if (to < 0 || to >= l.sections.length) return l;
     const s = [...l.sections]; const [x] = s.splice(i, 1); s.splice(to, 0, x!);
@@ -90,6 +101,7 @@ export function ResumeEditor({ initial, appLocale }: { initial: LoadedResume; ap
 
       <div className={`editor-body show-${tab}`}>
         <aside className="panel" aria-label="Resume settings">
+          <ExportPanel resumeId={initial.id} beforeExport={flush} />
           <section>
             <h2>Country &amp; language</h2>
             <label htmlFor="country">Target country</label>

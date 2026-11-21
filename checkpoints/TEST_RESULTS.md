@@ -92,3 +92,22 @@
   Free plan blocks 2nd resume with upgrade message (DB count stays 1). A real user changed locale/template/page in the
   editor during testing — autosave stored them with `overridden` = [locale, templateId, pageSize]; left as the user set them.
 - Regression: storage 16/16; SUPABASE_IT 11/11; web typecheck + build OK.
+
+## 2026-11-21 05:50–06:45 — 10A PDF export (+5B, 5C)
+- Env: Playwright 1.49 Chromium download/extract **hung twice under Node 26** (zip extraction stalls after first file).
+  Workaround: downloaded zip verified with `unzip -t`, extracted manually to ~/Library/Caches/ms-playwright/
+  chromium_headless_shell-1148 + INSTALLATION_COMPLETE marker. `CHROMIUM_EXECUTABLE` env supported as fallback.
+- PDF_IT (real Chromium) found 4 real defects, all fixed:
+  1. "Software" extracted as "So\u0000ware": font ligatures (fi/ft) unmapped → ligatures off for non-Arabic-script docs.
+  2. Inter contextual alternates (+ and – beside digits) unmapped → calt off for non-Arabic-script docs.
+  3. System Arial (macOS) used for Arabic and system Devanagari before bundled Noto → output depended on host fonts →
+     bundled script fonts now precede system fonts.
+  4. Japanese rendered with SC glyph forms (Han unification) → locale-ordered script fonts (ja: JP first; ur: Nastaliq first).
+  Test corrections (not product bugs): case-insensitive match for CAPS headings; Arabic/Urdu shaped glyphs are exported via
+  /ActualText (pdf.js ignores it) → test reads ActualText; Nastaliq clusters → per-cluster ActualText.
+  Final: **114/114** (105 templates + links + pagination + 5 scripts + consistency + network blocking).
+- SUPABASE_IT + PDF_IT: export 3/3 (owner-only storage + signed URL, failed job recorded, clients can't claim). Total integration 14/14.
+- UI E2E (background tab, worker running): export → "ready" → 44 KB application/pdf; Free plan 3rd export blocked (DB count 2).
+- Preview fonts: Next bundling broke dynamic font resolution → fonts now copied to apps/web/public/fonts at prebuild
+  (511 files, 13 MB, gitignored); iframe loads Inter + Noto Sans Arabic from the same files the PDF embeds.
+- Regression: unit 333/333, pgTAP 79/79, storage 16/16, web typecheck OK. Disk 29 GB free.

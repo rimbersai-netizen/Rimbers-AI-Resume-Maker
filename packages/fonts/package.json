@@ -1,0 +1,18 @@
+{
+  "name": "@gars/fonts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@fontsource/inter": "5.1.1",
+    "@fontsource/source-serif-4": "5.1.1",
+    "@fontsource/source-sans-3": "5.1.1",
+    "@fontsource/noto-sans-arabic": "5.1.1",
+    "@fontsource/noto-nastaliq-urdu": "5.1.1",
+    "@fontsource/noto-sans-devanagari": "5.1.1",
+    "@fontsource/noto-sans-sc": "5.1.1",
+    "@fontsource/noto-sans-jp": "5.1.1"
+  }
+}

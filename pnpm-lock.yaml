@@ -35,6 +35,9 @@ importers:
       '@gars/localization':
         specifier: workspace:*
         version: link:../../packages/localization
+      '@gars/resume-builder':
+        specifier: workspace:*
+        version: link:../../packages/resume-builder
       '@gars/resume-schema':
         specifier: workspace:*
         version: link:../../packages/resume-schema
@@ -109,11 +112,53 @@ importers:
         specifier: 3.24.1
         version: 3.24.1
 
+  packages/fonts:
+    dependencies:
+      '@fontsource/inter':
+        specifier: 5.1.1
+        version: 5.1.1
+      '@fontsource/noto-nastaliq-urdu':
+        specifier: 5.1.1
+        version: 5.1.1
+      '@fontsource/noto-sans-arabic':
+        specifier: 5.1.1
+        version: 5.1.1
+      '@fontsource/noto-sans-devanagari':
+        specifier: 5.1.1
+        version: 5.1.1
+      '@fontsource/noto-sans-jp':
+        specifier: 5.1.1
+        version: 5.1.1
+      '@fontsource/noto-sans-sc':
+        specifier: 5.1.1
+        version: 5.1.1
+      '@fontsource/source-sans-3':
+        specifier: 5.1.1
+        version: 5.1.1
+      '@fontsource/source-serif-4':
+        specifier: 5.1.1
+        version: 5.1.1
+
   packages/localization:
     dependencies:
       '@gars/shared-types':
         specifier: workspace:*
         version: link:../shared-types
+
+  packages/resume-builder:
+    dependencies:
+      '@gars/country-rules':
+        specifier: workspace:*
+        version: link:../country-rules
+      '@gars/resume-schema':
+        specifier: workspace:*
+        version: link:../resume-schema
+      '@gars/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
+      '@gars/template-engine':
+        specifier: workspace:*
+        version: link:../template-engine
 
   packages/resume-schema:
     dependencies:
@@ -167,9 +212,40 @@ importers:
       '@gars/country-rules':
         specifier: workspace:*
         version: link:../packages/country-rules
+      '@gars/fonts':
+        specifier: workspace:*
+        version: link:../packages/fonts
       '@gars/template-engine':
         specifier: workspace:*
         version: link:../packages/template-engine
+
+  services/document-worker:
+    dependencies:
+      '@gars/fonts':
+        specifier: workspace:*
+        version: link:../../packages/fonts
+      '@gars/resume-builder':
+        specifier: workspace:*
+        version: link:../../packages/resume-builder
+      '@gars/resume-schema':
+        specifier: workspace:*
+        version: link:../../packages/resume-schema
+      '@gars/template-engine':
+        specifier: workspace:*
+        version: link:../../packages/template-engine
+      '@supabase/supabase-js':
+        specifier: 2.47.10
+        version: 2.47.10
+      playwright-core:
+        specifier: 1.49.1
+        version: 1.49.1
+    devDependencies:
+      pdfjs-dist:
+        specifier: 4.10.38
+        version: 4.10.38
+      playwright:
+        specifier: 1.49.1
+        version: 1.49.1
 
 packages:
 
@@ -458,6 +534,30 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@fontsource/inter@5.1.1':
+    resolution: {integrity: sha512-weN3E+rq0Xb3Z93VHJ+Rc7WOQX9ETJPTAJ+gDcaMHtjft67L58sfS65rAjC5tZUXQ2FdZ/V1/sSzCwZ6v05kJw==}
+
+  '@fontsource/noto-nastaliq-urdu@5.1.1':
+    resolution: {integrity: sha512-sE+raSfV6dVbjR2qOxXxcgB5dyuxLAUlRDLbWAOr44Wij+1gvzVOLwtP1znUOaeh1tzQAbIOJiGaXuzCeBFRXA==}
+
+  '@fontsource/noto-sans-arabic@5.1.1':
+    resolution: {integrity: sha512-uTWseOALVqIx+CLHSMC0PwJQRNwDL8qJGZstcJ7jVYxVKBK2JGIe1ylvan/POMdrlT80bGAGHLC+D1C6jgsPxg==}
+
+  '@fontsource/noto-sans-devanagari@5.1.1':
+    resolution: {integrity: sha512-cFybtjR8RNOYIkTRwsNJGuvyrmDyWE30E9dCnLF8X5Bu58WneLU6WZ/MwW5ILG6c3+g4ypnFa+UOXqPtk+qIDg==}
+
+  '@fontsource/noto-sans-jp@5.1.1':
+    resolution: {integrity: sha512-PXk7mDjiaW99xU85IIxRGekzxLz91h2usk0rfDXSVwds9Nuo4sdlDUEE8PQ1P3VLnV00FsCHfSH54uR217VXpg==}
+
+  '@fontsource/noto-sans-sc@5.1.1':
+    resolution: {integrity: sha512-v20RiW0Hp9qnHjLV5IAIwloL3IIKy2elMyMSeLuMzqyhYTCD2kHuRoe4w0aA+sd19IaWtdo2diHskIFL0Asfgw==}
+
+  '@fontsource/source-sans-3@5.1.1':
+    resolution: {integrity: sha512-WVSo2dfrhPhcrWMeSMFdwhp7afUi/3uaRHwYxKZR524rx2RtcT0vpUbftQ0SmZ0vHSqcYhS5HNnVASw9clh0sA==}
+
+  '@fontsource/source-serif-4@5.1.1':
+    resolution: {integrity: sha512-ziTw0MFHaLlVMhuk8nFytaeCU2+K5UApjoaX2OZHwyz+a9Pq6bx1ZW7c2f3xIdiuvDgPBqBB+kqgjOapAG4Waw==}
+
   '@img/sharp-darwin-arm64@0.33.5':
     resolution: {integrity: sha512-UT4p+iz/2H4twwAoLCqfA9UH5pI6DggwKEGuaPy7nCVQ8ZsiY5PIcrRvD1DzuY3qYL07NtIQcWnBSY/heikIFQ==}
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
@@ -565,6 +665,76 @@ packages:
 
   '@jridgewell/sourcemap-codec@1.6.0':
     resolution: {integrity: sha512-T7jf+5zgsZHwNJ4lvQ7/aezbyk0nNX+zJVWpmHA7VYsEx7a7qr5Rg5IbtJFqkgze5Y2sruq1RUY8Q837Od7iFw==}
+
+  '@napi-rs/canvas-android-arm64@0.1.100':
+    resolution: {integrity: sha512-hjhCKhntPv9+t4ckHymdx0phYNcVW+GKQR6Lzw2zE+pOVjOplSmtx9nNNknTjbEDLcuLZqA1y8ufKg1XfgftzQ==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [android]
+
+  '@napi-rs/canvas-darwin-arm64@0.1.100':
+    resolution: {integrity: sha512-2PcswRaC7Ly645DGt88///zuFDhJxJYdKAs1uU3mfk1atYkXufgcgLfBpk6Tm12nCQBaNt1wpybuPZ4qOhTo8A==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@napi-rs/canvas-darwin-x64@0.1.100':
+    resolution: {integrity: sha512-ePNZtj7pNIva/siZMg+HmbeozkIjqUIYdoymH8HaA3qK7LfzFN4WMBM8G6HQ9ZC+H3+Dnn5pqtiXpgLykaPOhw==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@napi-rs/canvas-linux-arm-gnueabihf@0.1.100':
+    resolution: {integrity: sha512-d5cDB48oWFGU8/XPhUOFAlySgb/VAu7D+s8fi55K1Pcfg8aPplHWqMgibhVLU8ky7Pyg/fuiVLz4Nf3JrSTuUA==}
+    engines: {node: '>= 10'}
+    cpu: [arm]
+    os: [linux]
+
+  '@napi-rs/canvas-linux-arm64-gnu@0.1.100':
+    resolution: {integrity: sha512-rDxgxRu69RvDlX/bh9o22DxLsGr8EqsNgotL9+RwQE1S0b0cqeatqsw6aW45mukm0B42DIAaAacKaYQ8cqS1nw==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@napi-rs/canvas-linux-arm64-musl@0.1.100':
+    resolution: {integrity: sha512-K3mDW66N+xT2/V439u1alFANiBUjdEx2gLiNYnCmUsva5jZMxWTjafBYwTzYK+EMFMHrUoabuU+T1BIP5CgbYQ==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@napi-rs/canvas-linux-riscv64-gnu@0.1.100':
+    resolution: {integrity: sha512-mooqUBTIsccZpnoQC4NgrC1v6C1vof39etLNMnBwCY+p0gajWJvAHLGQ6g/gGyS5YrpDW+GefSN4+Cvcr08UWw==}
+    engines: {node: '>= 10'}
+    cpu: [riscv64]
+    os: [linux]
+
+  '@napi-rs/canvas-linux-x64-gnu@0.1.100':
+    resolution: {integrity: sha512-1eCvkDCazm7FFhsT7DfGOdSaHgZVK3bt/dSBl5EWHOWmnz+I7j8tPseJqqD81NF+MH21jKUK4wQSDjN0mdhnTg==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@napi-rs/canvas-linux-x64-musl@0.1.100':
+    resolution: {integrity: sha512-20arT6lnI19S68qNlii73TSEDbECNgzMz2EpldC1V3mZFuRkeujXkcebRk0LRJe9SEUAooYiLokfMViY8IX7yA==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@napi-rs/canvas-win32-arm64-msvc@0.1.100':
+    resolution: {integrity: sha512-DZFFT1wIAg37LJw37yhMRFfjATd3vTQzjZ1Yki8u2vhO6Hi5VE6BVaGQ1aaDu7xb4iMErz+9EOwjpS7xcxFeBw==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [win32]
+
+  '@napi-rs/canvas-win32-x64-msvc@0.1.100':
+    resolution: {integrity: sha512-MyT1j3mHC2+Lu4pBi9mKyMJhtP6U7k7EldY7sj/uS5gJA65gTXt8MefJQXLJo5d/vZbuWmfxzkEUNc/urV3pHA==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [win32]
+
+  '@napi-rs/canvas@0.1.100':
+    resolution: {integrity: sha512-xglYA6q3XO5P3BNJYxVZ1IV7DLVjp1Py6nwag88YntrS+3vKHyYcMqXVS4ZztJmwz2uGvz1FWhI/4LgbR5uQDA==}
+    engines: {node: '>= 10'}
 
   '@next/env@15.1.6':
     resolution: {integrity: sha512-d9AFQVPEYNr+aqokIiPLNK/MTyt3DWa/dpKveiAaVccUadFbhFEvY6FXYX2LJO2Hv7PHnLBu2oWwB4uBuHjr/w==}
@@ -919,6 +1089,11 @@ packages:
     resolution: {integrity: sha512-KfYbmpRm0VbLjEvVa9yGwCi9GI34xvi7A/HXYWQO65CSD2u3MczUJSuwXKFIxlGsgBQizV9q5J9NHj4VG0n+pA==}
     engines: {node: '>=12.0.0'}
 
+  fsevents@2.3.2:
+    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
+    engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
+    os: [darwin]
+
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
@@ -973,8 +1148,22 @@ packages:
     resolution: {integrity: sha512-//nshmD55c46FuFw26xV/xFAaB5HF9Xdap7HJBBnrKdAd6/GxDBaNA1870O79+9ueg61cZLSVc+OaFlfmObYVQ==}
     engines: {node: '>= 14.16'}
 
+  pdfjs-dist@4.10.38:
+    resolution: {integrity: sha512-/Y3fcFrXEAsMjJXeL9J8+ZG9U01LbuWaYypvDW2ycW1jL269L3js3DVBjDJ0Up9Np1uqDXsDrRihHANhZOlwdQ==}
+    engines: {node: '>=20'}
+
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
+
+  playwright-core@1.49.1:
+    resolution: {integrity: sha512-BzmpVcs4kE2CH15rWfzpjzVGhWERJfmnXmniSyKeRZUs9Ws65m+RGIi7mjJK/euCegfn3i7jvqWeWyHe9y3Vgg==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  playwright@1.49.1:
+    resolution: {integrity: sha512-VYL8zLoNTBxVOrJBbDuRgDWa3i+mfQgDTrL8Ah9QXZ7ax4Dsj0MSq5bYgytRnDVVe+njoKnfsYkH3HzqVj5UZA==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   postcss@8.4.31:
     resolution: {integrity: sha512-PS08Iboia9mts/2ygV3eLpY5ghnUcfLV/EXTOW1E2qYxJKGGBUtNjN76FYHnMs36RmARn41bC0AZmn+rR0OVpQ==}
@@ -1318,6 +1507,22 @@ snapshots:
   '@esbuild/win32-x64@0.23.1':
     optional: true
 
+  '@fontsource/inter@5.1.1': {}
+
+  '@fontsource/noto-nastaliq-urdu@5.1.1': {}
+
+  '@fontsource/noto-sans-arabic@5.1.1': {}
+
+  '@fontsource/noto-sans-devanagari@5.1.1': {}
+
+  '@fontsource/noto-sans-jp@5.1.1': {}
+
+  '@fontsource/noto-sans-sc@5.1.1': {}
+
+  '@fontsource/source-sans-3@5.1.1': {}
+
+  '@fontsource/source-serif-4@5.1.1': {}
+
   '@img/sharp-darwin-arm64@0.33.5':
     optionalDependencies:
       '@img/sharp-libvips-darwin-arm64': 1.0.4
@@ -1394,6 +1599,54 @@ snapshots:
     optional: true
 
   '@jridgewell/sourcemap-codec@1.6.0': {}
+
+  '@napi-rs/canvas-android-arm64@0.1.100':
+    optional: true
+
+  '@napi-rs/canvas-darwin-arm64@0.1.100':
+    optional: true
+
+  '@napi-rs/canvas-darwin-x64@0.1.100':
+    optional: true
+
+  '@napi-rs/canvas-linux-arm-gnueabihf@0.1.100':
+    optional: true
+
+  '@napi-rs/canvas-linux-arm64-gnu@0.1.100':
+    optional: true
+
+  '@napi-rs/canvas-linux-arm64-musl@0.1.100':
+    optional: true
+
+  '@napi-rs/canvas-linux-riscv64-gnu@0.1.100':
+    optional: true
+
+  '@napi-rs/canvas-linux-x64-gnu@0.1.100':
+    optional: true
+
+  '@napi-rs/canvas-linux-x64-musl@0.1.100':
+    optional: true
+
+  '@napi-rs/canvas-win32-arm64-msvc@0.1.100':
+    optional: true
+
+  '@napi-rs/canvas-win32-x64-msvc@0.1.100':
+    optional: true
+
+  '@napi-rs/canvas@0.1.100':
+    optionalDependencies:
+      '@napi-rs/canvas-android-arm64': 0.1.100
+      '@napi-rs/canvas-darwin-arm64': 0.1.100
+      '@napi-rs/canvas-darwin-x64': 0.1.100
+      '@napi-rs/canvas-linux-arm-gnueabihf': 0.1.100
+      '@napi-rs/canvas-linux-arm64-gnu': 0.1.100
+      '@napi-rs/canvas-linux-arm64-musl': 0.1.100
+      '@napi-rs/canvas-linux-riscv64-gnu': 0.1.100
+      '@napi-rs/canvas-linux-x64-gnu': 0.1.100
+      '@napi-rs/canvas-linux-x64-musl': 0.1.100
+      '@napi-rs/canvas-win32-arm64-msvc': 0.1.100
+      '@napi-rs/canvas-win32-x64-msvc': 0.1.100
+    optional: true
 
   '@next/env@15.1.6': {}
 
@@ -1735,6 +1988,9 @@ snapshots:
 
   expect-type@1.4.0: {}
 
+  fsevents@2.3.2:
+    optional: true
+
   fsevents@2.3.3:
     optional: true
 
@@ -1784,7 +2040,19 @@ snapshots:
 
   pathval@2.0.1: {}
 
+  pdfjs-dist@4.10.38:
+    optionalDependencies:
+      '@napi-rs/canvas': 0.1.100
+
   picocolors@1.1.1: {}
+
+  playwright-core@1.49.1: {}
+
+  playwright@1.49.1:
+    dependencies:
+      playwright-core: 1.49.1
+    optionalDependencies:
+      fsevents: 2.3.2
 
   postcss@8.4.31:
     dependencies:

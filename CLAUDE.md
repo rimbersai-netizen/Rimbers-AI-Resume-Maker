@@ -15,6 +15,8 @@ Languages: `docs/localization/GLOBAL_LANGUAGE_STRATEGY.md` — app language ≠ 
 ## Commands
 - `pnpm install` · `pnpm test` (vitest) · `pnpm typecheck` (tsc -b) · `pnpm check` (both)
 - DB: `supabase start -x studio,realtime,edge-runtime,imgproxy,vector,logflare,supavisor,postgres-meta` · `supabase db reset` · `supabase test db` (pgTAP in `supabase/tests/database`) · `bash supabase/tests/storage/storage-rls.test.sh`
+- PDF: `PDF_IT=1 pnpm vitest run services/document-worker` (real Chromium). Worker: `cd services/document-worker && set -a && . ./.env.local && set +a && pnpm start`. Integration: `SUPABASE_IT=1 PDF_IT=1 pnpm vitest run tests/integration`.
+- Catalog/fonts are generated: `pnpm gen:catalog` (migration from template/country sources), `pnpm gen:fonts` (web preview fonts; runs on prebuild).
 - This project's local Supabase uses ports 554xx (API 55421, DB 55422). Another local project uses 543xx — never stop it.
 
 ## Rules
@@ -22,6 +24,7 @@ Languages: `docs/localization/GLOBAL_LANGUAGE_STRATEGY.md` — app language ≠ 
 - No AI calls from clients; only `services/ai-worker` talks to Ollama on 127.0.0.1. Cloud fallback off unless configured + consented.
 - No "guaranteed ATS" claims. Country rules = conventions with sources + reviewDate; user-overridable.
 - Sensitive fields (photo, DOB, nationality) always optional.
+- Renderer: preview and PDF share renderResumeHtml + @gars/fonts. Latin docs disable ligatures/calt (ATS text extraction); bundled script fonts precede system fonts.
 - Every public table has RLS; child rows use composite FK (parent_id, user_id). New tables need RLS + pgTAP tests.
 - Entitlements server-side only. Webhooks verified + idempotent.
 - Machine: Intel i7, 16 GB RAM, ~35 GB free disk. One LLM at a time; no parallel heavy builds. AI: qwen3:4b primary, llama3.2:3b fallback.

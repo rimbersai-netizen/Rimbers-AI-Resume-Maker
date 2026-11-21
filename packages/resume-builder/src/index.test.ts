@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { MasterProfile } from "@gars/resume-schema";
 import { renderResumeHtml, getTemplate } from "@gars/template-engine";
-import { changeCountry, defaultLayout, flag, isPremiumTemplate, override, overrideSections, recommendationNotes, toResumeDocument } from "./resume-settings";
+import { changeCountry, defaultLayout, flag, isPremiumTemplate, override, overrideSections, recommendationNotes, toResumeDocument } from "./index";
 
 const profile = MasterProfile.parse({
   schemaVersion: 1, personal: { fullName: "Ayesha Khan", email: "a@example.com" }, summary: "Engineer.",

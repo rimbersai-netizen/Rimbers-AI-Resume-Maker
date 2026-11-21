@@ -1,0 +1,22 @@
+{
+  "name": "@gars/document-worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "tsx src/main.ts"
+  },
+  "dependencies": {
+    "@gars/resume-builder": "workspace:*",
+    "@gars/resume-schema": "workspace:*",
+    "@gars/template-engine": "workspace:*",
+    "@supabase/supabase-js": "2.47.10",
+    "playwright-core": "1.49.1",
+    "@gars/fonts": "workspace:*"
+  },
+  "devDependencies": {
+    "pdfjs-dist": "4.10.38",
+    "playwright": "1.49.1"
+  }
+}

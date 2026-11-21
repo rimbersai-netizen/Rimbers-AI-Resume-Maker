@@ -3,5 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "dependencies": {"@gars/country-rules": "workspace:*", "@gars/template-engine": "workspace:*"}
+  "dependencies": {
+    "@gars/country-rules": "workspace:*",
+    "@gars/template-engine": "workspace:*",
+    "@gars/fonts": "workspace:*"
+  }
 }

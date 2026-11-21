@@ -36,14 +36,42 @@ function monthNames(locale: string): string[] {
   }
 }
 
-const FONT_STACKS: Record<TemplateSpec["typography"]["fontStack"], string> = {
-  sans: `"Inter", "Helvetica Neue", Arial`,
-  serif: `"Source Serif 4", Georgia, "Times New Roman"`,
-  humanist: `"Source Sans 3", "Segoe UI", Arial`,
-  mono_accent: `"Inter", Arial`,
+/** Bundled primary (Latin) font per template style — must match services/document-worker/src/fonts.ts. */
+const PRIMARY_FONT: Record<TemplateSpec["typography"]["fontStack"], string> = {
+  sans: `"Inter"`,
+  serif: `"Source Serif 4"`,
+  humanist: `"Source Sans 3"`,
+  mono_accent: `"Inter"`,
 };
-// Script fallbacks appended to every stack so Arabic/Urdu/Hindi/CJK always have glyphs.
-const SCRIPT_FALLBACK = `"Noto Sans Arabic", "Noto Nastaliq Urdu", "Noto Sans Devanagari", "Noto Sans SC", "Noto Sans JP", sans-serif`;
+const SYSTEM_FALLBACK: Record<TemplateSpec["typography"]["fontStack"], string> = {
+  sans: `"Helvetica Neue", Arial`,
+  serif: `Georgia, "Times New Roman"`,
+  humanist: `"Segoe UI", Arial`,
+  mono_accent: `"Helvetica Neue", Arial`,
+};
+/**
+ * Bundled script fonts, ordered by RESUME language. They come before any system font so output never depends on
+ * what the server has installed (e.g. macOS Arial has Arabic glyphs; Linux does not). Order matters where scripts
+ * share code points: Urdu needs Nastaliq before Naskh; Japanese needs JP glyph forms before SC (Han unification).
+ */
+function scriptFonts(locale: string): string {
+  const base = locale.split("-")[0];
+  const order: Record<string, string[]> = {
+    ur: ["Noto Nastaliq Urdu", "Noto Sans Arabic"],
+    ar: ["Noto Sans Arabic", "Noto Nastaliq Urdu"],
+    fa: ["Noto Sans Arabic", "Noto Nastaliq Urdu"],
+    ja: ["Noto Sans JP", "Noto Sans SC"],
+    zh: ["Noto Sans SC", "Noto Sans JP"],
+    hi: ["Noto Sans Devanagari"],
+  };
+  const all = ["Noto Sans Arabic", "Noto Nastaliq Urdu", "Noto Sans Devanagari", "Noto Sans SC", "Noto Sans JP"];
+  const first = order[base!] ?? [];
+  return [...first, ...all.filter((f) => !first.includes(f))].map((f) => `"${f}"`).join(", ");
+}
+
+export function fontStack(style: TemplateSpec["typography"]["fontStack"], locale: string): string {
+  return `${PRIMARY_FONT[style]}, ${scriptFonts(locale)}, ${SYSTEM_FALLBACK[style]}, sans-serif`;
+}
 
 function css(spec: TemplateSpec, pageSize: "A4" | "Letter", locale: string): string {
   const gap = { compact: 8, normal: 12, airy: 16 }[spec.spacing];
@@ -71,7 +99,8 @@ function css(spec: TemplateSpec, pageSize: "A4" | "Letter", locale: string): str
 @page { size: ${pageSize}; margin: 14mm 14mm 16mm; }
 :root { --accent: ${spec.accent}; --text: #1a1d29; --muted: #4a4f63; }
 * { box-sizing: border-box; }
-html { font-family: ${FONT_STACKS[spec.typography.fontStack]}, ${SCRIPT_FALLBACK}; font-size: ${spec.typography.baseSizePt}pt; line-height: ${lh}; color: var(--text); }
+html { font-family: ${fontStack(spec.typography.fontStack, locale)}; font-size: ${spec.typography.baseSizePt}pt; line-height: ${lh}; color: var(--text); }
+${/^(ar|ur|fa)\b/.test(locale) ? "" : "/* Ligatures (fi, ft) and contextual alternates (Inter's +/– next to digits) become glyphs with no Unicode mapping,\n   so PDF text extraction / ATS parsers can't read them. Arabic-script\n   documents keep their required joining forms. */\nhtml { font-variant-ligatures: no-common-ligatures no-discretionary-ligatures no-contextual; font-feature-settings: \"liga\" 0, \"dlig\" 0, \"calt\" 0; }"}
 body { margin: 0; }
 .resume { max-width: 100%; }
 header.top { ${header} margin-block-end: ${gap + 4}px; }

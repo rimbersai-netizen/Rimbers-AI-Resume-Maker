@@ -9,9 +9,10 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc -b packages/shared-types packages/resume-schema packages/validation packages/country-rules packages/localization packages/ats-engine packages/ai-engine packages/template-engine packages/subscriptions",
+    "typecheck": "tsc -b packages/shared-types packages/resume-schema packages/validation packages/country-rules packages/localization packages/ats-engine packages/ai-engine packages/template-engine packages/subscriptions packages/resume-builder packages/fonts services/document-worker",
     "check": "pnpm typecheck && pnpm test",
-    "gen:catalog": "tsx scripts/src/gen-catalog.ts"
+    "gen:catalog": "tsx scripts/src/gen-catalog.ts",
+    "gen:fonts": "tsx scripts/src/copy-fonts.ts"
   },
   "devDependencies": {
     "typescript": "5.6.3",

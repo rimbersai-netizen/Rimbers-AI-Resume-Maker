@@ -36,16 +36,19 @@ async function ctx() {
 
 /** Server-side entitlement decision (never trust the client). */
 async function entitlement(supabase: Awaited<ReturnType<typeof createClient>>, feature: Feature) {
-  const [subs, ents, resumes] = await Promise.all([
+  const now = new Date();
+  const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
+  const [subs, ents, resumes, exportsMonth] = await Promise.all([
     supabase.from("subscriptions").select("plan_id,status,current_period_end,cancel_at_period_end"),
     supabase.from("entitlements").select("feature,source,valid_from,valid_until"),
     supabase.from("resume_documents").select("id", { count: "exact", head: true }).is("deleted_at", null),
+    supabase.from("document_exports").select("id", { count: "exact", head: true }).gte("created_at", monthStart).in("status", ["queued", "running", "succeeded"]),
   ]);
   return evaluate(feature, {
     subscriptions: (subs.data ?? []) as SubscriptionRow[],
     entitlements: (ents.data ?? []) as EntitlementRow[],
-    usage: { resumes: resumes.count ?? 0, ai_requests_month: 0, exports_month: 0 },
-    now: new Date(),
+    usage: { resumes: resumes.count ?? 0, ai_requests_month: 0, exports_month: exportsMonth.count ?? 0 },
+    now,
   });
 }
 
@@ -140,4 +143,37 @@ export async function deleteResume(id: string): Promise<ActionResult> {
   const { error, count } = await supabase.from("resume_documents").update({ deleted_at: new Date().toISOString() }, { count: "exact" }).eq("id", id).is("deleted_at", null);
   if (error || !count) return { ok: false, kind: "error", message: "Could not delete the resume." };
   return { ok: true };
+}
+
+export interface ExportState { id: string; status: "queued" | "running" | "succeeded" | "failed"; url?: string; error?: string }
+
+/** Queue a PDF export (quota checked server-side). The document worker renders it. */
+export async function requestExport(resumeId: string, format: "pdf" | "docx"): Promise<ActionResult<{ id: string }>> {
+  const { supabase, user } = await ctx();
+  if (!user) return { ok: false, kind: "auth", message: "Please sign in again." };
+  if (!z.string().uuid().safeParse(resumeId).success) return { ok: false, kind: "invalid", message: "Unknown resume" };
+  if (format === "docx") return { ok: false, kind: "error", message: "Editable Word export is coming soon." };
+  const quota = await entitlement(supabase, "export_pdf");
+  if (!quota.allowed) {
+    return { ok: false, kind: "entitlement", upgradeTo: quota.upgradeTo,
+      message: `You have used this month's downloads on the ${quota.plan === "FREE" ? "Free" : quota.plan} plan. Upgrade${quota.upgradeTo ? ` to ${PLAN_NAMES[quota.upgradeTo]}` : ""} for more.` };
+  }
+  const ins = await supabase.from("document_exports").insert({ user_id: user.id, resume_id: resumeId, format }).select("id").single();
+  if (ins.error || !ins.data) return { ok: false, kind: "error", message: "Could not start the export." };
+  return { ok: true, value: { id: ins.data.id } };
+}
+
+/** Poll an export; when ready, returns a short-lived signed download URL (private bucket). */
+export async function getExport(exportId: string): Promise<ExportState | null> {
+  const { supabase, user } = await ctx();
+  if (!user || !z.string().uuid().safeParse(exportId).success) return null;
+  const { data } = await supabase.from("document_exports").select("id,status,storage_path,error,resume_id").eq("id", exportId).maybeSingle();
+  if (!data) return null;
+  if (data.status !== "succeeded" || !data.storage_path) {
+    return { id: data.id, status: data.status, error: data.status === "failed" ? "The export failed. Please try again." : undefined };
+  }
+  const { data: doc } = await supabase.from("resume_documents").select("title").eq("id", data.resume_id).maybeSingle();
+  const name = `${(doc?.title ?? "resume").replace(/[^\p{L}\p{N} _-]+/gu, "").trim().slice(0, 80) || "resume"}.pdf`;
+  const { data: signed } = await supabase.storage.from("resume-exports").createSignedUrl(data.storage_path, 300, { download: name });
+  return { id: data.id, status: "succeeded", url: signed?.signedUrl };
 }

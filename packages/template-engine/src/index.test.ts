@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ResumeDocument } from "@gars/resume-schema";
 import { analyzeResume } from "@gars/ats-engine";
 import { getCountryRule } from "@gars/country-rules";
-import { layoutKey, recommendTemplates, renderResumeHtml, RESUME_HEADINGS, TEMPLATE_CATEGORIES, TEMPLATES, type TemplateSpec } from "./index";
+import { fontStack, layoutKey, recommendTemplates, renderResumeHtml, RESUME_HEADINGS, TEMPLATE_CATEGORIES, TEMPLATES, type TemplateSpec } from "./index";
 
 const doc = (over: Record<string, unknown> = {}) => ResumeDocument.parse({
   schemaVersion: 1, id: "r1", title: "CV", country: "US", locale: "en", templateId: "ats-minimal-01", pageSize: "Letter",
@@ -77,6 +77,17 @@ describe("render details", () => {
     expect(html).toContain('<bdi dir="ltr">ayesha@example.com</bdi>');
     expect(html).toContain('<bdi dir="ltr">+966 55 123 4567</bdi>');
     expect(html).toContain("size: A4");
+  });
+  it("ligatures are disabled for Latin documents but not for Arabic-script ones", () => {
+    expect(renderResumeHtml(doc(), TEMPLATES[0]!)).toContain('"liga" 0');
+    expect(renderResumeHtml(doc({ locale: "ar" }), TEMPLATES[0]!)).not.toContain('"liga" 0');
+  });
+  it("bundled script fonts precede system fonts, ordered by resume language", () => {
+    const ar = fontStack("sans", "ar");
+    expect(ar.indexOf("Noto Sans Arabic")).toBeLessThan(ar.indexOf("Arial"));
+    expect(fontStack("sans", "ur").indexOf("Nastaliq")).toBeLessThan(fontStack("sans", "ur").indexOf("Noto Sans Arabic"));
+    expect(fontStack("sans", "ja").indexOf("Noto Sans JP")).toBeLessThan(fontStack("sans", "ja").indexOf("Noto Sans SC"));
+    expect(fontStack("serif", "zh").startsWith('"Source Serif 4", "Noto Sans SC"')).toBe(true);
   });
   it("Urdu gets taller line height for Nastaliq", () => expect(renderResumeHtml(doc({ locale: "ur" }), TEMPLATES[0]!)).toMatch(/line-height: 1\.9/));
   it("country date convention: DE uses MM.YYYY, JP uses 年月", () => {

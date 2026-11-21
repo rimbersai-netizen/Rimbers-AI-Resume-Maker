@@ -108,14 +108,14 @@
     {
      "id": "5B",
      "title": "Layout + pagination engine",
-     "status": "IN_PROGRESS",
-     "notes": "HTML/CSS layout engine with print CSS (@page, break-inside). Real pagination checks need Chromium (Phase 10A)."
+     "status": "VERIFIED",
+     "evidence": "Print CSS pagination verified in Chromium: 18-role resume \u2192 \u22653 A4 pages, no blank page, all entries present (no clipped content); all 105 templates \u22642 pages for standard profile, no blank pages."
     },
     {
      "id": "5C",
      "title": "Live preview + consistency tests",
-     "status": "IMPLEMENTED",
-     "notes": "Live preview (same renderResumeHtml used for export), autosave, Edit/Preview tabs on mobile, template gallery w/ category filters + premium lock, section order/visibility, per-entry hiding. Not VERIFIED: preview\u2194PDF consistency test needs Phase 10A."
+     "status": "VERIFIED",
+     "evidence": "Live preview uses the same renderer and the same bundled font files as the PDF (public/fonts generated from @gars/fonts); automated preview\u2194PDF text consistency test passes."
     }
    ]
   },
@@ -127,19 +127,19 @@
      "id": "6A",
      "title": "35 templates",
      "status": "IMPLEMENTED",
-     "notes": "105 templates seeded to DB via generated migration (sync test); gallery in editor. PDF/DOCX/visual tests pending Phase 10."
+     "notes": "105 templates: PDF verified per template (text, pages, no unmapped glyphs). Pending for VERIFIED: DOCX per template (10B) + visual regression snapshots (10C)."
     },
     {
      "id": "6B",
      "title": "35 more templates",
      "status": "IMPLEMENTED",
-     "notes": "105 templates seeded to DB via generated migration (sync test); gallery in editor. PDF/DOCX/visual tests pending Phase 10."
+     "notes": "105 templates: PDF verified per template (text, pages, no unmapped glyphs). Pending for VERIFIED: DOCX per template (10B) + visual regression snapshots (10C)."
     },
     {
      "id": "6C",
      "title": "30+ more, gallery, visual tests",
      "status": "IMPLEMENTED",
-     "notes": "105 templates seeded to DB via generated migration (sync test); gallery in editor. PDF/DOCX/visual tests pending Phase 10."
+     "notes": "105 templates: PDF verified per template (text, pages, no unmapped glyphs). Pending for VERIFIED: DOCX per template (10B) + visual regression snapshots (10C)."
     }
    ]
   },
@@ -221,7 +221,8 @@
     {
      "id": "10A",
      "title": "PDF",
-     "status": "NOT_STARTED"
+     "status": "VERIFIED",
+     "evidence": "services/document-worker: Chromium (JS off, network blocked except bundled fonts/data URIs) renders renderResumeHtml \u2192 tagged PDF; queue via claim_document_export (service role, skip-locked, retries \u22643); upload to private resume-exports/<uid>/\u2026; owner-only signed download; export quota enforced. PDF_IT 114/114 (all 105 templates: text extractable, no blank pages, no unmapped glyphs; links; pagination; ar/ur/hi/ja/zh fonts embedded + text extractable incl. ActualText; preview\u2194PDF text consistency; network blocking). SUPABASE_IT export 3/3. UI E2E: export \u2192 ready \u2192 44 KB PDF; Free quota blocks 3rd export (2026-11-21)."
     },
     {
      "id": "10B",
@@ -310,7 +311,7 @@
      "id": "14A",
      "title": "Plans, quotas, entitlements",
      "status": "IMPLEMENTED",
-     "notes": "Engine tested. Server-side enforcement wired + verified for create_resume (Free=1, blocked in UI E2E) and premium templates (create/save). AI + export quota enforcement pending (Phases 7B/10A)."
+     "notes": "Server-side enforcement verified for create_resume, premium templates, export_pdf (monthly). AI request quota pending (7B)."
     },
     {
      "id": "14B",
