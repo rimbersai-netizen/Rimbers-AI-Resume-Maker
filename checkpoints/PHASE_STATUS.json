@@ -74,12 +74,14 @@
     {
      "id": "4A",
      "title": "Country config schema + sources",
-     "status": "NOT_STARTED"
+     "status": "IMPLEMENTED",
+     "notes": "packages/country-rules: 50 tests pass under Bun (86/86 total); re-run under Node/pnpm to mark VERIFIED. All 30 rules reviewStatus=unreviewed (needs human review before DB status 'published')."
     },
     {
      "id": "4B",
      "title": "Initial 30 country conventions",
-     "status": "NOT_STARTED"
+     "status": "IMPLEMENTED",
+     "notes": "packages/country-rules: 50 tests pass under Bun (86/86 total); re-run under Node/pnpm to mark VERIFIED. All 30 rules reviewStatus=unreviewed (needs human review before DB status 'published')."
     },
     {
      "id": "4C",

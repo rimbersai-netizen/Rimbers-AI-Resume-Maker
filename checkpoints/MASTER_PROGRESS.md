@@ -4,7 +4,9 @@
 |---|---|
 | 1 Foundation | 1A VERIFIED · 1B VERIFIED · 1C IMPLEMENTED (awaiting pnpm on Node) |
 | 2 Supabase/Auth | 2A VERIFIED · 2B NOT_STARTED (needs Node) · 2C VERIFIED |
-| 3–20 | NOT_STARTED |
+| 3 | NOT_STARTED (needs web app → Node) |
+| 4 Country rules | 4A IMPLEMENTED · 4B IMPLEMENTED (Bun-tested; Node re-run pending) · 4C NOT_STARTED |
+| 5–20 | NOT_STARTED |
 
 Mobile UI references + global language requirements recorded (2026-11-21) and mapped to batches 13A–C, 16A–C.
 Acceptance workflows A–L: none verified yet (H partially covered at DB level).

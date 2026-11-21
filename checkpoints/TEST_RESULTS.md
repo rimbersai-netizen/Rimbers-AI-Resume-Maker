@@ -22,3 +22,7 @@
   upload/read/sign/delete denied; client writes to resume-exports denied; MIME allowlist; 10 MB limit; public URL
   disabled; owner signed URL downloads; REST cross-user profile read returns []. Test users cleaned up.
 - Node build check 03:10: progressing (~20 objects/min, 906/1803), allowed to continue per instruction.
+
+## 2026-11-21 — Batch 4A/4B (under Bun, Node still compiling)
+- `vitest run` → 3 files, **86/86 pass** (country-rules 50). `tsc -b` 4 packages → OK.
+- Country data honesty: all 30 entries `unreviewed`; sources are review entry points (gov/EU/editorial), not per-value proof.
