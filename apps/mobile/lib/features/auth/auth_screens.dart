@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/brand.dart';
 import '../../core/theme.dart';
 import '../../core/widgets.dart';
@@ -56,6 +57,39 @@ class _AuthScaffold extends StatelessWidget {
       );
 }
 
+/// Google sign-in through Supabase OAuth in the system browser; the rimbers://login-callback deep link brings the session back to the app.
+class GoogleSignInButton extends StatefulWidget {
+  const GoogleSignInButton({super.key});
+  @override
+  State<GoogleSignInButton> createState() => _GoogleSignInButtonState();
+}
+
+class _GoogleSignInButtonState extends State<GoogleSignInButton> {
+  bool _busy = false;
+
+  Future<void> _go() async {
+    setState(() => _busy = true);
+    try {
+      await Supabase.instance.client.auth.signInWithOAuth(OAuthProvider.google, redirectTo: 'rimbers://login-callback', authScreenLaunchMode: LaunchMode.externalApplication);
+    } catch (e) {
+      if (mounted) toast(context, 'Google sign-in is not available right now.');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Column(children: [
+        const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Text('or continue with', style: TextStyle(color: Tokens.textSecondary, fontSize: 13))),
+        OutlinedButton.icon(
+          onPressed: _busy ? null : _go,
+          style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(50), side: const BorderSide(color: Tokens.border), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Tokens.rButton))),
+          icon: const Text('G', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 20, color: Color(0xFF4285F4))),
+          label: Text(_busy ? 'Opening Google…' : 'Continue with Google', style: const TextStyle(color: Tokens.navy, fontWeight: FontWeight.w600)),
+        ),
+      ]);
+}
+
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
   @override
@@ -100,6 +134,7 @@ class _SignInState extends State<SignInScreen> {
           Align(alignment: AlignmentDirectional.centerEnd, child: TextButton(onPressed: () => context.push('/forgot-password'), child: const Text('Forgot password?'))),
           if (_error != null) Padding(padding: const EdgeInsets.only(bottom: 12), child: ErrorBanner(_error!)),
           GradientButton(label: 'Sign In', busy: _busy, onPressed: _submit),
+          const GoogleSignInButton(),
           const SizedBox(height: 16),
           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             const Text("Don't have an account?", style: TextStyle(color: Tokens.textSecondary)),
@@ -164,6 +199,7 @@ class _SignUpState extends State<SignUpScreen> {
         const SizedBox(height: 16),
         if (_error != null) Padding(padding: const EdgeInsets.only(bottom: 12), child: ErrorBanner(_error!)),
         GradientButton(label: 'Create Account', busy: _busy, onPressed: _submit),
+        const GoogleSignInButton(),
         TextButton(onPressed: () => context.go('/sign-in'), child: const Text('I already have an account')),
       ],
     );

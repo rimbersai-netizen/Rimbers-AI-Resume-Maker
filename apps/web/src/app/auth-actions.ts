@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -100,4 +101,17 @@ export async function requestAccountDeletion(_: FormState, form: FormData): Prom
   if (error) return { error: "Could not submit the request. Please try again." };
   await supabase.rpc("write_audit_log", { p_action: "account.deletion_requested", p_entity_type: "user", p_entity_id: user.id, p_metadata: {} });
   return { message: "Deletion requested. We will process it and permanently remove your account, resumes and files." };
+}
+
+/** Google sign-in via Supabase OAuth. The redirect target is built from the request host so it matches the allow-list entry (localhost vs 127.0.0.1). */
+export async function signInWithGoogle(form: FormData): Promise<void> {
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  const proto = h.get("x-forwarded-proto") ?? (host?.startsWith("localhost") || host?.startsWith("127.") ? "http" : "https");
+  const origin = host ? `${proto}://${host}` : site();
+  const next = safeNext(form.get("next"));
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}` } });
+  if (error || !data.url) redirect("/sign-in?error=google_unavailable");
+  redirect(data.url);
 }
