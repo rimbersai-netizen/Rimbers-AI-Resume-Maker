@@ -1,7 +1,7 @@
 import { vi } from "vitest";
 vi.mock("server-only", () => ({}));
 import { describe, expect, it } from "vitest";
-import { htmlToText, parseSalaryMin, passesPrefs, type Job, PrefsSchema } from "./jobs";
+import { htmlToText, looksGerman, parseSalaryMin, passesPrefs, type Job, PrefsSchema } from "./jobs";
 import { containsContact } from "./community";
 
 const job = (o: Partial<Job> = {}): Job => ({ key: "remotive:1", source: "remotive", externalId: "1", title: "Senior Software Engineer", company: "Acme", location: "Worldwide",
@@ -37,6 +37,15 @@ describe("preference filtering", () => {
   it("rejects invalid preferences", () => {
     expect(PrefsSchema.safeParse({ roles: ["astronaut"] }).success).toBe(false);
     expect(PrefsSchema.safeParse({ postedWithinDays: 2 }).success).toBe(false);
+  });
+});
+
+describe("language filter", () => {
+  it("drops German postings but keeps English ones", () => {
+    expect(looksGerman("Sachbearbeiter (m/w/d) Kundenservice")).toBe(true);
+    expect(looksGerman("Wir suchen dich für unser Team. Deine Aufgaben: Du bist zuständig für die Betreuung und wir bieten eine flexible Arbeitszeit mit Erfahrung in der Praxis.")).toBe(true);
+    expect(looksGerman("We are looking for a senior Flutter developer with experience in state management, testing and CI/CD. You will work with the product team and ship features every week.")).toBe(false);
+    expect(looksGerman("Senior Product Designer")).toBe(false);
   });
 });
 

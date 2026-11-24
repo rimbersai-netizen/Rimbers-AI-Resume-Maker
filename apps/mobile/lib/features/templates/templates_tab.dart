@@ -19,21 +19,30 @@ class _LiveThumb extends StatefulWidget {
 }
 
 class _LiveThumbState extends State<_LiveThumb> {
+  static const _pageWidth = 820.0; // the templates are laid out as an ~A4 page this wide
   WebViewController? _web;
+  String? _html;
+  double _scale = 0;
   bool _failed = false;
 
   @override
   void initState() {
     super.initState();
     Api.instance.templatePreviewHtml(widget.templateId).then((html) {
-      if (!mounted) return;
-      setState(() => _web = WebViewController()
-        ..setJavaScriptMode(JavaScriptMode.disabled)
-        ..setBackgroundColor(Colors.white)
-        ..loadHtmlString(html, baseUrl: Config.apiBase));
+      if (mounted) setState(() => _html = html);
     }).catchError((_) {
       if (mounted) setState(() => _failed = true);
     });
+  }
+
+  /// Lay the page out at its real width and shrink it with CSS so the WHOLE page fits the card (WebViews ignore the viewport hint).
+  String _scaled(String html, double scale) {
+    final s = scale.toStringAsFixed(4);
+    final meta = '<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">';
+    var out = html.replaceAll(RegExp(r'<meta[^>]*name="viewport"[^>]*>', caseSensitive: false), '');
+    out = out.replaceFirst('<head>', '<head>$meta<style>html,body{margin:0!important;padding:0!important;overflow:hidden!important;background:#fff}#__fit{width:${_pageWidth.toInt()}px;transform-origin:0 0;transform:scale($s)}</style>');
+    out = out.replaceFirstMapped(RegExp(r'<body([^>]*)>', caseSensitive: false), (m) => '<body${m[1]}><div id="__fit">');
+    return out.replaceFirst('</body>', '</div></body>');
   }
 
   @override
@@ -43,7 +52,19 @@ class _LiveThumbState extends State<_LiveThumb> {
     return Container(
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: border, boxShadow: Tokens.shadow),
       clipBehavior: Clip.antiAlias,
-      child: _web == null ? const Center(child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2))) : IgnorePointer(child: WebViewWidget(controller: _web!)),
+      child: LayoutBuilder(builder: (context, c) {
+        final html = _html;
+        if (html == null || c.maxWidth <= 0) return const Center(child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2)));
+        final scale = c.maxWidth / _pageWidth;
+        if (_web == null || (scale - _scale).abs() > 0.001) {
+          _scale = scale;
+          _web = WebViewController()
+            ..setJavaScriptMode(JavaScriptMode.disabled)
+            ..setBackgroundColor(Colors.white)
+            ..loadHtmlString(_scaled(html, scale), baseUrl: Config.apiBase);
+        }
+        return IgnorePointer(child: WebViewWidget(controller: _web!));
+      }),
     );
   }
 }

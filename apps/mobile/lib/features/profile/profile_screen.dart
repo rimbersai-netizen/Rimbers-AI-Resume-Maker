@@ -16,7 +16,10 @@ const _steps = ['Personal', 'Experience', 'Education', 'Skills'];
 
 class ProfileScreen extends ConsumerStatefulWidget {
   final int initialStep;
-  const ProfileScreen({super.key, this.initialStep = 0});
+  /// Test seams; the app uses the backend API.
+  final Future<LoadedProfile> Function()? loader;
+  final Future<String> Function(LoadedProfile)? saver;
+  const ProfileScreen({super.key, this.initialStep = 0, this.loader, this.saver});
   @override
   ConsumerState<ProfileScreen> createState() => _ProfileState();
 }
@@ -38,7 +41,7 @@ class _ProfileState extends ConsumerState<ProfileScreen> {
   Future<void> _load() async {
     setState(() => _loadError = null);
     try {
-      final p = await Api.instance.loadProfile();
+      final p = await (widget.loader ?? Api.instance.loadProfile)();
       if (mounted) setState(() => _p = p);
     } on ApiException catch (e) {
       if (mounted) setState(() => _loadError = e.message);
@@ -53,7 +56,7 @@ class _ProfileState extends ConsumerState<ProfileScreen> {
     setState(() { _saving = true; _issues = {}; _message = null; });
     pruneBlankEntries(_data);
     try {
-      final updated = await Api.instance.saveProfile(_p!);
+      final updated = await (widget.saver ?? (lp) => Api.instance.saveProfile(lp))(_p!);
       _p!.updatedAt = updated;
       ref.invalidate(profileProvider);
       if (mounted) setState(() => _dirty = false);

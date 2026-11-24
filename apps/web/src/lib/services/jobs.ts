@@ -60,7 +60,7 @@ const TTL_MS = 6 * 60 * 60 * 1000; // Remotive asks API users to poll sparingly 
 const cache = new Map<string, { at: number; jobs: Job[] }>();
 
 const ENT: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", ndash: "–", mdash: "—", rsquo: "’", lsquo: "‘", ldquo: "“", rdquo: "”", hellip: "…", bull: "•" };
-export function htmlToText(html: string): string {
+function stripOnce(html: string): string {
   return html
     .replace(/<\s*(script|style)[^>]*>[\s\S]*?<\/\s*\1\s*>/gi, " ")
     .replace(/<\s*br\s*\/?>|<\/\s*(p|div|h[1-6]|ul|ol|tr)\s*>/gi, "\n")
@@ -71,6 +71,12 @@ export function htmlToText(html: string): string {
       return ENT[e.toLowerCase()] ?? m;
     })
     .replace(/[ \t ]+/g, " ").replace(/\s*\n\s*/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+/** Some feeds HTML-encode their HTML ("&lt;p&gt;"): decode once, and if tags appear, strip again. */
+export function htmlToText(html: string): string {
+  const once = stripOnce(html);
+  return /<\/?[a-z][^>]*>/i.test(once) ? stripOnce(once) : once;
 }
 
 export function parseSalaryMin(text: string | undefined): number | undefined {
@@ -125,6 +131,14 @@ async function loadArbeitnow(): Promise<Job[]> {
   });
 }
 
+const DE_WORDS = /\b(und|der|die|das|mit|für|wir|sie|ist|nicht|oder|auf|bei|werden|deine|dein|ihre|unser|unsere|aufgaben|bieten|erfahrung|kenntnisse|sowie|zum|zur|eine|einen|dich|deinen|bist|suchen)\b/gi;
+/** Listings are shown in English for now: drop postings written in German (Arbeitnow is mostly German). */
+export function looksGerman(text: string): boolean {
+  if (/\((m\/w\/d|w\/m\/d|m\/f\/d|f\/m\/d|d\/m\/w)\)/i.test(text)) return true;
+  const words = text.split(/\s+/).filter(Boolean).length;
+  return words >= 15 && (text.match(DE_WORDS)?.length ?? 0) / words > 0.06;
+}
+
 const SOURCES: Record<string, () => Promise<Job[]>> = { remotive: loadRemotive, arbeitnow: loadArbeitnow };
 
 /** All current listings. A failing source falls back to its last good copy; only if every source fails do we report it. */
@@ -142,7 +156,7 @@ export async function loadAllJobs(): Promise<{ jobs: Job[]; degraded: string[] }
       return hit?.jobs ?? [];
     }
   }));
-  const jobs = results.flat();
+  const jobs = results.flat().filter((j) => !looksGerman(`${j.title}. ${j.description.slice(0, 1500)}`));
   if (!jobs.length && degraded.length === Object.keys(SOURCES).length) throw new Error("Job sources are unreachable right now.");
   return { jobs, degraded };
 }

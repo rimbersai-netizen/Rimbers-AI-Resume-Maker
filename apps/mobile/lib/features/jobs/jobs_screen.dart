@@ -171,17 +171,21 @@ class _DiscoverViewState extends ConsumerState<DiscoverView> {
   Future<void> _act(String state, String verb) async {
     if (_queue.isEmpty || _busy) return;
     final job = _queue.first;
-    setState(() { _busy = true; _dx = 0; });
+    // Optimistic: the card leaves at once and the next one appears; if saving fails it comes back.
+    setState(() { _busy = true; _dx = 0; _queue.removeAt(0); });
     try {
       final item = await Api.instance.setJobState(job.key, state);
-      _queue.removeAt(0);
       _last = (job: job, id: item.id, verb: verb);
       if (_queue.length <= 5) _refill();
       ref.invalidate(pipelineProvider);
     } on ApiException catch (e) {
+      _queue.insert(0, job);
       if (mounted) toast(context, e.message);
+    } catch (_) {
+      _queue.insert(0, job);
+      if (mounted) toast(context, 'Could not save that. Please try again.');
     }
-    if (mounted) setState(() => _busy = false);
+    if (mounted) setState(() { _busy = false; _dx = 0; });
   }
 
   Future<void> _undo() async {
@@ -221,8 +225,11 @@ class _DiscoverViewState extends ConsumerState<DiscoverView> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: Tokens.gutter),
           child: GestureDetector(
-            onHorizontalDragUpdate: (d) => setState(() => _dx += d.delta.dx),
+            // Ignore drags while a swipe is being saved: they used to pile up on the card and leave it stuck off-screen.
+            onHorizontalDragUpdate: (d) { if (!_busy) setState(() => _dx += d.delta.dx); },
+            onHorizontalDragCancel: () => setState(() => _dx = 0),
             onHorizontalDragEnd: (_) {
+              if (_busy) { setState(() => _dx = 0); return; }
               if (_dx > 110) { _act('ready', 'Added to applications'); } else if (_dx < -110) { _act('passed', 'Passed'); } else { setState(() => _dx = 0); }
             },
             child: AnimatedContainer(
