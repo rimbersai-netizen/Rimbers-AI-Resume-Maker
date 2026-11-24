@@ -12,7 +12,7 @@ const profile = MasterProfile.parse({ schemaVersion: 1, personal: { fullName: "T
 
 const route: RouteConfig = {
   localModels: ["qwen3:4b"], maxAttempts: 2, backoffMs: 1500,
-  cloud: { provider: new GeminiProvider({ apiKey: process.env.GEMINI_API_KEY ?? "x", fallbackModels: ["gemini-flash-lite-latest"] }), model: "gemini-flash-lite-latest", enabled: true, first: true, assumeConsent: true },
+  cloud: { provider: new GeminiProvider({ apiKey: process.env.GEMINI_API_KEY ?? "x", fallbackModels: ["gemini-3.1-flash-lite","gemini-3.7-flash"] }), model: "gemini-3.5-flash-lite", enabled: true, first: true, assumeConsent: true },
 };
 const base = { masterProfileId: "00000000-0000-4000-8000-000000000001", locale: "en" as const };
 const JD = "Site Engineer for residential towers. Requirements: AutoCAD, Primavera, subcontractor coordination, Revit, 3+ years experience.";

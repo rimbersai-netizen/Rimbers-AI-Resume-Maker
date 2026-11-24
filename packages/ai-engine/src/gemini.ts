@@ -86,7 +86,7 @@ export class GeminiProvider implements AiProvider {
         maxOutputTokens: Math.max(req.maxTokens ?? 600, 2048),
         responseMimeType: "application/json",
       },
-    }, req.timeoutMs ?? 60_000);
+    }, Math.min(req.timeoutMs ?? 25_000, 25_000)); // a hung Gemini call must fail over to the next model/local quickly, not block for minutes
     if (res.status === 404) throw new AiError("model_missing", `Model ${model} is not available`, false);
     if (res.status === 429) throw new AiError("quota_exceeded", "Gemini rate or quota limit reached", true);
     if (res.status === 401 || res.status === 403) throw new AiError("provider_unavailable", "Gemini rejected the API key", false);

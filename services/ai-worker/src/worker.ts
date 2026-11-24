@@ -16,7 +16,7 @@ export interface WorkerDeps {
 export function defaultDeps(): WorkerDeps {
   // Gemini is used only when an operator sets BOTH a key and AI_PROVIDER=gemini (resume content then goes to Google).
   const gemini = process.env.GEMINI_API_KEY && process.env.AI_PROVIDER === "gemini"
-    ? { provider: new GeminiProvider({ apiKey: process.env.GEMINI_API_KEY, fallbackModels: (process.env.GEMINI_FALLBACK_MODELS ?? "gemini-flash-lite-latest").split(",").map((m) => m.trim()).filter(Boolean) }), model: process.env.GEMINI_MODEL ?? "gemini-flash-latest", enabled: true, first: true, assumeConsent: true }
+    ? { provider: new GeminiProvider({ apiKey: process.env.GEMINI_API_KEY, fallbackModels: (process.env.GEMINI_FALLBACK_MODELS ?? "gemini-3.1-flash-lite,gemini-3.7-flash").split(",").map((m) => m.trim()).filter(Boolean) }), model: process.env.GEMINI_MODEL ?? "gemini-flash-latest", enabled: true, first: true, assumeConsent: true }
     : undefined;
   return {
     provider: new OllamaProvider({ baseUrl: process.env.OLLAMA_BASE_URL ?? "http://127.0.0.1:11434" }),

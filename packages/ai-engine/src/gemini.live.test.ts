@@ -10,7 +10,7 @@ const p = MasterProfile.parse({ schemaVersion: 1, personal: { fullName: "Test Us
   skills: [{ id: "s1", name: "AutoCAD" }, { id: "s2", name: "Primavera" }] });
 
 describe.skipIf(!live)("Gemini live", () => {
-  const gem = () => new GeminiProvider({ apiKey: process.env.GEMINI_API_KEY!, fallbackModels: ["gemini-flash-lite-latest"] });
+  const gem = () => new GeminiProvider({ apiKey: process.env.GEMINI_API_KEY!, fallbackModels: ["gemini-3.1-flash-lite"] });
   const model = process.env.GEMINI_MODEL ?? "gemini-flash-latest";
   it("health lists models", async () => { expect((await gem().health()).ok).toBe(true); }, 30_000);
   it("generates a validated, fact-checked summary", async () => {
