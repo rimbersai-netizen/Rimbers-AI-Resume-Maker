@@ -101,10 +101,10 @@ class _JobsTabState extends ConsumerState<JobsTab> {
         child: SegmentedButton<int>(
           showSelectedIcon: false,
           segments: const [
-            ButtonSegment(value: 0, label: Text('Swipe'), icon: Icon(Icons.layers_outlined)),
-            ButtonSegment(value: 1, label: Text('Search'), icon: Icon(Icons.search)),
-            ButtonSegment(value: 2, label: Text('Saved'), icon: Icon(Icons.bookmark_border)),
-            ButtonSegment(value: 3, label: Text('Applied'), icon: Icon(Icons.send_outlined)),
+            ButtonSegment(value: 0, label: Text('Swipe')),
+            ButtonSegment(value: 1, label: Text('Search')),
+            ButtonSegment(value: 2, label: Text('Saved')),
+            ButtonSegment(value: 3, label: Text('Applied')),
           ],
           selected: {_seg},
           onSelectionChanged: (s) => setState(() => _seg = s.first),
