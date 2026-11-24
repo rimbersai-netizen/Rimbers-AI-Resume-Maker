@@ -111,6 +111,49 @@ describe.skipIf(!enabled)("AI pipeline", () => {
     expect((await a.c.from("ai_jobs").select("status,error_code").eq("id", g).single()).data).toMatchObject({ status: "failed", error_code: "invalid_input" });
   });
 
+  it("LinkedIn headline/about jobs run; saved drafts are length-limited by the DB and owner-only", async () => {
+    const a = await user("li");
+    const b = await user("li2");
+    const ids: string[] = [];
+    for (const kind of ["linkedin_headline", "linkedin_about"]) ids.push((await a.c.from("ai_jobs").insert({ user_id: a.uid, kind, idempotency_key: randomUUID(),
+      input: { masterProfileId: a.mpId, locale: "en", tone: "professional" } }).select("id").single()).data!.id);
+    const answers: Record<string, unknown> = {
+      headline: "Site Engineer | AutoCAD · Primavera | Residential Construction",
+      about: "I am a Site Engineer at Al Bina Contracting, where I supervised construction of 3 residential buildings and coordinated subcontractors and inspections. ".repeat(2) + "\n\nI plan sites with AutoCAD and Primavera.",
+    };
+    const multi: AiProvider = { name: "fake", isLocal: true, health: async () => ({ ok: true, provider: "fake", models: ["m"] }),
+      generate: async (_m, req) => { const key = JSON.stringify(req.jsonSchema).includes("headline") ? "headline" : "about";
+        return { value: req.schema.parse({ [key]: answers[key] }), provider: "fake", model: "m", promptTokens: 1, completionTokens: 1, durationMs: 1 }; } };
+    await drain({ provider: multi, route: { localModels: ["m"], sleep: async () => {} } });
+    const { data } = await a.c.from("ai_jobs").select("kind,status,output").in("id", ids);
+    expect(data!.every((r) => r.status === "succeeded")).toBe(true);
+    const tooLong = await a.c.from("master_profiles").update({ linkedin: { headline: "x".repeat(221) } }).eq("id", a.mpId).select("id");
+    expect(tooLong.error?.code).toBe("23514");
+    const ok = await a.c.from("master_profiles").update({ linkedin: { headline: answers.headline } }).eq("id", a.mpId).select("linkedin");
+    expect(ok.data?.[0]?.linkedin.headline).toBe(answers.headline);
+    const other = await b.c.from("master_profiles").update({ linkedin: { headline: "hacked" } }).eq("id", a.mpId).select("id");
+    expect(other.data).toEqual([]);
+    // save_master_profile must not wipe LinkedIn drafts
+    await a.c.rpc("save_master_profile", { p_id: a.mpId, p_data: { personal: { fullName: "Omar Haddad" }, experience: [], education: [], skills: [] } });
+    expect((await a.c.from("master_profiles").select("linkedin").eq("id", a.mpId).single()).data!.linkedin.headline).toBe(answers.headline);
+  });
+
+  it.skipIf(process.env.OLLAMA_LIVE !== "1")("live LinkedIn headline + About are fact-checked and within limits", async () => {
+    const a = await user("li-live");
+    const ids: string[] = [];
+    for (const kind of ["linkedin_headline", "linkedin_about"]) ids.push((await a.c.from("ai_jobs").insert({ user_id: a.uid, kind, idempotency_key: randomUUID(),
+      input: { masterProfileId: a.mpId, locale: "en", tone: "professional" } }).select("id").single()).data!.id);
+    await drain(defaultDeps());
+    const { data } = await a.c.from("ai_jobs").select("kind,status,error_code,output").in("id", ids);
+    console.log("LIVE-LI", JSON.stringify(data));
+    for (const r of data!) {
+      if (r.status === "succeeded") {
+        if (r.kind === "linkedin_headline") expect(r.output.headline.length).toBeLessThanOrEqual(220);
+        else expect(r.output.about.length).toBeLessThanOrEqual(2600);
+      } else expect(r.error_code).toBe("unverified_facts");
+    }
+  }, 600_000);
+
   it.skipIf(process.env.OLLAMA_LIVE !== "1")("live tailoring never claims the JD skill the user lacks", async () => {
     const a = await user("live-tailor");
     const jd = "Site Engineer\nRequirements:\n- AutoCAD\n- Revit and BIM coordination\n- Supervise residential construction projects";

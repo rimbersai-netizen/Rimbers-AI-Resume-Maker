@@ -201,3 +201,48 @@ ${userNotes}
     }),
   };
 }
+
+// ---------------------------------------------------------------- Phase 12B: LinkedIn
+
+/** LinkedIn limits: headline 220 chars, About 2,600 chars. */
+export const LINKEDIN_LIMITS = { headline: 220, about: 2600 } as const;
+export const HeadlineOutput = z.object({ headline: z.string().min(10).max(LINKEDIN_LIMITS.headline) });
+export const AboutOutput = z.object({ about: z.string().min(200).max(LINKEDIN_LIMITS.about) });
+
+export function buildLinkedInHeadlineTask(p: MasterProfile, opts: { tone: Tone; locale: string; targetRole?: string }) {
+  const facts = profileFacts(p);
+  return {
+    messages: [
+      { role: "system", content: SYSTEM_RULES },
+      { role: "user", content: `Write a LinkedIn headline in ${lang(opts.locale)}, at most 200 characters${opts.targetRole ? `, positioned for ${opts.targetRole} roles` : ""}.
+Format like "Role | Key skill · Key skill | Focus". Use only titles and skills from SOURCE. No emojis, no hashtags.
+Return {"headline": "..."}.
+SOURCE:
+<<<
+${facts.text}
+>>>` },
+    ] as ChatMessage[],
+    schema: HeadlineOutput,
+    jsonSchema: { type: "object", properties: { headline: { type: "string" } }, required: ["headline"] },
+    check: (out: z.infer<typeof HeadlineOutput>) => factCheck({ output: out.headline, sourceTexts: [facts.text], knownSkills: facts.skills }),
+  };
+}
+
+export function buildLinkedInAboutTask(p: MasterProfile, opts: { tone: Tone; locale: string }) {
+  const facts = profileFacts(p);
+  return {
+    messages: [
+      { role: "system", content: SYSTEM_RULES },
+      { role: "user", content: `Write a LinkedIn "About" section in ${lang(opts.locale)}, ${opts.tone} tone, 120-220 words, 2-4 short paragraphs, first person is allowed on LinkedIn.
+Cover what the person does, notable results from SOURCE (only numbers that appear in SOURCE), core skills, and what they are interested in next (keep this general).
+No emojis, no hashtags, no contact details. Return {"about": "..."} with paragraphs separated by blank lines.
+SOURCE:
+<<<
+${facts.text}
+>>>` },
+    ] as ChatMessage[],
+    schema: AboutOutput,
+    jsonSchema: { type: "object", properties: { about: { type: "string" } }, required: ["about"] },
+    check: (out: z.infer<typeof AboutOutput>) => factCheck({ output: out.about, sourceTexts: [facts.text], knownSkills: facts.skills }),
+  };
+}

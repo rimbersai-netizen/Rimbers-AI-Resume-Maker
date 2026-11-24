@@ -164,3 +164,23 @@ Omar`;
     expect(err).toBeInstanceOf(AiError);
   });
 });
+
+describe("12B LinkedIn", () => {
+  const id = "00000000-0000-4000-8000-000000000001";
+  it("headline within 220 chars, from profile titles/skills", async () => {
+    const { provider } = scripted([{ headline: "Site Engineer | AutoCAD · Residential Construction | Site Supervision" }]);
+    const r = await runAiJob(AiJobInput.parse({ kind: "linkedin_headline", masterProfileId: id, locale: "en", tone: "professional" }), profile, provider, cfg, { cloudConsent: false });
+    expect(r.output).toMatchObject({ kind: "linkedin_headline" });
+  });
+  it("headline over the LinkedIn limit is rejected as invalid output", async () => {
+    const { provider } = scripted(["x", "y", "z", "w"].map(() => ({ headline: "Site Engineer ".repeat(20) })));
+    await expect(runAiJob(AiJobInput.parse({ kind: "linkedin_headline", masterProfileId: id, locale: "en", tone: "professional" }), profile, provider, cfg, { cloudConsent: false })).rejects.toBeInstanceOf(AiError);
+  });
+  it("About may not invent numbers or skills", async () => {
+    const good = "I am a Site Engineer at Al Bina, where I supervised construction of 3 residential buildings and coordinated subcontractors and inspections. ".repeat(2) + "\n\nI work with AutoCAD every day and care about safe, well-run sites. I am interested in larger residential and mixed-use projects next.";
+    const { provider, seen } = scripted([{ about: good.replace("3 residential", "12 residential") + " I also know Kubernetes." }, { about: good }]);
+    const r = await runAiJob(AiJobInput.parse({ kind: "linkedin_about", masterProfileId: id, locale: "en", tone: "friendly" }), profile, provider, cfg, { cloudConsent: false });
+    expect(r.output.kind === "linkedin_about" && r.output.about).toContain("3 residential");
+    expect(seen[1]!.at(-1)!.content).toMatch(/number "12".*skill "kubernetes"|skill "kubernetes".*number "12"/);
+  });
+});

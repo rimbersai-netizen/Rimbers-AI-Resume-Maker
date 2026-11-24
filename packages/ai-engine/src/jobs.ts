@@ -9,6 +9,7 @@ import { routeGenerate, type RouteConfig } from "./router";
 import { extractKeywords, matchKeywords, profileToText } from "@gars/ats-engine";
 import { isSkillLikeTerm } from "./factcheck";
 import { withSignature } from "./tasks";
+import { buildLinkedInAboutTask, buildLinkedInHeadlineTask } from "./tasks";
 import { buildCoverLetterTask, buildPolishTask, buildRewriteBulletsTask, buildSummaryTask, buildTailorSummaryTask, Length, Tone } from "./tasks";
 import type { Violation } from "./factcheck";
 
@@ -22,6 +23,8 @@ export const AiJobInput = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("tailor_resume"), ...base, jobDescription: z.string().trim().min(30).max(20000), tone: Tone, targetRole: z.string().max(120).optional() }),
   z.object({ kind: z.literal("cover_letter"), ...base, tone: Tone, jobTitle: z.string().trim().min(2).max(200), company: z.string().trim().max(200).optional(),
     keyPoints: z.string().trim().max(1000).optional(), jobDescription: z.string().trim().max(20000).optional() }),
+  z.object({ kind: z.literal("linkedin_headline"), ...base, tone: Tone, targetRole: z.string().max(120).optional() }),
+  z.object({ kind: z.literal("linkedin_about"), ...base, tone: Tone }),
 ]);
 export type AiJobInput = z.infer<typeof AiJobInput>;
 
@@ -33,6 +36,8 @@ export const AiJobOutput = z.discriminatedUnion("kind", [
   /** matched/missingRequired are deterministic (ATS engine), never model-generated. */
   z.object({ kind: z.literal("tailored_summary"), summary: z.string(), matched: z.array(z.string()), missingRequired: z.array(z.string()), ...meta }),
   z.object({ kind: z.literal("cover_letter"), letter: z.string(), matched: z.array(z.string()), missingRequired: z.array(z.string()), ...meta }),
+  z.object({ kind: z.literal("linkedin_headline"), headline: z.string(), ...meta }),
+  z.object({ kind: z.literal("linkedin_about"), about: z.string(), ...meta }),
 ]);
 export type AiJobOutput = z.infer<typeof AiJobOutput>;
 
@@ -54,7 +59,7 @@ const describe = (v: Violation[]) => v.filter((x) => x.severity === "block").map
  */
 type Built = { messages: import("./provider").ChatMessage[]; schema: unknown; jsonSchema: Record<string, unknown>; check: (v: unknown) => { ok: boolean; violations: Violation[] } };
 
-type Value = { summary?: string; bullets?: string[]; letter?: string };
+type Value = { summary?: string; bullets?: string[]; letter?: string; headline?: string; about?: string };
 function plan(input: AiJobInput, profile: MasterProfile): { task: Built; toOutput: (value: Value, violations: Violation[]) => AiJobOutput } {
   const allIds = [...profile.experience.map((w) => w.id), ...profile.education.map((e) => e.id), ...profile.skills.map((s) => s.id)];
   switch (input.kind) {
@@ -79,6 +84,14 @@ function plan(input: AiJobInput, profile: MasterProfile): { task: Built; toOutpu
       const forbidden = km.missing.map((k) => k.term).filter((t) => isSkillLikeTerm(t, input.jobDescription));
       const task = buildTailorSummaryTask(profile, { matched, missing: forbidden, tone: input.tone, locale: input.locale, targetRole: input.targetRole }) as unknown as Built;
       return { task, toOutput: (v, violations) => ({ kind: "tailored_summary", summary: v.summary!, matched, missingRequired: km.missingRequired.map((k) => k.term).filter((t) => isSkillLikeTerm(t, input.jobDescription)), violations, sourceFieldIds: allIds }) };
+    }
+    case "linkedin_headline": {
+      const task = buildLinkedInHeadlineTask(profile, { tone: input.tone, locale: input.locale, targetRole: input.targetRole }) as unknown as Built;
+      return { task, toOutput: (v, violations) => ({ kind: "linkedin_headline", headline: v.headline!.replace(/\s+/g, " ").trim(), violations, sourceFieldIds: allIds }) };
+    }
+    case "linkedin_about": {
+      const task = buildLinkedInAboutTask(profile, { tone: input.tone, locale: input.locale }) as unknown as Built;
+      return { task, toOutput: (v, violations) => ({ kind: "linkedin_about", about: v.about!.trim(), violations, sourceFieldIds: allIds }) };
     }
     case "cover_letter": {
       const jd = input.jobDescription ?? "";

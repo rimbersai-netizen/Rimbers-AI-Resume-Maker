@@ -10,3 +10,5 @@
 | B9 | Playwright 1.49 browser installer hangs on Node 26 (zip extraction) | New machines/CI need the manual extract or CHROMIUM_EXECUTABLE | Pin Node 22 LTS in CI/production, or upgrade Playwright |
 
 Resolved: B1 Node — Homebrew node 26.13.1 built (04:00). B2 Docker — running (2026-11-21). B7 — user confirmed `Showcase.png` is the second reference (2026-11-21).
+
+| B10 | Workspace moved to Windows 11: no Docker, no Ollama, Chromium/Android SDK unverified, ~3.7 GB free RAM at audit; Xcode impossible | pgTAP, storage, SUPABASE_IT, PDF_IT, live AI, mobile builds cannot run here | Install Docker Desktop + Ollama (qwen3:4b, llama3.2:3b) + Playwright Chromium, or continue on the Mac. iOS builds need a Mac. |

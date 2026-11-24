@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-21",
+ "updated": "2026-11-24",
  "phases": [
   {
    "phase": 1,
@@ -19,7 +19,7 @@
      "id": "1C",
      "title": "Monorepo, scripts, tests, git, checkpoints",
      "status": "VERIFIED",
-     "evidence": "Node 26.13.1 + pnpm 9.15.9: pnpm install && pnpm check \u2192 typecheck 9 pkgs OK, 298 tests pass (2026-11-21)"
+     "evidence": "Node 26.13.1 + pnpm 9.15.9: pnpm install && pnpm check → typecheck 9 pkgs OK, 298 tests pass (2026-11-21)"
     }
    ]
   },
@@ -37,7 +37,7 @@
      "id": "2B",
      "title": "Auth, account management, sessions",
      "status": "VERIFIED",
-     "evidence": "SUPABASE_IT auth integration 7/7; web typecheck+build OK; manual browser E2E: validation, sign-up\u2192Mailpit link\u2192dashboard, export JSON, deletion request (dup blocked), sign-out, wrong/right sign-in, guest mode (2026-11-21)"
+     "evidence": "SUPABASE_IT auth integration 7/7; web typecheck+build OK; manual browser E2E: validation, sign-up→Mailpit link→dashboard, export JSON, deletion request (dup blocked), sign-out, wrong/right sign-in, guest mode (2026-11-21)"
     },
     {
      "id": "2C",
@@ -67,7 +67,7 @@
      "id": "3C",
      "title": "Autosave, validation, versioning",
      "status": "VERIFIED",
-     "evidence": "Debounced autosave via atomic save_master_profile RPC; optimistic concurrency (conflict \u2192 load latest / keep mine); local crash-recovery (restore / restore_conflict); named versions + restore; beforeunload guard. Tests: pgTAP 002 (16), unit profile-draft (31), SUPABASE_IT profile (4), browser E2E desktop+375px (2026-11-21)."
+     "evidence": "Debounced autosave via atomic save_master_profile RPC; optimistic concurrency (conflict → load latest / keep mine); local crash-recovery (restore / restore_conflict); named versions + restore; beforeunload guard. Tests: pgTAP 002 (16), unit profile-draft (31), SUPABASE_IT profile (4), browser E2E desktop+375px (2026-11-21)."
     }
    ]
   },
@@ -91,7 +91,7 @@
      "id": "4C",
      "title": "Connect country to forms/formatting",
      "status": "VERIFIED",
-     "evidence": "New-resume flow: country search+flags, recommendations (page/photo/dates/sections/templates) with notes 'conventions not rules'; resume language independent of app language (SA+en app\u2192en, Arabic offered; manual choice survives country change; app stays LTR); overrides persist (real user changed locale/template/page \u2192 stored as overridden). Tests: resume-settings unit 14, pgTAP 003 (9), browser E2E (2026-11-21)."
+     "evidence": "New-resume flow: country search+flags, recommendations (page/photo/dates/sections/templates) with notes 'conventions not rules'; resume language independent of app language (SA+en app→en, Arabic offered; manual choice survives country change; app stays LTR); overrides persist (real user changed locale/template/page → stored as overridden). Tests: resume-settings unit 14, pgTAP 003 (9), browser E2E (2026-11-21)."
     }
    ]
   },
@@ -109,13 +109,13 @@
      "id": "5B",
      "title": "Layout + pagination engine",
      "status": "VERIFIED",
-     "evidence": "Print CSS pagination verified in Chromium: 18-role resume \u2192 \u22653 A4 pages, no blank page, all entries present (no clipped content); all 105 templates \u22642 pages for standard profile, no blank pages."
+     "evidence": "Print CSS pagination verified in Chromium: 18-role resume → ≥3 A4 pages, no blank page, all entries present (no clipped content); all 105 templates ≤2 pages for standard profile, no blank pages."
     },
     {
      "id": "5C",
      "title": "Live preview + consistency tests",
      "status": "VERIFIED",
-     "evidence": "Live preview uses the same renderer and the same bundled font files as the PDF (public/fonts generated from @gars/fonts); automated preview\u2194PDF text consistency test passes."
+     "evidence": "Live preview uses the same renderer and the same bundled font files as the PDF (public/fonts generated from @gars/fonts); automated preview↔PDF text consistency test passes."
     }
    ]
   },
@@ -127,19 +127,19 @@
      "id": "6A",
      "title": "35 templates",
      "status": "VERIFIED",
-     "evidence": "105 structurally distinct layouts (unique layoutKey, 21 categories, AA contrast); each verified in automated tests for HTML, PDF (Chromium text/pages/glyphs), DOCX (word parity) and visual baseline (reviewed snapshots, pixel diff \u22640.2%); editor gallery with category filters + premium lock (2026-11-21)."
+     "evidence": "105 structurally distinct layouts (unique layoutKey, 21 categories, AA contrast); each verified in automated tests for HTML, PDF (Chromium text/pages/glyphs), DOCX (word parity) and visual baseline (reviewed snapshots, pixel diff ≤0.2%); editor gallery with category filters + premium lock (2026-11-21)."
     },
     {
      "id": "6B",
      "title": "35 more templates",
      "status": "VERIFIED",
-     "evidence": "105 structurally distinct layouts (unique layoutKey, 21 categories, AA contrast); each verified in automated tests for HTML, PDF (Chromium text/pages/glyphs), DOCX (word parity) and visual baseline (reviewed snapshots, pixel diff \u22640.2%); editor gallery with category filters + premium lock (2026-11-21)."
+     "evidence": "105 structurally distinct layouts (unique layoutKey, 21 categories, AA contrast); each verified in automated tests for HTML, PDF (Chromium text/pages/glyphs), DOCX (word parity) and visual baseline (reviewed snapshots, pixel diff ≤0.2%); editor gallery with category filters + premium lock (2026-11-21)."
     },
     {
      "id": "6C",
      "title": "30+ more, gallery, visual tests",
      "status": "VERIFIED",
-     "evidence": "105 structurally distinct layouts (unique layoutKey, 21 categories, AA contrast); each verified in automated tests for HTML, PDF (Chromium text/pages/glyphs), DOCX (word parity) and visual baseline (reviewed snapshots, pixel diff \u22640.2%); editor gallery with category filters + premium lock (2026-11-21). Gallery/filtering in /resumes/[id]."
+     "evidence": "105 structurally distinct layouts (unique layoutKey, 21 categories, AA contrast); each verified in automated tests for HTML, PDF (Chromium text/pages/glyphs), DOCX (word parity) and visual baseline (reviewed snapshots, pixel diff ≤0.2%); editor gallery with category filters + premium lock (2026-11-21). Gallery/filtering in /resumes/[id]."
     }
    ]
   },
@@ -151,13 +151,13 @@
      "id": "7A",
      "title": "Ollama discovery, benchmark, adapter",
      "status": "VERIFIED",
-     "evidence": "Unit tests + live Ollama: qwen3:4b 32s/llama3.2:3b 21s summaries, structured output validated; Ollama-down \u2192 safe error (2026-11-21)"
+     "evidence": "Unit tests + live Ollama: qwen3:4b 32s/llama3.2:3b 21s summaries, structured output validated; Ollama-down → safe error (2026-11-21)"
     },
     {
      "id": "7B",
      "title": "Job queue, health, retries, structured output",
      "status": "VERIFIED",
-     "evidence": "services/ai-worker: claim_ai_job (service role, skip-locked, lock expiry), Ollama health on start, routeGenerate retries/model fallback, structured JSON output validated, requeue on provider_unavailable/timeout up to max_attempts, ai_usage rows. SUPABASE_IT ai 4/4 + live 1/1 (qwen3:4b ~32 s faithful summary); workflow I: dead Ollama \u2192 3 attempts \u2192 failed provider_unavailable, safe message (2026-11-21)."
+     "evidence": "services/ai-worker: claim_ai_job (service role, skip-locked, lock expiry), Ollama health on start, routeGenerate retries/model fallback, structured JSON output validated, requeue on provider_unavailable/timeout up to max_attempts, ai_usage rows. SUPABASE_IT ai 4/4 + live 1/1 (qwen3:4b ~32 s faithful summary); workflow I: dead Ollama → 3 attempts → failed provider_unavailable, safe message (2026-11-21)."
     },
     {
      "id": "7C",
@@ -175,13 +175,13 @@
      "id": "8A",
      "title": "Summaries, experience rewriting",
      "status": "VERIFIED",
-     "evidence": "Summary + bullet rewrite tasks end-to-end in UI (B-6 style assistant): generate \u2192 edit \u2192 accept \u2192 autosave; live qwen3:4b outputs faithful; prompt revised (no dates/job lists) after UI review."
+     "evidence": "Summary + bullet rewrite tasks end-to-end in UI (B-6 style assistant): generate → edit → accept → autosave; live qwen3:4b outputs faithful; prompt revised (no dates/job lists) after UI review."
     },
     {
      "id": "8B",
      "title": "Achievements, grammar, job-specific",
      "status": "VERIFIED",
-     "evidence": "Grammar + tone (summary or bullets, checked against original text), achievement rewrite (8A), job-specific tailoring (summary tailored to JD; matched/missing from ATS engine; skill-like missing JD terms forbidden; per-resume summaryOverride \u2014 master profile untouched, reset supported). Unit: ai-engine 36, ats-engine 16, resume-builder 15. SUPABASE_IT ai 5/5 (+tailor/grammar). Live qwen3:4b tailoring \u00d73 faithful, no Revit/BIM claimed. UI E2E: JD analyze (84, Good, 6 categories, matched/missing, disclaimer) \u2192 tailor \u2192 accept \u2192 preview + before/after deltas (+1, +4) \u2192 DB override set, master unchanged \u2192 reset; profile 'Fix grammar' corrected 3 errors minimally (2026-11-21)."
+     "evidence": "Grammar + tone (summary or bullets, checked against original text), achievement rewrite (8A), job-specific tailoring (summary tailored to JD; matched/missing from ATS engine; skill-like missing JD terms forbidden; per-resume summaryOverride — master profile untouched, reset supported). Unit: ai-engine 36, ats-engine 16, resume-builder 15. SUPABASE_IT ai 5/5 (+tailor/grammar). Live qwen3:4b tailoring ×3 faithful, no Revit/BIM claimed. UI E2E: JD analyze (84, Good, 6 categories, matched/missing, disclaimer) → tailor → accept → preview + before/after deltas (+1, +4) → DB override set, master unchanged → reset; profile 'Fix grammar' corrected 3 errors minimally (2026-11-21)."
     },
     {
      "id": "8C",
@@ -223,19 +223,19 @@
      "id": "10A",
      "title": "PDF",
      "status": "VERIFIED",
-     "evidence": "services/document-worker: Chromium (JS off, network blocked except bundled fonts/data URIs) renders renderResumeHtml \u2192 tagged PDF; queue via claim_document_export (service role, skip-locked, retries \u22643); upload to private resume-exports/<uid>/\u2026; owner-only signed download; export quota enforced. PDF_IT 114/114 (all 105 templates: text extractable, no blank pages, no unmapped glyphs; links; pagination; ar/ur/hi/ja/zh fonts embedded + text extractable incl. ActualText; preview\u2194PDF text consistency; network blocking). SUPABASE_IT export 3/3. UI E2E: export \u2192 ready \u2192 44 KB PDF; Free quota blocks 3rd export (2026-11-21)."
+     "evidence": "services/document-worker: Chromium (JS off, network blocked except bundled fonts/data URIs) renders renderResumeHtml → tagged PDF; queue via claim_document_export (service role, skip-locked, retries ≤3); upload to private resume-exports/<uid>/…; owner-only signed download; export quota enforced. PDF_IT 114/114 (all 105 templates: text extractable, no blank pages, no unmapped glyphs; links; pagination; ar/ur/hi/ja/zh fonts embedded + text extractable incl. ActualText; preview↔PDF text consistency; network blocking). SUPABASE_IT export 3/3. UI E2E: export → ready → 44 KB PDF; Free quota blocks 3rd export (2026-11-21)."
     },
     {
      "id": "10B",
      "title": "Editable DOCX",
      "status": "VERIFIED",
-     "evidence": "DOCX from shared content model (@gars/template-engine buildContentModel): Heading1/Heading2 styles, numbered bullet list, hyperlinks, A4/Letter + margins, RTL (w:bidi/w:rtl only when RTL), per-script Office fonts, photo only if requested + template slot, no image-only output. Tests: 110 DOCX (mammoth \u2192 <h1>/<h2>/<li>, XML page size/RTL/rels; parity: every HTML/PDF word present in DOCX for all 105 templates); SUPABASE_IT DOCX export (Arabic, RTL); UI: Free blocked (plan feature) \u2192 one-time entitlement \u2192 8 KB .docx downloaded; independent parse with macOS textutil (en + ar) (2026-11-21)."
+     "evidence": "DOCX from shared content model (@gars/template-engine buildContentModel): Heading1/Heading2 styles, numbered bullet list, hyperlinks, A4/Letter + margins, RTL (w:bidi/w:rtl only when RTL), per-script Office fonts, photo only if requested + template slot, no image-only output. Tests: 110 DOCX (mammoth → <h1>/<h2>/<li>, XML page size/RTL/rels; parity: every HTML/PDF word present in DOCX for all 105 templates); SUPABASE_IT DOCX export (Arabic, RTL); UI: Free blocked (plan feature) → one-time entitlement → 8 KB .docx downloaded; independent parse with macOS textutil (en + ar) (2026-11-21)."
     },
     {
      "id": "10C",
      "title": "Rendering/Unicode/export regression tests",
      "status": "VERIFIED",
-     "evidence": "Visual regression: 112 page-1 baselines (105 templates + ar/ur/ja/hi/zh samples), comparator self-test proves detection; harness caught 2 real changes (localized contact labels; sidebar date wrapping) which were reviewed and accepted. Unicode/overflow/export regression 24/24: NFD combining marks, Vietnamese/Turkish/German diacritics in PDF+DOCX, emoji, mixed bidi, long URLs/words wrap on one template per category (layout overflowX=0), 60 skills not lost, PDF+DOCX per category. Found + fixed: content overflow of 400\u2013600 px with long unbroken strings; English contact labels in non-English resumes; bidi override controls stripped (Trojan Source)."
+     "evidence": "Visual regression: 112 page-1 baselines (105 templates + ar/ur/ja/hi/zh samples), comparator self-test proves detection; harness caught 2 real changes (localized contact labels; sidebar date wrapping) which were reviewed and accepted. Unicode/overflow/export regression 24/24: NFD combining marks, Vietnamese/Turkish/German diacritics in PDF+DOCX, emoji, mixed bidi, long URLs/words wrap on one template per category (layout overflowX=0), 60 skills not lost, PDF+DOCX per category. Found + fixed: content overflow of 400–600 px with long unbroken strings; English contact labels in non-English resumes; bidi override controls stripped (Trojan Source)."
     }
    ]
   },
@@ -268,12 +268,13 @@
      "id": "12A",
      "title": "Cover letters",
      "status": "VERIFIED",
-     "evidence": "Cover letters: AI job (profile facts + user's job title/company/key points; skill-like missing JD terms forbidden; deterministic localized sign-off with exact profile name), cover_letters (RLS) + editor with autosave/copy, PDF (Chromium) + DOCX via worker with country-aware date and resume template accent. Tests: ai-engine unit (+4), letter DOCX/PDF 6, pgTAP 004 (6), SUPABASE_IT cover-letter 1/1 + live 1/1 (qwen3:4b faithful, no Revit/BIM, exact name). UI E2E: generate \u2192 save \u2192 edit autosave \u2192 PDF 26 KB + DOCX 8 KB downloads; layout reviewed (2026-11-21)."
+     "evidence": "Cover letters: AI job (profile facts + user's job title/company/key points; skill-like missing JD terms forbidden; deterministic localized sign-off with exact profile name), cover_letters (RLS) + editor with autosave/copy, PDF (Chromium) + DOCX via worker with country-aware date and resume template accent. Tests: ai-engine unit (+4), letter DOCX/PDF 6, pgTAP 004 (6), SUPABASE_IT cover-letter 1/1 + live 1/1 (qwen3:4b faithful, no Revit/BIM, exact name). UI E2E: generate → save → edit autosave → PDF 26 KB + DOCX 8 KB downloads; layout reviewed (2026-11-21)."
     },
     {
      "id": "12B",
      "title": "LinkedIn assistant",
-     "status": "NOT_STARTED"
+     "status": "IMPLEMENTED",
+     "notes": "Code + 3 unit tests pass (Windows, 2026-11-24). NOT VERIFIED: migration 0010, integration test and live Ollama run need Docker/Ollama (blocker B10)."
     },
     {
      "id": "12C",
@@ -316,7 +317,7 @@
      "id": "14A",
      "title": "Plans, quotas, entitlements",
      "status": "VERIFIED",
-     "evidence": "Server-side enforcement verified end-to-end for every quota/feature: create_resume (Free=1), premium templates, export_pdf monthly (Free=2), export_docx (plan feature + one-time entitlement), ai_request monthly (Free=5 \u2192 6th blocked with upgrade message in UI, DB count 5); Standard subscription lifted AI/DOCX limits (2026-11-21)."
+     "evidence": "Server-side enforcement verified end-to-end for every quota/feature: create_resume (Free=1), premium templates, export_pdf monthly (Free=2), export_docx (plan feature + one-time entitlement), ai_request monthly (Free=5 → 6th blocked with upgrade message in UI, DB count 5); Standard subscription lifted AI/DOCX limits (2026-11-21)."
     },
     {
      "id": "14B",

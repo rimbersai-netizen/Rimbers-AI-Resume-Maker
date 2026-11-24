@@ -197,3 +197,10 @@ mark { background: #FFE9A8; padding: 0 3px; border-radius: 3px; }
 .ai-modes { margin-bottom: 8px; flex-wrap: wrap; }
 .ai-modes button:disabled { opacity: .45; cursor: not-allowed; }
 .ai-btn-row { display: inline-flex; gap: 14px; }
+/* ---- LinkedIn assistant (reference A-10) ---- */
+.li-tabs { margin: 8px 0 12px; }
+.li-card { display: flex; gap: 14px; align-items: center; border: 1px solid var(--border); border-radius: var(--radius-card); padding: 14px; }
+.li-avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--brand-gradient); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 1.4rem; flex: none; }
+.li-headline { margin: 2px 0; }
+button.chip { border: 1px solid var(--border); cursor: pointer; font: inherit; color: var(--text-primary); }
+button.chip:disabled { opacity: .5; cursor: not-allowed; }
