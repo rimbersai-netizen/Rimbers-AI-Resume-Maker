@@ -302,3 +302,8 @@ input[type=email], input[type=password], input[type=text], textarea, select { bo
 .home h1 { font-size: 2rem; }
 .tool .ico { width: 54px; height: 54px; border-radius: 16px; display: grid; place-items: center; background: var(--bg-subtle); font-size: 1.5rem; }
 .tools-grid { gap: 16px; }
+
+/* Template gallery: real renders (820px-wide page scaled into a 180px card) */
+.tpl-gallery { grid-template-columns: repeat(auto-fill, 180px); justify-content: center; }
+.tpl-card .paper-thumb { width: 180px; height: 255px; aspect-ratio: auto; padding: 0; overflow: hidden; display: block; }
+.tpl-card .paper-thumb iframe { width: 820px; height: 1160px; border: 0; transform: scale(0.2195); transform-origin: top left; pointer-events: none; background: #fff; }

@@ -95,6 +95,25 @@ class Api {
     }
   }
 
+  static final Map<String, String> _tplCache = {};
+
+  /// A template rendered with the signed-in user's saved profile (sample persona if it is still empty). Cached per session.
+  Future<String> templatePreviewHtml(String id) async {
+    final hit = _tplCache[id];
+    if (hit != null) return hit;
+    try {
+      final r = await http.get(_uri('/templates/${Uri.encodeComponent(id)}/preview'), headers: _headers).timeout(const Duration(seconds: 30));
+      if (r.statusCode != 200) throw ApiException('Preview unavailable (${r.statusCode}).', status: r.statusCode);
+      return _tplCache[id] = Config.fixHost(utf8.decode(r.bodyBytes));
+    } on ApiException {
+      rethrow;
+    } catch (_) {
+      throw ApiException('Cannot reach the server to load the preview.');
+    }
+  }
+
+  void clearTemplateCache() => _tplCache.clear();
+
   Future<Map<String, dynamic>> analyze(String resumeId, {String? jobDescription}) async =>
       (await post('/resumes/$resumeId/ats', {if (jobDescription != null && jobDescription.trim().isNotEmpty) 'jobDescription': jobDescription}))['result'] as Map<String, dynamic>;
 

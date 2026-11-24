@@ -7,14 +7,12 @@ import '../../core/data.dart';
 import '../../core/theme.dart';
 import '../../core/widgets.dart';
 import '../home/shell.dart';
+import 'profile_data.dart';
 
 const _uuid = Uuid();
 const _employmentTypes = {'full_time': 'Full-time', 'part_time': 'Part-time', 'contract': 'Contract', 'internship': 'Internship', 'freelance': 'Freelance', 'temporary': 'Temporary', 'volunteer': 'Volunteer'};
 const _steps = ['Personal', 'Experience', 'Education', 'Skills'];
 
-typedef Json = Map<String, dynamic>;
-
-List<Json> _list(Json p, String key) => ((p[key] as List?) ?? []).map((e) => Json.from(e as Map)).toList();
 
 class ProfileScreen extends ConsumerStatefulWidget {
   final int initialStep;
@@ -53,6 +51,7 @@ class _ProfileState extends ConsumerState<ProfileScreen> {
   /// Save through the backend (shared Zod validation). Returns true on success.
   Future<bool> _save() async {
     setState(() { _saving = true; _issues = {}; _message = null; });
+    pruneBlankEntries(_data);
     try {
       final updated = await Api.instance.saveProfile(_p!);
       _p!.updatedAt = updated;
@@ -177,13 +176,13 @@ class _ProfileState extends ConsumerState<ProfileScreen> {
       _text('LinkedIn', per['linkedin'] as String?, (v) => set('linkedin', v), issue: _issues['personal.linkedin'], type: TextInputType.url, hint: 'https://linkedin.com/in/…'),
       _text('Website / portfolio', per['website'] as String?, (v) => set('website', v), issue: _issues['personal.website'], type: TextInputType.url, hint: 'https://…'),
       _text('Professional summary', _data['summary'] as String?, (v) => _data['summary'] = v, issue: _issues['summary'], maxLines: 5, maxLength: 1200, hint: 'A few lines about your experience and strengths'),
-      Align(alignment: AlignmentDirectional.centerStart, child: TextButton.icon(onPressed: () => context.push('/ai-writer').then((_) => _load()), icon: const Icon(Icons.auto_awesome, size: 18), label: const Text('Write summary with AI'))),
+      Align(alignment: AlignmentDirectional.centerStart, child: TextButton.icon(onPressed: () async { if (_dirty && !await _save()) return; if (!mounted) return; await context.push('/ai-writer'); await _load(); }, icon: const Icon(Icons.auto_awesome, size: 18), label: const Text('Write summary with AI'))),
     ]);
   }
 
   // ------------------------------------------------------------------ step 2
   Widget _experience() {
-    final items = _list(_data, 'experience');
+    final items = liveList(_data, 'experience');
     void commit() { _data['experience'] = items; _touch(); }
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text('Work Experience', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
@@ -204,7 +203,7 @@ class _ProfileState extends ConsumerState<ProfileScreen> {
     final w = items[i];
     final id = w['id'] as String;
     final dates = Json.from((w['dates'] as Map?) ?? {'current': false});
-    final bullets = _list(w, 'bullets');
+    final bullets = liveList(w, 'bullets');
     final p = 'experience.$i';
     void setW(String k, Object? v) { if (v == null || v == '') { w.remove(k); } else { w[k] = v; } items[i] = w; commit(); }
     void setDates(String k, Object? v) { if (v == null) { dates.remove(k); } else { dates[k] = v; } if (dates['current'] == true) dates.remove('end'); w['dates'] = dates; items[i] = w; commit(); }
@@ -253,7 +252,7 @@ class _ProfileState extends ConsumerState<ProfileScreen> {
 
   // ------------------------------------------------------------------ step 3
   Widget _education() {
-    final items = _list(_data, 'education');
+    final items = liveList(_data, 'education');
     void commit() { _data['education'] = items; _touch(); }
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text('Education', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
@@ -298,9 +297,9 @@ class _ProfileState extends ConsumerState<ProfileScreen> {
 
   // ------------------------------------------------------------------ step 4
   Widget _skills() {
-    final skills = _list(_data, 'skills');
-    final languages = _list(_data, 'languages');
-    final certs = _list(_data, 'certifications');
+    final skills = liveList(_data, 'skills');
+    final languages = liveList(_data, 'languages');
+    final certs = liveList(_data, 'certifications');
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text('Skills', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
       const SizedBox(height: 4),

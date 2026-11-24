@@ -1,10 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import '../../core/api.dart';
+import '../../core/config.dart';
 import '../../core/brand.dart';
 import '../../core/data.dart';
 import '../../core/theme.dart';
 import '../../core/widgets.dart';
+
+/// The real template rendered with the user's own data (server-side, same engine as the PDF), scaled into the card.
+class _LiveThumb extends StatefulWidget {
+  final String templateId, category;
+  final bool selected;
+  const _LiveThumb({required this.templateId, required this.category, required this.selected});
+  @override
+  State<_LiveThumb> createState() => _LiveThumbState();
+}
+
+class _LiveThumbState extends State<_LiveThumb> {
+  WebViewController? _web;
+  bool _failed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Api.instance.templatePreviewHtml(widget.templateId).then((html) {
+      if (!mounted) return;
+      setState(() => _web = WebViewController()
+        ..setJavaScriptMode(JavaScriptMode.disabled)
+        ..setBackgroundColor(Colors.white)
+        ..loadHtmlString(html, baseUrl: Config.apiBase));
+    }).catchError((_) {
+      if (mounted) setState(() => _failed = true);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final border = Border.all(color: widget.selected ? Tokens.brand : Tokens.border, width: widget.selected ? 2.5 : 1);
+    if (_failed) return TemplateThumb(category: widget.category, selected: widget.selected);
+    return Container(
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: border, boxShadow: Tokens.shadow),
+      clipBehavior: Clip.antiAlias,
+      child: _web == null ? const Center(child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2))) : IgnorePointer(child: WebViewWidget(controller: _web!)),
+    );
+  }
+}
 
 String _cap(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1).replaceAll(RegExp('[-_]'), ' ');
 
@@ -72,7 +114,7 @@ class _TemplatesTabState extends ConsumerState<TemplatesTab> {
                               onTap: () => setState(() => _selected = id),
                               child: Column(children: [
                                 Expanded(child: Stack(children: [
-                                  Positioned.fill(child: TemplateThumb(category: t['category'] as String, selected: sel)),
+                                  Positioned.fill(child: _LiveThumb(templateId: id, category: t['category'] as String, selected: sel)),
                                   if (sel) const Positioned(top: 8, right: 8, child: CircleAvatar(radius: 12, backgroundColor: Tokens.brand, child: Icon(Icons.check, size: 16, color: Colors.white))),
                                   if (t['premium'] == true) Positioned(top: 8, left: 8, child: Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: Tokens.navy, borderRadius: BorderRadius.circular(6)), child: const Text('PRO', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800)))),
                                 ])),

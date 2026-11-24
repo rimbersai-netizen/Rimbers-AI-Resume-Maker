@@ -26,13 +26,10 @@ export function Gallery({ items, categories }: { items: Item[]; categories: stri
       {list.length === 0 ? <p className="empty">No templates found. Try another search or category.</p> : (
         <div className="tpl-gallery">
           {list.map((t) => {
-            const a = accent(t.category);
-            const side = a.length % 2 === 0 || [...t.category].length % 2 === 0;
-            return (
+                        return (
               <button key={t.id} type="button" className="tpl-card" aria-pressed={sel === t.id} onClick={() => setSel(t.id)} aria-label={`${t.name}${t.premium ? " (premium)" : ""}`}>
-                <div className="paper-thumb" style={{ ["--acc" as string]: a }}>
-                  {side && <div className="pt-side" />}
-                  <div className="pt-main"><div className="pt-h" /><div className="pt-l" /><div className="pt-l" style={{ width: "85%" }} /><div className="pt-s" /><div className="pt-l" /><div className="pt-l" style={{ width: "70%" }} /><div className="pt-s" /><div className="pt-l" /><div className="pt-l" style={{ width: "80%" }} /></div>
+                <div className="paper-thumb">
+                  <iframe src={`/templates/preview/${encodeURIComponent(t.id)}`} title={`${t.name} preview`} loading="lazy" tabIndex={-1} sandbox="" aria-hidden />
                   {sel === t.id && <span className="tick" aria-hidden>✓</span>}
                   {t.premium && <span className="pro">PRO</span>}
                 </div>
