@@ -19,3 +19,9 @@ Plan computed deterministically from the user's profile. Only skills the user ti
 
 ## Verified so far (see TESTING_REPORT.md)
 Live Ollama 2/2 on Windows (qwen3:4b faithful summary ≈ 35 s). Tailoring/cover-letter/LinkedIn live runs were verified earlier on macOS or are unverified (12B). CPU-only inference is slow: everything is asynchronous with progress and cancel.
+
+## Gemini provider (added 2026-11-24, at the user's explicit request)
+`GeminiProvider` (`packages/ai-engine/src/gemini.ts`) is a server-side cloud provider used by `services/ai-worker` **only** when the operator sets `GEMINI_API_KEY` **and** `AI_PROVIDER=gemini` (kept in the git-ignored `services/ai-worker/.env.gemini`). It runs **first**; local Ollama models are the fallback when Gemini is rate-limited/overloaded. Same Zod validation + fact-check gate as local models; the API key travels in a header, never a URL; clients never call Gemini.
+**Privacy trade-off:** with Gemini active, resume/profile text is sent to Google. On Google's free tier that content may be used to improve their products. Remove `AI_PROVIDER` (or the key) to return to local-only. Without the operator flag, cloud is used only with per-job `cloud_consent`.
+Models: default `gemini-flash-latest`, fallback `gemini-flash-lite-latest` (2.5 models are closed to new keys). Free-tier limits and 503 "high demand" spikes are expected → retries + local fallback.
+Status: key valid (model list OK); unit tests pass (request shape, error mapping, model fallback, cloud-first routing, consent rules). **Live generation not yet confirmed**: every model returned 503 during the test window (2026-11-24 ~20:15) — rerun `GEMINI_LIVE=1 vitest run packages/ai-engine/src/gemini.live.test.ts`.

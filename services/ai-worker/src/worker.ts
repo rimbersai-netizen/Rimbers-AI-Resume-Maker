@@ -3,7 +3,7 @@
  * The service role bypasses RLS, so ownership of the referenced profile is checked explicitly.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { AiError, AiJobInput, OllamaProvider, runAiJob, userFacingAiError, type AiProvider, type RouteConfig } from "@gars/ai-engine";
+import { AiError, AiJobInput, GeminiProvider, OllamaProvider, runAiJob, userFacingAiError, type AiProvider, type RouteConfig } from "@gars/ai-engine";
 import { MasterProfile } from "@gars/resume-schema";
 
 export interface AiJobRow { id: string; user_id: string; kind: string; input: unknown; attempts: number; max_attempts: number; cloud_consent: boolean }
@@ -14,13 +14,18 @@ export interface WorkerDeps {
 }
 
 export function defaultDeps(): WorkerDeps {
+  // Gemini is used only when an operator sets BOTH a key and AI_PROVIDER=gemini (resume content then goes to Google).
+  const gemini = process.env.GEMINI_API_KEY && process.env.AI_PROVIDER === "gemini"
+    ? { provider: new GeminiProvider({ apiKey: process.env.GEMINI_API_KEY, fallbackModels: (process.env.GEMINI_FALLBACK_MODELS ?? "gemini-flash-lite-latest").split(",").map((m) => m.trim()).filter(Boolean) }), model: process.env.GEMINI_MODEL ?? "gemini-flash-latest", enabled: true, first: true, assumeConsent: true }
+    : undefined;
   return {
     provider: new OllamaProvider({ baseUrl: process.env.OLLAMA_BASE_URL ?? "http://127.0.0.1:11434" }),
     route: {
       localModels: (process.env.AI_MODELS ?? "qwen3:4b,llama3.2:3b").split(",").map((s) => s.trim()).filter(Boolean),
       maxAttempts: 2,
       backoffMs: 1000,
-      // Cloud fallback stays disabled until an operator configures a provider here and users consent per request.
+      // Cloud stays disabled unless the operator opted in above; otherwise users must consent per request.
+      cloud: gemini,
     },
   };
 }

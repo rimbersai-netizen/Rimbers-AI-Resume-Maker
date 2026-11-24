@@ -6,7 +6,13 @@ export interface RouteConfig {
   maxAttempts?: number;
   backoffMs?: number;
   /** Cloud fallback: only used if enabled by admin AND consented by the user for this job. */
-  cloud?: { provider: AiProvider; model: string; enabled: boolean };
+  cloud?: {
+    provider: AiProvider; model: string; enabled: boolean;
+    /** Operator chose this provider as primary (e.g. AI_PROVIDER=gemini): try it before local models; local models become the fallback. */
+    first?: boolean;
+    /** Operator-level consent for every job (set only by an explicit deployment decision). Otherwise per-job `cloudConsent` is required. */
+    assumeConsent?: boolean;
+  };
   sleep?: (ms: number) => Promise<void>;
 }
 
@@ -30,6 +36,20 @@ export async function routeGenerate<T>(
   let attempts = 0;
   let last: AiError | undefined;
 
+  const cloudAllowed = Boolean(cfg.cloud?.enabled && (ctx.cloudConsent || cfg.cloud.assumeConsent));
+  if (cfg.cloud?.first && cloudAllowed) {
+    for (let i = 0; i < max; i++) {
+      attempts++;
+      try {
+        return { ...(await cfg.cloud.provider.generate(cfg.cloud.model, req)), attempts };
+      } catch (e) {
+        last = e instanceof AiError ? e : new AiError("unknown", (e as Error).message, false);
+        if (!last.retryable || last.code === "quota_exceeded") break; // transient 5xx is retried once; otherwise fall back to local models
+        await sleep((cfg.backoffMs ?? 500) * 2 ** i);
+      }
+    }
+  }
+
   for (const model of cfg.localModels) {
     for (let i = 0; i < max; i++) {
       attempts++;
@@ -45,8 +65,8 @@ export async function routeGenerate<T>(
     if (last?.code === "provider_unavailable") break;
   }
 
-  if (cfg.cloud?.enabled) {
-    if (!ctx.cloudConsent) throw new AiError("cloud_not_permitted", "Local AI unavailable and cloud processing was not consented", false);
+  if (cfg.cloud?.enabled && !cfg.cloud.first) {
+    if (!ctx.cloudConsent && !cfg.cloud.assumeConsent) throw new AiError("cloud_not_permitted", "Local AI unavailable and cloud processing was not consented", false);
     attempts++;
     return { ...(await cfg.cloud.provider.generate(cfg.cloud.model, req)), attempts };
   }
