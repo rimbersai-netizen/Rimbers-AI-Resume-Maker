@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/config.dart';
+import 'core/illustrations.dart';
 import 'core/router.dart';
 import 'core/theme.dart';
 
@@ -25,6 +26,7 @@ class App extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: buildTheme(),
       routerConfig: ref.watch(routerProvider),
+      builder: (context, child) => AppBackground(child: child ?? const SizedBox.shrink()),
     );
   }
 }

@@ -117,7 +117,7 @@ class _SignInState extends State<SignInScreen> {
 
   @override
   Widget build(BuildContext context) => _AuthScaffold(
-        title: 'Sign In to Your Account', subtitle: 'Continue and build your professional CV',
+        title: 'Welcome Back 👋', subtitle: 'Sign in to continue',
         children: [
           Form(
             key: _form,
@@ -134,6 +134,7 @@ class _SignInState extends State<SignInScreen> {
           Align(alignment: AlignmentDirectional.centerEnd, child: TextButton(onPressed: () => context.push('/forgot-password'), child: const Text('Forgot password?'))),
           if (_error != null) Padding(padding: const EdgeInsets.only(bottom: 12), child: ErrorBanner(_error!)),
           GradientButton(label: 'Sign In', busy: _busy, onPressed: _submit),
+          TextButton(onPressed: () => context.push('/sign-in/code'), child: const Text('Email me a sign-in code instead')),
           const GoogleSignInButton(),
           const SizedBox(height: 16),
           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -163,8 +164,8 @@ class _SignUpState extends State<SignUpScreen> {
     setState(() { _busy = true; _error = null; });
     try {
       final r = await Supabase.instance.client.auth.signUp(email: _email.text.trim(), password: _password.text);
-      // With email confirmation on there is no session yet; show the check-your-inbox state.
-      if (mounted && r.session == null) setState(() => _sent = true);
+      // With email confirmation on there is no session yet: continue to the 6-digit code screen.
+      if (mounted && r.session == null) context.push('/verify?type=signup&email=${Uri.encodeQueryComponent(_email.text.trim())}');
     } catch (e) {
       if (mounted) setState(() => _error = friendlyAuthError(e));
     } finally {

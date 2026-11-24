@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { continueAsGuest } from "../auth-actions";
-import { Brand, Submit } from "../form-bits";
+import { Brand } from "../form-bits";
 import { GoogleButton } from "../google-button";
 import { SignInForm } from "./form";
 
@@ -10,14 +9,14 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
     <main className="shell">
       <section className="card" aria-labelledby="t">
         <Brand />
-        <h1 id="t">Sign in to your account</h1>
-        <p className="sub">Continue and build your professional CV</p>
+        <h1 id="t">Welcome back 👋</h1>
+        <p className="sub">Sign in to continue</p>
         {error === "link_invalid" && <div className="alert error" role="alert">That link is invalid or has expired.</div>}
         {error === "guest_unavailable" && <div className="alert error" role="alert">Guest mode is unavailable right now.</div>}
         {error === "google_unavailable" && <div className="alert error" role="alert">Google sign-in is not available right now.</div>}
         <SignInForm next={next} />
+        <p className="row muted" style={{ justifyContent: "center" }}><Link href={`/sign-in/code${next ? `?next=${encodeURIComponent(next)}` : ""}`}>Email me a sign-in code instead</Link></p>
         <GoogleButton next={next} />
-        <form action={continueAsGuest}><Submit variant="secondary">Continue as guest</Submit></form>
         <p className="row muted">Don’t have an account? <Link href="/sign-up">Sign up</Link></p>
       </section>
     </main>

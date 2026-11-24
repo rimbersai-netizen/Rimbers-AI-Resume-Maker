@@ -4,6 +4,7 @@ import 'package:global_ai_resume_studio/core/theme.dart';
 import 'package:global_ai_resume_studio/core/widgets.dart';
 import 'package:global_ai_resume_studio/core/jobs_api.dart';
 import 'package:global_ai_resume_studio/features/auth/auth_screens.dart';
+import 'package:global_ai_resume_studio/features/auth/otp_screens.dart';
 import 'package:global_ai_resume_studio/features/jobs/jobs_screen.dart';
 
 Widget host(Widget child, {TextDirection dir = TextDirection.ltr}) =>
@@ -11,6 +12,7 @@ Widget host(Widget child, {TextDirection dir = TextDirection.ltr}) =>
 
 void main() {
   jobsTests();
+  otpTests();
   group('auth validation', () {
     test('email', () {
       expect(validateEmail(''), 'Required');
@@ -98,6 +100,23 @@ void jobsTests() {
     test('label colours follow the match thresholds', () {
       expect(labelColor('strong'), Tokens.success);
       expect(labelColor('stretch'), Tokens.danger);
+    });
+  });
+}
+
+void otpTests() {
+  group('otp screen', () {
+    testWidgets('shows the email, keeps Confirm disabled until 6 digits, and filters non-digits', (t) async {
+      await t.pumpWidget(MaterialApp(theme: buildTheme(), home: const OtpScreen(email: 'a@b.co', type: 'signup')));
+      expect(find.textContaining('a@b.co'), findsOneWidget);
+      expect(find.text('Send a new code in 60s'), findsOneWidget);
+      await t.enterText(find.byType(TextField), '12ab3');
+      await t.pump();
+      expect(find.text('1'), findsOneWidget);
+      expect(find.text('a'), findsNothing);
+      final confirm = find.widgetWithText(GradientButton, 'Confirm and continue');
+      expect(t.widget<GradientButton>(confirm).onPressed, isNull);
+      await t.pumpWidget(const SizedBox()); // dispose timers
     });
   });
 }

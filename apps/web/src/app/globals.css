@@ -282,3 +282,23 @@ button.chip:disabled { opacity: .5; cursor: not-allowed; }
 .sticky-cta { position: sticky; bottom: 12px; display: flex; justify-content: center; }
 .sticky-cta .btn { max-width: 420px; box-shadow: var(--shadow); }
 a.btn, a.cta, .ai-banner, .tool, .resume-card { text-decoration: none; }
+
+/* ---- Rimbers look: soft wave canvas, big rounded shadowed cards, pill navy buttons (matches the mobile app + mockups) ---- */
+html, body { background: transparent; min-height: 100%; }
+body { background: linear-gradient(180deg, #F6F9FF 0%, #E6EFFF 100%) fixed; position: relative; }
+body::before, body::after { content: ""; position: fixed; z-index: -1; border-radius: 50%; pointer-events: none; }
+body::before { width: 520px; height: 520px; top: -200px; inset-inline-end: -160px; background: radial-gradient(circle, rgba(59,130,255,.30), rgba(59,130,255,0) 70%); }
+body::after { width: 560px; height: 560px; bottom: -240px; inset-inline-start: -160px; background: radial-gradient(circle, rgba(31,95,224,.26), rgba(31,95,224,0) 70%); }
+@media (prefers-color-scheme: dark) { body { background: linear-gradient(180deg, #0A1636 0%, #08122E 100%) fixed; } }
+.card, .tool, .resume-card, .jobs-row, .jobs-card { border-radius: 24px; border-color: transparent; box-shadow: 0 10px 30px rgba(11, 42, 122, .10); }
+.btn { border-radius: 999px; min-height: 52px; background: linear-gradient(90deg, #0A2E8F, #1F5FE0); box-shadow: 0 8px 20px rgba(10, 46, 143, .25); }
+.btn.secondary { background: var(--bg-surface); color: var(--text-primary); box-shadow: 0 4px 14px rgba(11, 42, 122, .08); border: 1px solid var(--border); }
+input[type=email], input[type=password], input[type=text], textarea, select { border-radius: 16px; border-color: transparent; box-shadow: 0 2px 10px rgba(11, 42, 122, .07); padding: 14px 16px; }
+.sitenav { background: rgba(255,255,255,.72); border-bottom-color: transparent; box-shadow: 0 4px 20px rgba(11, 42, 122, .06); }
+@media (prefers-color-scheme: dark) { .sitenav { background: rgba(10,22,54,.75); } }
+.ai-banner { border-radius: 28px; background: linear-gradient(135deg, #0A2E8F, #1F5FE0); box-shadow: 0 16px 36px rgba(10, 46, 143, .30); position: relative; overflow: hidden; }
+.ai-banner::after { content: ""; position: absolute; width: 260px; height: 260px; border-radius: 50%; inset-inline-end: -60px; top: -90px; background: radial-gradient(circle, rgba(255,255,255,.22), rgba(255,255,255,0) 70%); }
+.ai-banner .bot { width: 92px; height: 92px; background: #fff; box-shadow: 0 10px 24px rgba(0,0,0,.2); }
+.home h1 { font-size: 2rem; }
+.tool .ico { width: 54px; height: 54px; border-radius: 16px; display: grid; place-items: center; background: var(--bg-subtle); font-size: 1.5rem; }
+.tools-grid { gap: 16px; }

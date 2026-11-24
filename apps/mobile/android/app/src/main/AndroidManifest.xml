@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="global_ai_resume_studio"
+        android:label="Rimbers"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -58,7 +58,13 @@ export class GeminiProvider implements AiProvider {
     let last: unknown;
     for (const m of [model, ...(this.opts.fallbackModels ?? []).filter((x) => x !== model)]) {
       try {
-        return await this.generateWith(m, req);
+        try {
+          return await this.generateWith(m, req);
+        } catch (e) {
+          // Gemini's "high demand" 503s are usually gone within a couple of seconds: retry the same model once before switching.
+          if (e instanceof AiError && e.code === "provider_unavailable" && e.retryable) { await new Promise((r) => setTimeout(r, 2000)); return await this.generateWith(m, req); }
+          throw e;
+        }
       } catch (e) {
         last = e;
         const retryOtherModel = e instanceof AiError && (e.code === "model_missing" || (e.code === "provider_unavailable" && e.retryable));

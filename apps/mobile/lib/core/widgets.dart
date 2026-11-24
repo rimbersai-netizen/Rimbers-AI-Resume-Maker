@@ -26,7 +26,7 @@ class GradientButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(Tokens.rButton),
             onTap: enabled ? onPressed : null,
             child: Container(
-              height: 52, alignment: Alignment.center, padding: const EdgeInsets.symmetric(horizontal: 16),
+              height: 56, alignment: Alignment.center, padding: const EdgeInsets.symmetric(horizontal: 20),
               child: busy
                   ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
                   : Row(mainAxisSize: MainAxisSize.min, children: [

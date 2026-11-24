@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/brand.dart';
+import '../../core/illustrations.dart';
 import '../../core/router.dart';
 import '../../core/theme.dart';
 import '../../core/widgets.dart';
@@ -36,7 +37,7 @@ class _OnboardingState extends ConsumerState<OnboardingScreen> {
         child: Padding(
           padding: const EdgeInsets.all(Tokens.gutter),
           child: Column(children: [
-            Row(children: [const RimbersLogo(size: 30), const Spacer(), TextButton(onPressed: _done, child: const Text('Skip'))]),
+            Align(alignment: AlignmentDirectional.centerEnd, child: TextButton(onPressed: _done, child: const Text('Skip'))),
             Expanded(
               child: PageView.builder(
                 controller: _controller,
@@ -45,11 +46,9 @@ class _OnboardingState extends ConsumerState<OnboardingScreen> {
                 itemBuilder: (_, i) {
                   final p = _pages[i];
                   return Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Container(
-                      width: 180, height: 180,
-                      decoration: BoxDecoration(gradient: Tokens.gradient, shape: BoxShape.circle, boxShadow: Tokens.shadow),
-                      child: Icon(p.$1, color: Colors.white, size: 84),
-                    ),
+                    i == 0
+                        ? const Column(mainAxisSize: MainAxisSize.min, children: [RimbersLogo(size: 76, stacked: true), SizedBox(height: 8), Text('Build a Better Career with AI', style: TextStyle(fontStyle: FontStyle.italic, fontSize: 17, color: Tokens.navy)), SizedBox(height: 12), ResumeIllustration(size: 250)])
+                        : i == 1 ? const ResumeIllustration(size: 250) : Container(width: 200, height: 200, decoration: BoxDecoration(gradient: Tokens.gradient, shape: BoxShape.circle, boxShadow: Tokens.shadow), child: Icon(p.$1, color: Colors.white, size: 92)),
                     const SizedBox(height: 40),
                     Text(p.$2, textAlign: TextAlign.center, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
                     const SizedBox(height: 12),
@@ -66,7 +65,7 @@ class _OnboardingState extends ConsumerState<OnboardingScreen> {
             ]),
             const SizedBox(height: 20),
             GradientButton(
-              label: last ? 'Get Started' : 'Next', trailing: Icons.arrow_forward,
+              label: last || _page == 0 && false ? 'Get Started' : (_page == 0 ? 'Get Started' : 'Next'), trailing: Icons.arrow_forward,
               onPressed: () => last ? _done() : _controller.nextPage(duration: const Duration(milliseconds: 250), curve: Curves.easeOut)),
           ]),
         ),

@@ -29,7 +29,7 @@ class EditorScreen extends ConsumerStatefulWidget {
 }
 
 class _EditorState extends ConsumerState<EditorScreen> with SingleTickerProviderStateMixin {
-  late final TabController _tabs = TabController(length: 4, vsync: this, initialIndex: widget.initialTab.clamp(0, 3));
+  late final TabController _tabs = TabController(length: 4, vsync: this, initialIndex: const [0, 1, 0, 2][widget.initialTab.clamp(0, 3)]);
   LoadedResume? _resume;
   String? _loadError;
   String _status = 'saved'; // saved | saving | error | conflict
@@ -94,16 +94,20 @@ class _EditorState extends ConsumerState<EditorScreen> with SingleTickerProvider
         actions: [
           IconButton(tooltip: 'ATS analysis', icon: const Icon(Icons.verified_outlined), onPressed: () => context.push('/resumes/${r.id}/ats')),
         ],
-        bottom: TabBar(controller: _tabs, labelColor: Tokens.brand, indicatorColor: Tokens.brand, tabs: const [Tab(text: 'Preview'), Tab(text: 'Style'), Tab(text: 'Sections'), Tab(text: 'Export')]),
+        bottom: TabBar(controller: _tabs, labelColor: Tokens.brand, unselectedLabelColor: Tokens.textSecondary, indicatorColor: Tokens.brand, tabs: const [Tab(icon: Icon(Icons.article_outlined), text: 'Content', height: 62), Tab(icon: Icon(Icons.palette_outlined), text: 'Design', height: 62), Tab(icon: Icon(Icons.ios_share), text: 'Export', height: 62), Tab(icon: Icon(Icons.visibility_outlined), text: 'Preview', height: 62)]),
+      ),
+      bottomNavigationBar: AnimatedBuilder(
+        animation: _tabs,
+        builder: (context, _) => _tabs.index == 3 ? const SizedBox.shrink() : SafeArea(child: Padding(padding: const EdgeInsets.fromLTRB(Tokens.gutter, 6, Tokens.gutter, 10), child: GradientButton(label: 'Preview Resume', leading: Icons.visibility_outlined, onPressed: () => _tabs.animateTo(3)))),
       ),
       body: Column(children: [
         _StatusBar(status: _status, message: _statusMessage, onRetry: _save, onReload: () { setState(() { _resume = null; _status = 'saved'; }); _load(); }),
         Expanded(
           child: TabBarView(controller: _tabs, physics: const NeverScrollableScrollPhysics(), children: [
-            _PreviewTab(key: ValueKey('p$_previewKey'), resumeId: r.id, onEditProfile: () => context.push('/profile/edit').then((_) => setState(() => _previewKey++))),
-            _StyleTab(layout: r.layout, onChange: _edit),
             _SectionsTab(layout: r.layout, onChange: _edit),
+            _StyleTab(layout: r.layout, onChange: _edit),
             _ExportTab(resumeId: r.id, saving: _status == 'saving', title: r.layout['title'] as String),
+            _PreviewTab(key: ValueKey('p$_previewKey'), resumeId: r.id, onEditProfile: () => context.push('/profile/edit').then((_) => setState(() => _previewKey++))),
           ]),
         ),
       ]),

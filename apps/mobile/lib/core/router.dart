@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../features/ai/ai_writer_screen.dart';
 import '../features/ats/ats_screen.dart';
 import '../features/auth/auth_screens.dart';
+import '../features/auth/otp_screens.dart';
 import '../features/cover_letters/cover_letter_screens.dart';
 import '../features/community/community_screens.dart';
 import '../features/home/shell.dart';
@@ -22,7 +23,7 @@ import '../features/settings/settings_screen.dart';
 
 final prefsProvider = Provider<SharedPreferences>((_) => throw UnimplementedError('prefs not initialised'));
 
-const _publicPaths = {'/onboarding', '/sign-in', '/sign-up', '/forgot-password'};
+const _publicPaths = {'/onboarding', '/sign-in', '/sign-in/code', '/sign-up', '/forgot-password', '/verify'};
 
 class _AuthRefresh extends ChangeNotifier {
   late final StreamSubscription<AuthState> _sub;
@@ -58,6 +59,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
       GoRoute(path: '/sign-in', builder: (_, __) => const SignInScreen()),
+      GoRoute(path: '/sign-in/code', builder: (_, __) => const EmailCodeScreen()),
+      GoRoute(path: '/verify', builder: (_, s) => OtpScreen(email: s.uri.queryParameters['email'] ?? '', type: s.uri.queryParameters['type'] == 'email' ? 'email' : 'signup')),
       GoRoute(path: '/sign-up', builder: (_, __) => const SignUpScreen()),
       GoRoute(path: '/forgot-password', builder: (_, __) => const ForgotPasswordScreen()),
       GoRoute(path: '/home', builder: (_, state) => AppShell(tab: int.tryParse(state.uri.queryParameters['tab'] ?? '') ?? 0)),

@@ -8,7 +8,7 @@ if (!url || !key) { console.error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY ar
 const db = createClient(url, key, { auth: { persistSession: false } });
 const deps = defaultDeps();
 const health = await deps.provider.health();
-console.log(`ai-worker started; ${deps.provider.name} ${health.ok ? `ok (${health.models.length} models)` : `UNAVAILABLE: ${health.error}`}; models=${deps.route.localModels.join(",")}`);
+console.log(`ai-worker started; AI primary=${deps.route.cloud?.enabled && deps.route.cloud.first ? `${deps.route.cloud.provider.name}:${deps.route.cloud.model} (local fallback)` : "local"}; ${deps.provider.name} ${health.ok ? `ok (${health.models.length} models)` : `UNAVAILABLE: ${health.error}`}; models=${deps.route.localModels.join(",")}`);
 process.on("SIGINT", () => process.exit(0)); process.on("SIGTERM", () => process.exit(0));
 for (;;) {
   try {

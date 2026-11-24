@@ -6,6 +6,7 @@ import '../../core/api.dart';
 import '../../core/data.dart';
 import '../../core/theme.dart';
 import '../../core/brand.dart';
+import '../../core/illustrations.dart';
 import '../../core/widgets.dart';
 import '../templates/templates_tab.dart';
 import '../jobs/jobs_screen.dart';
@@ -156,7 +157,7 @@ class _HomeTab extends ConsumerWidget {
               ),
               const SizedBox(width: 12),
               Column(children: [
-                Container(width: 64, height: 64, decoration: const BoxDecoration(color: Colors.white12, shape: BoxShape.circle), child: const Icon(Icons.smart_toy_outlined, color: Colors.white, size: 38)),
+                const RobotMascot(size: 84),
                 const SizedBox(height: 10),
                 const CircleAvatar(radius: 16, backgroundColor: Colors.white, child: Icon(Icons.arrow_forward, size: 18, color: Tokens.brand)),
               ]),

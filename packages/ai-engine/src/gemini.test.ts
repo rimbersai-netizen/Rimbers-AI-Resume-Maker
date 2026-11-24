@@ -30,11 +30,11 @@ describe("GeminiProvider", () => {
 describe("Gemini model fallback", () => {
   it("moves to the fallback model when the main one is overloaded", async () => {
     const urls: string[] = [];
-    const p = new GeminiProvider({ apiKey: "K", fallbackModels: ["lite"], fetchImpl: (async (url: string) => { urls.push(url); return urls.length === 1 ? new Response("", { status: 503 }) : ok('{"summary":"ok"}'); }) as never });
+    const p = new GeminiProvider({ apiKey: "K", fallbackModels: ["lite"], fetchImpl: (async (url: string) => { urls.push(url); return urls.length <= 2 ? new Response("", { status: 503 }) : ok('{"summary":"ok"}'); }) as never });
     const r = await p.generate("big", req);
     expect(r.model).toBe("lite");
     expect(urls[0]).toContain("/models/big:");
-    expect(urls[1]).toContain("/models/lite:");
+    expect(urls[2]).toContain("/models/lite:");
   });
 });
 

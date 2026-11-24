@@ -49,8 +49,43 @@ export async function signUp(_: FormState, form: FormData): Promise<FormState> {
   });
   if (error && error.status === 429) return { error: "Too many attempts. Please wait and try again." };
   if (error && /password/i.test(error.message)) return { fieldErrors: { password: error.message }, values: echo(form) };
-  // Same response whether or not the email already exists.
-  return { message: CHECK_EMAIL };
+  // Same response whether or not the email already exists: always continue to the code screen.
+  redirect(`/verify?type=signup&email=${encodeURIComponent(parsed.data.email)}`);
+}
+
+const OTP_FAILED = "That code is incorrect or has expired. Check it and try again, or request a new one.";
+
+/** Confirm a 6-digit email code (signup confirmation or passwordless sign-in). Generic errors; Supabase rate-limits attempts. */
+export async function verifyOtp(_: FormState, form: FormData): Promise<FormState> {
+  const parsed = z.object({ email: Email, token: z.string().regex(/^d{6}$/, "Enter the 6-digit code"), type: z.enum(["signup", "email"]) })
+    .safeParse({ email: form.get("email"), token: String(form.get("token") ?? "").replace(/s/g, ""), type: form.get("type") });
+  if (!parsed.success) return { fieldErrors: fieldErrors(parsed.error), values: echo(form) };
+  const supabase = await createClient();
+  const { error } = await supabase.auth.verifyOtp({ email: parsed.data.email, token: parsed.data.token, type: parsed.data.type });
+  if (error) return { error: error.status === 429 ? "Too many attempts. Please wait a minute and try again." : OTP_FAILED, values: echo(form) };
+  redirect(safeNext(form.get("next")));
+}
+
+/** Send a fresh code. Same response whether or not the account exists. */
+export async function resendOtp(_: FormState, form: FormData): Promise<FormState> {
+  const parsed = z.object({ email: Email, type: z.enum(["signup", "email"]) }).safeParse({ email: form.get("email"), type: form.get("type") });
+  if (!parsed.success) return { error: "Enter a valid email address." };
+  const supabase = await createClient();
+  const { error } = parsed.data.type === "signup"
+    ? await supabase.auth.resend({ type: "signup", email: parsed.data.email })
+    : await supabase.auth.signInWithOtp({ email: parsed.data.email, options: { shouldCreateUser: false } });
+  if (error?.status === 429) return { error: "Please wait a minute before requesting another code.", values: echo(form) };
+  return { message: "If that email can receive a code, a new one is on its way.", values: echo(form) };
+}
+
+/** Passwordless login step 1: email me a code. Never reveals whether the account exists. */
+export async function requestLoginCode(_: FormState, form: FormData): Promise<FormState> {
+  const parsed = Email.safeParse(form.get("email"));
+  if (!parsed.success) return { fieldErrors: { email: parsed.error.issues[0]!.message }, values: echo(form) };
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithOtp({ email: parsed.data, options: { shouldCreateUser: false } });
+  if (error?.status === 429) return { error: "Too many attempts. Please wait a minute and try again.", values: echo(form) };
+  redirect(`/verify?type=email&email=${encodeURIComponent(parsed.data)}&next=${encodeURIComponent(safeNext(form.get("next")))}`);
 }
 
 export async function continueAsGuest(): Promise<void> {
