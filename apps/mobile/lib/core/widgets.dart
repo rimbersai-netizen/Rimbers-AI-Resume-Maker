@@ -352,3 +352,9 @@ class _WorkingState extends State<_Working> {
     );
   }
 }
+
+/// First letter for avatars. Safe for empty/blank names (a brand-new profile has no name yet).
+String initialOf(String? s, [String fallback = '?']) {
+  final t = (s ?? '').trim();
+  return t.isEmpty ? fallback : t.characters.first.toUpperCase();
+}

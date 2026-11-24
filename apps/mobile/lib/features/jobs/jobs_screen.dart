@@ -151,6 +151,8 @@ class _DiscoverViewState extends ConsumerState<DiscoverView> {
       _profileReady = f.profileReady;
     } on ApiException catch (e) {
       _error = e.message;
+    } catch (_) {
+      _error = 'Could not load jobs. Please try again.'; // never show raw Dart errors
     }
     if (mounted) setState(() => _loading = false);
   }

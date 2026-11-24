@@ -13,6 +13,7 @@ Widget host(Widget child, {TextDirection dir = TextDirection.ltr}) =>
 void main() {
   jobsTests();
   otpTests();
+  initialTests();
   group('auth validation', () {
     test('email', () {
       expect(validateEmail(''), 'Required');
@@ -101,6 +102,16 @@ void jobsTests() {
       expect(labelColor('strong'), Tokens.success);
       expect(labelColor('stretch'), Tokens.danger);
     });
+  });
+}
+
+void initialTests() {
+  test('avatar initial is safe for empty or blank names', () {
+    expect(initialOf(''), '?');
+    expect(initialOf('   '), '?');
+    expect(initialOf(null), '?');
+    expect(initialOf('aliza khan'), 'A');
+    expect(initialOf('', 'U'), 'U');
   });
 }
 

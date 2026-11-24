@@ -131,7 +131,7 @@ class _HomeTab extends ConsumerWidget {
           InkWell(
             customBorder: const CircleBorder(),
             onTap: () => context.go('/home?tab=3'),
-            child: Semantics(label: 'Profile', button: true, child: CircleAvatar(backgroundColor: Tokens.subtle, child: Text((name ?? '?').characters.first.toUpperCase(), style: const TextStyle(color: Tokens.brand, fontWeight: FontWeight.w800)))),
+            child: Semantics(label: 'Profile', button: true, child: CircleAvatar(backgroundColor: Tokens.subtle, child: Text(initialOf(name), style: const TextStyle(color: Tokens.brand, fontWeight: FontWeight.w800)))),
           ),
         ]),
         const SizedBox(height: 18),
@@ -366,7 +366,7 @@ class _ProfileTab extends ConsumerWidget {
 
     return ListView(padding: const EdgeInsets.all(Tokens.gutter), children: [
       Align(alignment: Alignment.centerRight, child: IconButton(tooltip: 'Settings', icon: const Icon(Icons.settings_outlined), onPressed: () => context.push('/settings'))),
-      Center(child: CircleAvatar(radius: 44, backgroundColor: Tokens.subtle, child: Text((fullName.isNotEmpty ? fullName : (user?.email ?? '?')).characters.first.toUpperCase(), style: const TextStyle(fontSize: 34, color: Tokens.brand, fontWeight: FontWeight.w800)))),
+      Center(child: CircleAvatar(radius: 44, backgroundColor: Tokens.subtle, child: Text(initialOf(fullName.isNotEmpty ? fullName : user?.email), style: const TextStyle(fontSize: 34, color: Tokens.brand, fontWeight: FontWeight.w800)))),
       const SizedBox(height: 10),
       Center(child: Text(fullName.isNotEmpty ? fullName : 'Your name', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Tokens.navy))),
       Center(child: Text(user?.email ?? '', style: const TextStyle(color: Tokens.textSecondary))),
