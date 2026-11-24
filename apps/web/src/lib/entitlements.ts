@@ -1,11 +1,11 @@
 import "server-only";
 import { evaluate, type EntitlementRow, type Feature, type SubscriptionRow } from "@gars/subscriptions";
-import type { createClient } from "./supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export const PLAN_NAMES: Record<string, string> = { STANDARD: "Standard", PROFESSIONAL: "Professional", PREMIUM: "Premium" };
 
 /** Server-side entitlement decision from the user's own rows (RLS-scoped). Never trust the client. */
-export async function entitlement(supabase: Awaited<ReturnType<typeof createClient>>, feature: Feature) {
+export async function entitlement(supabase: SupabaseClient, feature: Feature) {
   const now = new Date();
   const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
   const active = ["queued", "running", "succeeded"];
