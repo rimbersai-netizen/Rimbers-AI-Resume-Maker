@@ -181,3 +181,9 @@
 - Cloud Supabase: `supabase db push --remote` applied 11 migrations (dry run first). Anonymous REST check: `resume_templates` readable; `job_pipeline`, `community_posts`, `community_reports`, `master_profiles` → `[]` (RLS).
 - NOT run: pgTAP/storage/SUPABASE_IT (no Docker), signed-in E2E (no account, B11), live Ollama tailoring on the new flow.
 - `flutter build apk --debug` after the jobs/community screens: built OK (2026-11-24).
+
+## 2026-11-24 (later) — cloud smoke test, no account
+- Web (`next start -p 3100`, cloud env): /sign-in 200; /jobs → 307 to sign-in; /api/v1/jobs, /community/posts, /plan → 401 (bearer required); /api/v1/templates 200.
+- ai-worker with the cloud service-role key (`services/*/.env.cloud`, git-ignored): "ollama ok (2 models)", connected and polling.
+- Docker install attempted via winget (elevated): not installed — needs interactive UAC + WSL2 + reboot (B10 stays open).
+- Creating a test user in the cloud project was refused by the tool's permission check twice → signed-in E2E still NOT run (B11).
