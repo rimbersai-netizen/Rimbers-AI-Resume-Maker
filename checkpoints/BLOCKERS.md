@@ -11,4 +11,5 @@
 
 Resolved: B1 Node — Homebrew node 26.13.1 built (04:00). B2 Docker — running (2026-11-21). B7 — user confirmed `Showcase.png` is the second reference (2026-11-21).
 
-| B10 | Workspace moved to Windows 11: no Docker, no Ollama, Chromium/Android SDK unverified, ~3.7 GB free RAM at audit; Xcode impossible | pgTAP, storage, SUPABASE_IT, PDF_IT, live AI, mobile builds cannot run here | Install Docker Desktop + Ollama (qwen3:4b, llama3.2:3b) + Playwright Chromium, or continue on the Mac. iOS builds need a Mac. |
+
+| B10 | Windows-only development. Resolved on Windows: pnpm, Ollama (installed per-user), Chromium via system Chrome (CHROMIUM_EXECUTABLE). STILL BLOCKED: Docker Desktop (needs admin + WSL2 install) so local Supabase, pgTAP, storage RLS and SUPABASE_IT cannot run; iOS binaries cannot be built on Windows (Expo EAS cloud build is a paid external service needing approval) | DB/RLS verification; iOS | User: run elevated PowerShell: wsl --install; winget install Docker.DockerDesktop; reboot |

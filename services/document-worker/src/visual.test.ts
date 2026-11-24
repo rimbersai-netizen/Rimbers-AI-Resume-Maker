@@ -14,7 +14,8 @@ import { closeBrowser, renderPng } from "./pdf";
 
 const enabled = process.env.PDF_IT === "1";
 const update = process.env.UPDATE_SNAPSHOTS === "1";
-const SNAP_DIR = resolve(__dirname, "../../../tests/visual/__snapshots__");
+/** Baselines are per OS: text anti-aliasing differs (macOS baselines are the original reviewed set; Windows has its own). */
+const SNAP_DIR = resolve(__dirname, "../../../tests/visual", process.platform === "darwin" ? "__snapshots__" : `__snapshots__-${process.platform}`);
 const DIFF_DIR = resolve(__dirname, "../../../tests/visual/__diff__");
 /** Per-pixel colour threshold and the share of pixels allowed to differ (antialiasing noise). */
 const PIXEL_THRESHOLD = 0.1;

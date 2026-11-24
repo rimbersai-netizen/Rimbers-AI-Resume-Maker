@@ -18,6 +18,9 @@ The repo was developed on macOS (Intel i7, Docker, Ollama, Homebrew Node). The c
 
 `pnpm check` on this machine: typecheck OK, **476 tests pass, 280 skipped** (the skipped ones are the Docker/Chromium/Ollama-gated suites).
 
+### Windows-only update (same day)
+Decision: all development continues on Windows. Done: pnpm; Ollama 0.40.16 installed per-user (models qwen3:4b, llama3.2:3b pulling); Chromium suites run against system Chrome with `CHROMIUM_EXECUTABLE` -> PDF/DOCX/Unicode 255/255 pass; visual baselines are now per-OS (`tests/visual/__snapshots__-win32`, 112/112 pass, stable on re-run; Mac baselines untouched). Remaining: Docker Desktop (needs admin), Android SDK (not yet installed), iOS binaries cannot be built on Windows.
+
 ## 1. Architecture (existing)
 pnpm monorepo: `apps/{web,admin,mobile}`, `packages/*` (`@gars/*`), `services/{ai-worker,document-worker}`, `supabase/`.
 - **apps/web** — Next.js (App Router) + Supabase SSR auth. **Real, working.**

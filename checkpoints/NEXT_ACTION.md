@@ -1,6 +1,6 @@
 # Next Action
 
-Env: Node 26.13.1, pnpm 9.15.9 working. Web: `pnpm -C apps/web build && pnpm -C apps/web start` (127.0.0.1:3100; needs apps/web/.env.local from `supabase status`).
+Env (Windows): Node 26.13.1, pnpm 9.15.9. Chromium tests: set CHROMIUM_EXECUTABLE="C:Program FilesGoogleChromeApplicationrome.exe" PDF_IT=1. Ollama: %LOCALAPPDATA%ProgramsOllamaollama.exe serve.
 Local Supabase: `supabase start -x studio,realtime,edge-runtime,imgproxy,vector,logflare,supavisor,postgres-meta` (Mailpit on 55424).
 
 1. Restore Docker+Ollama (B10), verify 12B, then 11 Import, 12C interview prep, job tracker, AI agent. See docs/EXISTING_PROJECT_AUDIT.md section 9.
