@@ -25,3 +25,13 @@ Web server actions and the mobile app's `/api/v1` routes call the **same** funct
 
 ## Not built / out of scope here
 Admin dashboard (`apps/admin` empty), payments (sandbox only, not wired), resume import, interview prep, iOS binaries (cannot build on Windows), auto-submitting applications to employers (we do not do this: the user applies on the employer's page).
+
+## Billing (Moyasar, added 2026-11-24 at the user's explicit request; LIVE keys configured)
+`apps/web/src/lib/services/billing.ts`. Hosted Moyasar **invoices**: card data never touches our servers or the mobile app.
+1. `POST /api/v1/billing/checkout {plan, period}` (also the `/pricing` page): the **server** reads the price from `subscription_plans`, creates the invoice (secret key, Basic auth) and returns its https URL; an `initiated` row is written to `payments` (service role).
+2. After payment the user lands on `/billing/success` (web) or returns to the app (mobile calls `POST /api/v1/billing/confirm`). Both re-read the invoice **from Moyasar** with the secret key; redirect query strings are never trusted.
+3. Activation is idempotent (unique `provider+provider_subscription_id`, one payment row per payment); amount, currency, owner (`metadata.user_id`) and plan must match what we charged. Paying again before expiry extends from the current period end. Refunds seen on re-sync expire the plan.
+4. `POST /api/webhooks/moyasar` (needs a public HTTPS URL): constant-time check of the shared `secret_token` (`MOYASAR_WEBHOOK_SECRET`), then the same re-fetch + idempotent sync.
+Each payment is a one-time charge for one period (no stored cards, no auto-renewal); the plan ends at the period end unless the user pays again.
+Config (git-ignored `apps/web/.env.cloud`, server-only): `MOYASAR_SECRET_KEY`, `MOYASAR_PUBLISHABLE_KEY` (unused by invoices), `MOYASAR_WEBHOOK_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SITE_URL`. Prices (SAR halalas) live in migration `20261124000012`: Standard 19/159, Professional 39/279, Premium 59/429 per month/year — change by updating those rows.
+Verified: 12 unit tests with a mocked Moyasar API + in-memory DB; invoice payload accepted by Moyasar in TEST mode (no money). **No live charge has been made by us.**

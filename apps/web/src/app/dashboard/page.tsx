@@ -60,7 +60,7 @@ export default async function Dashboard() {
       )) : <p className="empty">No resumes yet. Pick a <Link href="/templates">template</Link> or create one with AI.</p>}
 
       <div className="row" style={{ marginTop: 24 }}>
-        <Link href="/profile">Edit my profile</Link><Link href="/account">Account settings</Link>
+        <Link href="/profile">Edit my profile</Link><Link href="/pricing">Plans</Link><Link href="/account">Account settings</Link>
         <form action={signOut}><Submit variant="secondary">Sign out</Submit></form>
       </div>
     </main>
