@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { loadPrimaryProfile } from "../profile/actions";
 import { LinkedInAssistant } from "./assistant";
 
-export const metadata = { title: "LinkedIn assistant · Global AI Resume Studio" };
+export const metadata = { title: "LinkedIn assistant · Rimbers AI Resume Maker" };
 
 export default async function LinkedInPage() {
   const supabase = await createClient();

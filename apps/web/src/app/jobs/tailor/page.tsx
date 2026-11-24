@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { tailorAnalysis } from "@/lib/services/jobs";
 import { Tailor } from "./tailor";
 
-export const metadata = { title: "Tailor resume · Global AI Resume Studio" };
+export const metadata = { title: "Tailor resume · Rimbers AI Resume Maker" };
 export const dynamic = "force-dynamic";
 
 export default async function TailorPage({ searchParams }: { searchParams: Promise<{ key?: string }> }) {

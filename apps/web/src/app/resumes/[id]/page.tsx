@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { loadResume } from "../actions";
 import { ResumeEditor } from "./editor";
 
-export const metadata = { title: "Edit resume · Global AI Resume Studio" };
+export const metadata = { title: "Edit resume · Rimbers AI Resume Maker" };
 
 export default async function ResumePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

@@ -5,7 +5,7 @@ import { getFeed, pipelineCounts } from "@/lib/services/jobs";
 import { JobsNav } from "./bits";
 import { Discover } from "./discover";
 
-export const metadata = { title: "Jobs · Global AI Resume Studio" };
+export const metadata = { title: "Jobs · Rimbers AI Resume Maker" };
 export const dynamic = "force-dynamic";
 
 export default async function JobsPage() {

@@ -187,3 +187,4 @@
 - ai-worker with the cloud service-role key (`services/*/.env.cloud`, git-ignored): "ollama ok (2 models)", connected and polling.
 - Docker install attempted via winget (elevated): not installed — needs interactive UAC + WSL2 + reboot (B10 stays open).
 - Creating a test user in the cloud project was refused by the tool's permission check twice → signed-in E2E still NOT run (B11).
+- Rimbers UI refresh (web + Flutter): pnpm check 493 passed; flutter analyze 0 errors/0 warnings; flutter test 12/12; next build OK; landing + templates screenshots reviewed.

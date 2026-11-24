@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { LetterEditor } from "./letter-editor";
 
-export const metadata = { title: "Cover letter · Global AI Resume Studio" };
+export const metadata = { title: "Cover letter · Rimbers AI Resume Maker" };
 
 export default async function LetterPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

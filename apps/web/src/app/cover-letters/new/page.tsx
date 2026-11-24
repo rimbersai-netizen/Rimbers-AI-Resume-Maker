@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { loadPrimaryProfile } from "../../profile/actions";
 import { NewLetter } from "./new-letter";
 
-export const metadata = { title: "New cover letter · Global AI Resume Studio" };
+export const metadata = { title: "New cover letter · Rimbers AI Resume Maker" };
 
 export default async function NewCoverLetterPage() {
   const supabase = await createClient();

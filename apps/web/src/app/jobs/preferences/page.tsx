@@ -5,7 +5,7 @@ import { getPrefs, pipelineCounts, ROLES, ROLE_IDS } from "@/lib/services/jobs";
 import { JobsNav } from "../bits";
 import { PreferencesForm } from "./form";
 
-export const metadata = { title: "Job preferences · Global AI Resume Studio" };
+export const metadata = { title: "Job preferences · Rimbers AI Resume Maker" };
 export const dynamic = "force-dynamic";
 
 export default async function PreferencesPage() {

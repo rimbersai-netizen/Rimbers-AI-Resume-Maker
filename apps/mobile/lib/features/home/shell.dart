@@ -5,8 +5,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/api.dart';
 import '../../core/data.dart';
 import '../../core/theme.dart';
+import '../../core/brand.dart';
 import '../../core/widgets.dart';
-import '../community/community_screens.dart';
+import '../templates/templates_tab.dart';
 import '../jobs/jobs_screen.dart';
 
 class ResumeSummary {
@@ -44,24 +45,67 @@ class AppShell extends ConsumerStatefulWidget {
   ConsumerState<AppShell> createState() => _AppShellState();
 }
 
+/// Pages: 0 Home · 1 Templates · 2 Jobs · 3 Profile. The centre "+" in the bar starts a new resume (not a page).
 class _AppShellState extends ConsumerState<AppShell> {
-  late int _index = widget.tab.clamp(0, 4);
+  late int _index = widget.tab.clamp(0, 3);
+
+  @override
+  void didUpdateWidget(AppShell old) {
+    super.didUpdateWidget(old);
+    if (old.tab != widget.tab) _index = widget.tab.clamp(0, 3);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final pages = [const _HomeTab(), const JobsTab(), const _ResumesTab(), const CommunityTab(), const _ProfileTab()];
+    final pages = [const _HomeTab(), const TemplatesTab(), const JobsTab(), const _ProfileTab()];
+    Widget item(int page, IconData icon, IconData active, String label) {
+      final on = _index == page;
+      return Expanded(
+        child: InkWell(
+          onTap: () => setState(() => _index = page),
+          child: Semantics(
+            selected: on, button: true, label: label, excludeSemantics: true,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                Icon(on ? active : icon, color: on ? Tokens.brand : Tokens.textSecondary),
+                const SizedBox(height: 2),
+                Text(label, style: TextStyle(fontSize: 11.5, fontWeight: on ? FontWeight.w700 : FontWeight.w500, color: on ? Tokens.brand : Tokens.textSecondary)),
+              ]),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: SafeArea(child: IndexedStack(index: _index, children: pages)),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: (i) => setState(() => _index = i),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.work_outline), selectedIcon: Icon(Icons.work), label: 'Jobs'),
-          NavigationDestination(icon: Icon(Icons.description_outlined), selectedIcon: Icon(Icons.description), label: 'Resumes'),
-          NavigationDestination(icon: Icon(Icons.forum_outlined), selectedIcon: Icon(Icons.forum), label: 'Community'),
-          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profile'),
-        ],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(color: Tokens.surface, boxShadow: [BoxShadow(color: Tokens.navy.withOpacity(.08), blurRadius: 16, offset: const Offset(0, -4))], borderRadius: const BorderRadius.vertical(top: Radius.circular(24))),
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 64,
+            child: Row(children: [
+              item(0, Icons.home_outlined, Icons.home, 'Home'),
+              item(1, Icons.grid_view_outlined, Icons.grid_view, 'Templates'),
+              Expanded(
+                child: Center(
+                  child: Semantics(
+                    button: true, label: 'Create new resume',
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: () => context.push('/resumes/new').then((_) => ref.invalidate(resumesProvider)),
+                      child: Container(width: 52, height: 52, decoration: BoxDecoration(gradient: Tokens.gradient, shape: BoxShape.circle, boxShadow: Tokens.shadow), child: const Icon(Icons.add, color: Colors.white, size: 30)),
+                    ),
+                  ),
+                ),
+              ),
+              item(2, Icons.work_outline, Icons.work, 'Jobs'),
+              item(3, Icons.person_outline, Icons.person, 'Profile'),
+            ]),
+          ),
+        ),
       ),
     );
   }
@@ -80,31 +124,51 @@ class _HomeTab extends ConsumerWidget {
         ref.invalidate(profileProvider);
       },
       child: ListView(padding: const EdgeInsets.all(Tokens.gutter), children: [
-        Text('Hi${name != null && name.isNotEmpty ? ', $name' : ''} 👋', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
-        const SizedBox(height: 4),
-        const Text('Ready to create or update your resume?', style: TextStyle(color: Tokens.textSecondary)),
+        Row(children: [
+          const RimbersLogo(size: 34),
+          const Spacer(),
+          InkWell(
+            customBorder: const CircleBorder(),
+            onTap: () => context.go('/home?tab=3'),
+            child: Semantics(label: 'Profile', button: true, child: CircleAvatar(backgroundColor: Tokens.subtle, child: Text((name ?? '?').characters.first.toUpperCase(), style: const TextStyle(color: Tokens.brand, fontWeight: FontWeight.w800)))),
+          ),
+        ]),
+        const SizedBox(height: 18),
+        Text('Hello${name != null && name.isNotEmpty ? ', $name' : ''} 👋', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800, color: Tokens.navy)),
+        const SizedBox(height: 2),
+        const Text('Let’s create your perfect resume', style: TextStyle(color: Tokens.textSecondary, fontSize: 15)),
         const SizedBox(height: 16),
         InkWell(
-          borderRadius: BorderRadius.circular(Tokens.rCard),
+          borderRadius: BorderRadius.circular(22),
           onTap: () => context.push('/resumes/new'),
           child: Ink(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(gradient: Tokens.gradient, borderRadius: BorderRadius.circular(Tokens.rCard), boxShadow: Tokens.shadow),
-            child: const Row(children: [
-              CircleAvatar(backgroundColor: Colors.white24, child: Icon(Icons.add, color: Colors.white)),
-              SizedBox(width: 14),
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('Create New Resume', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 17)),
-                Text('Build a professional CV with AI', style: TextStyle(color: Colors.white70)),
-              ])),
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(gradient: const LinearGradient(colors: [Color(0xFF0B2A7A), Color(0xFF1F5FE0)], begin: Alignment.topLeft, end: Alignment.bottomRight), borderRadius: BorderRadius.circular(22), boxShadow: Tokens.shadow),
+            child: Row(children: [
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: const [
+                  Icon(Icons.auto_awesome, color: Colors.white70),
+                  SizedBox(height: 8),
+                  Text('Create Resume with AI', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 19)),
+                  SizedBox(height: 4),
+                  Text('Generate, optimize and tailor your resume with the power of AI.', style: TextStyle(color: Colors.white70, height: 1.35)),
+                ]),
+              ),
+              const SizedBox(width: 12),
+              Column(children: [
+                Container(width: 64, height: 64, decoration: const BoxDecoration(color: Colors.white12, shape: BoxShape.circle), child: const Icon(Icons.smart_toy_outlined, color: Colors.white, size: 38)),
+                const SizedBox(height: 10),
+                const CircleAvatar(radius: 16, backgroundColor: Colors.white, child: Icon(Icons.arrow_forward, size: 18, color: Tokens.brand)),
+              ]),
             ]),
           ),
         ),
         const SizedBox(height: 16),
         _toolGrid(context, resumes.value),
+        Align(alignment: Alignment.centerRight, child: TextButton(onPressed: () => context.push('/tools'), child: const Text('All tools →'))),
         Section(
-          title: 'My Resumes${resumes.value == null ? '' : ' (${resumes.value!.length})'}',
-          action: TextButton(onPressed: () => context.go('/home?tab=2'), child: const Text('See All')),
+          title: 'Your Resumes',
+          action: TextButton(onPressed: () => context.push('/resumes').then((_) => ref.invalidate(resumesProvider)), child: const Text('See All →')),
           children: [
             resumes.when(
               loading: () => const Padding(padding: EdgeInsets.all(24), child: Loading()),
@@ -113,6 +177,7 @@ class _HomeTab extends ConsumerWidget {
                   ? const _NoResumes()
                   : Column(children: [for (final r in list.take(3)) Padding(padding: const EdgeInsets.only(bottom: 10), child: ResumeCard(r))]),
             ),
+            OutlineButton(label: 'Create New Resume', icon: Icons.add, onPressed: () => context.push('/resumes/new').then((_) => ref.invalidate(resumesProvider))),
           ],
         ),
       ]),
@@ -125,31 +190,35 @@ class _HomeTab extends ConsumerWidget {
       context.push('/resumes/${resumes.first.id}$suffix');
     }
 
-    final tiles = [
-      (Icons.auto_fix_high, 'AI Resume Writer', () => context.push('/ai-writer')),
-      (Icons.verified_outlined, 'ATS Analysis', () => withResume('/ats')),
-      (Icons.mail_outline, 'Cover Letter', () => context.push('/cover-letters')),
-      (Icons.gps_fixed, 'Job Match', () => withResume('/ats')),
-      (Icons.swipe, 'Find Jobs', () => context.go('/home?tab=1')),
-      (Icons.grid_view, 'All Tools', () => context.push('/tools')),
+    final tiles = <(IconData, String, VoidCallback?, String?)>[
+      (Icons.bar_chart_rounded, 'ATS Analyzer', () => withResume('/ats'), null),
+      (Icons.mail_outline, 'Cover Letter', () => context.push('/cover-letters'), null),
+      (Icons.forum_outlined, 'Interview Prep', null, 'Soon'),
+      (Icons.work_outline, 'Job Search', () => context.go('/home?tab=2'), null),
     ];
     return GridView.count(
-      crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: 2.1,
+      crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: 1.9,
       children: [
         for (final t in tiles)
-          InkWell(
-            borderRadius: BorderRadius.circular(Tokens.rCard), onTap: t.$3,
-            child: Ink(
-              decoration: BoxDecoration(color: Tokens.surface, borderRadius: BorderRadius.circular(Tokens.rCard), border: Border.all(color: Tokens.border)),
-              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Icon(t.$1, color: Tokens.brand), const SizedBox(width: 8), Flexible(child: Text(t.$2, style: const TextStyle(fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis)),
-              ]),
+          Opacity(
+            opacity: t.$3 == null ? .6 : 1,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(Tokens.rCard), onTap: t.$3,
+              child: Ink(
+                decoration: BoxDecoration(color: Tokens.surface, borderRadius: BorderRadius.circular(Tokens.rCard), border: Border.all(color: Tokens.border), boxShadow: Tokens.shadow),
+                child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  Icon(t.$1, color: Tokens.brand, size: 30),
+                  const SizedBox(height: 6),
+                  Text(t.$4 == null ? t.$2 : '${t.$2} · ${t.$4}', style: const TextStyle(fontWeight: FontWeight.w600, color: Tokens.navy), overflow: TextOverflow.ellipsis),
+                ]),
+              ),
             ),
           ),
       ],
     );
   }
 }
+
 
 class _NoResumes extends StatelessWidget {
   const _NoResumes();
@@ -255,6 +324,7 @@ class _ToolsList extends StatelessWidget {
     final items = [
       (Icons.auto_fix_high, 'AI Writing Assistant', 'Write or polish your professional summary', '/ai-writer'),
       (Icons.mail_outline, 'Cover Letters', 'Generate, edit and export letters', '/cover-letters'),
+      (Icons.forum_outlined, 'Community', 'Wins, questions and resume feedback', '/community'),
       (Icons.work_outline, 'LinkedIn Assistant', 'Headline and About section', '/linkedin'),
       (Icons.workspace_premium_outlined, 'Plans & Billing', 'See what your plan includes', '/plans'),
     ];
@@ -269,29 +339,66 @@ class _ToolsList extends StatelessWidget {
   }
 }
 
+class ResumesScreen extends StatelessWidget {
+  const ResumesScreen({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(), body: const _ResumesTab());
+}
+
 class _ProfileTab extends ConsumerWidget {
   const _ProfileTab();
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(profileProvider);
+    final plan = ref.watch(planProvider);
+    final resumes = ref.watch(resumesProvider);
+    final saved = ref.watch(pipelineProvider('saved'));
     final user = Supabase.instance.client.auth.currentUser;
     final personal = profile.value?.data['personal'] as Map?;
+    final fullName = (personal?['fullName'] as String?) ?? '';
+    final planId = plan.value?['plan'] as String? ?? 'FREE';
+    final planName = const {'FREE': 'Free', 'STANDARD': 'Standard', 'PROFESSIONAL': 'Professional', 'PREMIUM': 'Premium'}[planId] ?? planId;
+
+    Widget row(IconData icon, String label, {String? trailing, VoidCallback? onTap, Color? color}) => ListTile(
+          leading: Icon(icon, color: color ?? Tokens.navy), title: Text(label, style: TextStyle(fontWeight: FontWeight.w600, color: color ?? Tokens.navy)),
+          trailing: trailing != null ? Text(trailing, style: const TextStyle(color: Tokens.textSecondary)) : const Icon(Icons.chevron_right), onTap: onTap);
+
     return ListView(padding: const EdgeInsets.all(Tokens.gutter), children: [
-      Text('Profile', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
+      Align(alignment: Alignment.centerRight, child: IconButton(tooltip: 'Settings', icon: const Icon(Icons.settings_outlined), onPressed: () => context.push('/settings'))),
+      Center(child: CircleAvatar(radius: 44, backgroundColor: Tokens.subtle, child: Text((fullName.isNotEmpty ? fullName : (user?.email ?? '?')).characters.first.toUpperCase(), style: const TextStyle(fontSize: 34, color: Tokens.brand, fontWeight: FontWeight.w800)))),
+      const SizedBox(height: 10),
+      Center(child: Text(fullName.isNotEmpty ? fullName : 'Your name', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Tokens.navy))),
+      Center(child: Text(user?.email ?? '', style: const TextStyle(color: Tokens.textSecondary))),
+      const SizedBox(height: 8),
+      Center(child: Chip(avatar: const Icon(Icons.workspace_premium, size: 18, color: Tokens.brand), label: Text('$planName Plan', style: const TextStyle(fontWeight: FontWeight.w700)))),
+      const SizedBox(height: 12),
+      if (planId == 'FREE')
+        Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(gradient: const LinearGradient(colors: [Color(0xFF0B2A7A), Color(0xFF1F5FE0)]), borderRadius: BorderRadius.circular(20)),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Text('Upgrade your plan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 18)),
+            const SizedBox(height: 4),
+            const Text('Compare what each plan includes — more resumes, AI requests and downloads.', style: TextStyle(color: Colors.white70)),
+            const SizedBox(height: 12),
+            FilledButton(style: FilledButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Tokens.brand), onPressed: () => context.push('/plans'), child: const Text('See plans →')),
+          ]),
+        ),
       const SizedBox(height: 12),
       Card(
-        child: ListTile(
-          leading: CircleAvatar(backgroundColor: Tokens.subtle, child: Text(((personal?['fullName'] as String?) ?? user?.email ?? '?').characters.first.toUpperCase(), style: const TextStyle(color: Tokens.brand, fontWeight: FontWeight.w700))),
-          title: Text((personal?['fullName'] as String?)?.isNotEmpty == true ? personal!['fullName'] as String : 'Your name', style: const TextStyle(fontWeight: FontWeight.w700)),
-          subtitle: Text(user?.email ?? ''),
-        ),
+        child: Column(children: [
+          row(Icons.description_outlined, 'My Resumes', trailing: resumes.value == null ? null : '${resumes.value!.length}', onTap: () => context.push('/resumes').then((_) => ref.invalidate(resumesProvider))),
+          row(Icons.bookmark_border, 'Saved Jobs', trailing: saved.value == null ? null : '${saved.value!.items.length}', onTap: () => context.go('/home?tab=2')),
+          row(Icons.edit_outlined, 'Edit master profile', onTap: () => context.push('/profile/edit').then((_) => ref.invalidate(profileProvider))),
+          row(Icons.forum_outlined, 'Community', onTap: () => context.push('/community')),
+          row(Icons.grid_view, 'All tools', onTap: () => context.push('/tools')),
+          row(Icons.settings_outlined, 'Settings', onTap: () => context.push('/settings')),
+          row(Icons.logout, 'Log Out', color: Tokens.danger, onTap: () async {
+            if (!await confirm(context, title: 'Log out?', body: 'You can sign back in any time.', action: 'Log out')) return;
+            await Supabase.instance.client.auth.signOut();
+          }),
+        ]),
       ),
-      const SizedBox(height: 12),
-      const Text('Your master profile is entered once and reused for every resume, cover letter and AI tool. Editing it never changes a resume you have already tailored.', style: TextStyle(color: Tokens.textSecondary)),
-      const SizedBox(height: 16),
-      GradientButton(label: 'Edit master profile', leading: Icons.edit_outlined, onPressed: () => context.push('/profile/edit').then((_) => ref.invalidate(profileProvider))),
-      const SizedBox(height: 12),
-      OutlineButton(label: 'Settings', icon: Icons.settings_outlined, onPressed: () => context.push('/settings')),
     ]);
   }
 }

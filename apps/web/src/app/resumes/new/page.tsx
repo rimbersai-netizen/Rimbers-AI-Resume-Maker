@@ -3,9 +3,10 @@ import { createClient } from "@/lib/supabase/server";
 import { loadPrimaryProfile } from "../../profile/actions";
 import { NewResumeWizard } from "./wizard";
 
-export const metadata = { title: "New resume · Global AI Resume Studio" };
+export const metadata = { title: "New resume · Rimbers AI Resume Maker" };
 
-export default async function NewResumePage() {
+export default async function NewResumePage({ searchParams }: { searchParams: Promise<{ template?: string }> }) {
+  const { template } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/sign-in?next=/resumes/new");
@@ -16,6 +17,7 @@ export default async function NewResumePage() {
   return (
     <main className="page">
       <NewResumeWizard
+        initialTemplate={template ?? null}
         appLocale={prefs?.app_locale ?? "en"}
         initialCountry={prefs?.country_code ?? profile?.profile.personal.location.country ?? null}
         hasPhoto={Boolean(profile?.profile.personal.photoPath)}

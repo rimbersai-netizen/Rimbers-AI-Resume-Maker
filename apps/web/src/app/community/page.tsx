@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { KINDS, listPosts } from "@/lib/services/community";
 import { Feed } from "./feed";
 
-export const metadata = { title: "Community · Global AI Resume Studio" };
+export const metadata = { title: "Community · Rimbers AI Resume Maker" };
 export const dynamic = "force-dynamic";
 
 export default async function CommunityPage({ searchParams }: { searchParams: Promise<{ kind?: string }> }) {

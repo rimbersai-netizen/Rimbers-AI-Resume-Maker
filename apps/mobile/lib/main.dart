@@ -21,7 +21,7 @@ class App extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     if (!Config.configured) return const MaterialApp(home: _MissingConfig());
     return MaterialApp.router(
-      title: 'Global AI Resume Studio',
+      title: 'Rimbers AI Resume Maker',
       debugShowCheckedModeBanner: false,
       theme: buildTheme(),
       routerConfig: ref.watch(routerProvider),

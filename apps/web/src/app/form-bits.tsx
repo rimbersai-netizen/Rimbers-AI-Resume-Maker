@@ -26,5 +26,5 @@ export function Alerts({ state }: { state: FormState }) {
 }
 
 export function Brand() {
-  return <div className="brand"><span className="brand-mark" aria-hidden />Global AI Resume Studio</div>;
+  return <div className="brand"><span className="brand-r" aria-hidden>R</span>Rimbers <span className="brand-sub">AI Resume Maker</span></div>;
 }

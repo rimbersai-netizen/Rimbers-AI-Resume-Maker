@@ -40,7 +40,7 @@ class SettingsScreen extends StatelessWidget {
             await Supabase.instance.client.auth.signOut();
           }
         })),
-        const Padding(padding: EdgeInsets.all(16), child: Text('Global AI Resume Studio · v1.0.0', textAlign: TextAlign.center, style: TextStyle(color: Tokens.textSecondary, fontSize: 12))),
+        const Padding(padding: EdgeInsets.all(16), child: Text('Rimbers AI Resume Maker · v1.0.0', textAlign: TextAlign.center, style: TextStyle(color: Tokens.textSecondary, fontSize: 12))),
       ]),
     );
   }

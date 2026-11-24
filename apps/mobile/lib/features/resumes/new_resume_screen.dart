@@ -8,7 +8,8 @@ import '../../core/widgets.dart';
 
 /// Create a resume: country (suggests conventions) → language (independent!) → template → name.
 class NewResumeScreen extends ConsumerStatefulWidget {
-  const NewResumeScreen({super.key});
+  final String? initialTemplate;
+  const NewResumeScreen({super.key, this.initialTemplate});
   @override
   ConsumerState<NewResumeScreen> createState() => _NewResumeState();
 }
@@ -26,7 +27,8 @@ class _NewResumeState extends ConsumerState<NewResumeScreen> {
     setState(() { _country = code; _loadingLayout = true; _error = null; });
     try {
       final l = await Api.instance.defaultLayout(code, 'en', title: _title.text.trim().isEmpty ? null : _title.text.trim());
-      if (mounted) setState(() => _layout = l);
+      final tpl = widget.initialTemplate;
+      if (mounted) setState(() => _layout = tpl == null ? l : {...l, 'templateId': tpl});
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e.message);
     } finally {

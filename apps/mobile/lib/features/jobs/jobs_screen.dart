@@ -92,7 +92,7 @@ class _JobsTabState extends ConsumerState<JobsTab> {
       Padding(
         padding: const EdgeInsets.fromLTRB(Tokens.gutter, Tokens.gutter, 4, 0),
         child: Row(children: [
-          Expanded(child: Text(const ['Discover', 'Saved', 'Applications'][_seg], style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800))),
+          Expanded(child: Text(const ['Discover', 'Job Search', 'Saved', 'Applications'][_seg], style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800))),
           IconButton(tooltip: 'Job preferences', icon: const Icon(Icons.tune), onPressed: () => context.push('/jobs/preferences').then((_) => setState(() => _seg = 0))),
         ]),
       ),
@@ -101,15 +101,16 @@ class _JobsTabState extends ConsumerState<JobsTab> {
         child: SegmentedButton<int>(
           showSelectedIcon: false,
           segments: const [
-            ButtonSegment(value: 0, label: Text('Discover'), icon: Icon(Icons.layers_outlined)),
-            ButtonSegment(value: 1, label: Text('Saved'), icon: Icon(Icons.bookmark_border)),
-            ButtonSegment(value: 2, label: Text('Applied'), icon: Icon(Icons.send_outlined)),
+            ButtonSegment(value: 0, label: Text('Swipe'), icon: Icon(Icons.layers_outlined)),
+            ButtonSegment(value: 1, label: Text('Search'), icon: Icon(Icons.search)),
+            ButtonSegment(value: 2, label: Text('Saved'), icon: Icon(Icons.bookmark_border)),
+            ButtonSegment(value: 3, label: Text('Applied'), icon: Icon(Icons.send_outlined)),
           ],
           selected: {_seg},
           onSelectionChanged: (s) => setState(() => _seg = s.first),
         ),
       ),
-      Expanded(child: IndexedStack(index: _seg, children: [DiscoverView(active: _seg == 0), PipelineView(key: ValueKey('saved$_seg'), states: const ['saved'], saved: true), PipelineView(key: ValueKey('apps$_seg'), states: applicationStates)])),
+      Expanded(child: IndexedStack(index: _seg, children: [DiscoverView(active: _seg == 0), const BrowseView(), PipelineView(key: ValueKey('saved$_seg'), states: const ['saved'], saved: true), PipelineView(key: ValueKey('apps$_seg'), states: applicationStates)])),
     ]);
   }
 }
@@ -227,7 +228,7 @@ class _DiscoverViewState extends ConsumerState<DiscoverView> {
               transform: Matrix4.translationValues(_dx, 0, 0)..rotateZ(_dx / 1200),
               transformAlignment: Alignment.bottomCenter,
               child: Stack(children: [
-                _JobCard(job: job, onDetails: () => _showDetails(context, job)),
+                _JobCard(job: job, onDetails: () => showJobDetails(context, job)),
                 if (_dx > 40) const Positioned(top: 18, left: 18, child: _Stamp('ADD', Tokens.success)),
                 if (_dx < -40) const Positioned(top: 18, right: 18, child: _Stamp('PASS', Tokens.danger)),
               ]),
@@ -251,25 +252,26 @@ class _DiscoverViewState extends ConsumerState<DiscoverView> {
     ]);
   }
 
-  void _showDetails(BuildContext context, Job job) {
-    showModalBottomSheet(
-      context: context, isScrollControlled: true, showDragHandle: true, backgroundColor: Tokens.surface,
-      builder: (_) => DraggableScrollableSheet(
-        expand: false, initialChildSize: .8, maxChildSize: .95,
-        builder: (_, sc) => ListView(controller: sc, padding: const EdgeInsets.fromLTRB(20, 0, 20, 24), children: [
-          Text(job.title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 4),
-          Text('${job.company} · ${job.location}', style: const TextStyle(color: Tokens.textSecondary)),
-          const SizedBox(height: 14),
-          Text(job.description.isEmpty ? 'No description provided.' : job.description, style: const TextStyle(height: 1.45)),
-          const SizedBox(height: 16),
-          Text('via ${job.sourceName}', style: const TextStyle(color: Tokens.textSecondary, fontSize: 12)),
-          const SizedBox(height: 8),
-          OutlineButton(label: 'View original posting', onPressed: () => openUrl(context, job.url)),
-        ]),
-      ),
-    );
-  }
+}
+
+void showJobDetails(BuildContext context, Job job) {
+  showModalBottomSheet(
+    context: context, isScrollControlled: true, showDragHandle: true, backgroundColor: Tokens.surface,
+    builder: (_) => DraggableScrollableSheet(
+      expand: false, initialChildSize: .8, maxChildSize: .95,
+      builder: (_, sc) => ListView(controller: sc, padding: const EdgeInsets.fromLTRB(20, 0, 20, 24), children: [
+        Text(job.title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+        const SizedBox(height: 4),
+        Text('${job.company} · ${job.location}', style: const TextStyle(color: Tokens.textSecondary)),
+        const SizedBox(height: 14),
+        Text(job.description.isEmpty ? 'No description provided.' : job.description, style: const TextStyle(height: 1.45)),
+        const SizedBox(height: 16),
+        Text('via ${job.sourceName}', style: const TextStyle(color: Tokens.textSecondary, fontSize: 12)),
+        const SizedBox(height: 8),
+        OutlineButton(label: 'View original posting', onPressed: () => openUrl(context, job.url)),
+      ]),
+    ),
+  );
 }
 
 class _Stamp extends StatelessWidget {
@@ -452,5 +454,105 @@ class _PipelineTile extends ConsumerWidget {
         ]),
       ),
     );
+  }
+}
+
+// ---------------------------------------------------------------- Browse (search + filters list)
+
+class BrowseView extends ConsumerStatefulWidget {
+  const BrowseView({super.key});
+  @override
+  ConsumerState<BrowseView> createState() => _BrowseViewState();
+}
+
+class _BrowseViewState extends ConsumerState<BrowseView> {
+  final _q = TextEditingController();
+  final List<Job> _jobs = [];
+  int _total = 0;
+  bool _loading = true, _more = false, _remote = false, _fullTime = false, _strong = false;
+  String? _error;
+  final _saved = <String>{};
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void dispose() {
+    _q.dispose();
+    super.dispose();
+  }
+
+  Future<void> _load({bool more = false}) async {
+    setState(() { if (more) { _more = true; } else { _loading = true; _error = null; } });
+    try {
+      final f = await Api.instance.jobFeed(offset: more ? _jobs.length : 0);
+      if (!more) _jobs.clear();
+      final have = _jobs.map((j) => j.key).toSet();
+      _jobs.addAll(f.jobs.where((j) => !have.contains(j.key)));
+      _total = f.total;
+    } on ApiException catch (e) {
+      _error = e.message;
+    }
+    if (mounted) setState(() { _loading = false; _more = false; });
+  }
+
+  Future<void> _save(Job j) async {
+    try {
+      await Api.instance.setJobState(j.key, 'saved');
+      setState(() => _saved.add(j.key));
+      ref.invalidate(pipelineProvider);
+    } on ApiException catch (e) {
+      if (mounted) toast(context, e.message);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) return const Loading();
+    if (_error != null) return Padding(padding: const EdgeInsets.all(16), child: ErrorBanner(_error!, onRetry: _load));
+    final q = _q.text.trim().toLowerCase();
+    final list = _jobs.where((j) =>
+        (q.isEmpty || j.title.toLowerCase().contains(q) || j.company.toLowerCase().contains(q) || j.location.toLowerCase().contains(q)) &&
+        (!_remote || j.workMode == 'remote') && (!_fullTime || (j.jobType ?? '').toLowerCase().contains('full')) && (!_strong || (j.match?.score ?? 0) >= 75)).toList();
+    return Column(children: [
+      Padding(padding: const EdgeInsets.symmetric(horizontal: Tokens.gutter), child: TextField(controller: _q, onChanged: (_) => setState(() {}), decoration: const InputDecoration(hintText: 'Search jobs…', prefixIcon: Icon(Icons.search)))),
+      SizedBox(
+        height: 48,
+        child: ListView(scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: Tokens.gutter, vertical: 6), children: [
+          for (final f in [('Remote', _remote, (bool v) => _remote = v), ('Full-time', _fullTime, (bool v) => _fullTime = v), ('Strong match', _strong, (bool v) => _strong = v)])
+            Padding(padding: const EdgeInsets.only(right: 8), child: FilterChip(label: Text(f.$1), selected: f.$2, showCheckmark: false, selectedColor: Tokens.brand, labelStyle: TextStyle(color: f.$2 ? Colors.white : Tokens.textPrimary, fontWeight: FontWeight.w600), onSelected: (v) => setState(() => f.$3(v)))),
+        ]),
+      ),
+      Expanded(
+        child: list.isEmpty
+            ? EmptyState(icon: Icons.search_off, title: 'No jobs match', body: 'Try different filters, or change your job preferences.', action: OutlineButton(label: 'Change preferences', onPressed: () => context.push('/jobs/preferences').then((_) => _load())))
+            : RefreshIndicator(
+                onRefresh: _load,
+                child: ListView.separated(
+                  padding: const EdgeInsets.all(Tokens.gutter), itemCount: list.length + (_jobs.length < _total ? 1 : 0), separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  itemBuilder: (_, i) {
+                    if (i == list.length) return Center(child: TextButton(onPressed: _more ? null : () => _load(more: true), child: Text(_more ? 'Loading…' : 'Load more')));
+                    final j = list[i];
+                    return Card(
+                      child: ListTile(
+                        onTap: () => showJobDetails(context, j),
+                        leading: CompanyLogo(j.logo, j.company, size: 42),
+                        title: Text(j.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700, color: Tokens.navy)),
+                        subtitle: Text('${j.company}\n${j.location} · ${ago(j.postedAt)}'),
+                        isThreeLine: true,
+                        trailing: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                          if (j.match != null) Text('${j.match!.score}', style: TextStyle(fontWeight: FontWeight.w800, color: labelColor(j.match!.label))),
+                          IconButton(tooltip: _saved.contains(j.key) ? 'Saved' : 'Save job', visualDensity: VisualDensity.compact, icon: Icon(_saved.contains(j.key) ? Icons.bookmark : Icons.bookmark_border, color: Tokens.brand), onPressed: _saved.contains(j.key) ? null : () => _save(j)),
+                        ]),
+                      ),
+                    );
+                  },
+                ),
+              ),
+      ),
+    ]);
   }
 }

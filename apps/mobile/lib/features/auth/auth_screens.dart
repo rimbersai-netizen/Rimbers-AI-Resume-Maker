@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/brand.dart';
 import '../../core/theme.dart';
 import '../../core/widgets.dart';
 
@@ -40,12 +41,7 @@ class _AuthScaffold extends StatelessWidget {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 420),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                  Container(
-                    width: 64, height: 64, alignment: Alignment.center,
-                    decoration: BoxDecoration(gradient: Tokens.gradient, borderRadius: BorderRadius.circular(18)),
-                    child: const Icon(Icons.auto_awesome, color: Colors.white, size: 32)),
-                  const SizedBox(height: 16),
-                  Text('Global AI\nResume Studio', textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: Tokens.navy)),
+                  const Center(child: RimbersLogo(size: 56, stacked: true)),
                   const SizedBox(height: 28),
                   Text(title, textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
                   const SizedBox(height: 4),

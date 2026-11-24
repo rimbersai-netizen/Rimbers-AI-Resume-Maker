@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/brand.dart';
 import '../../core/router.dart';
 import '../../core/theme.dart';
 import '../../core/widgets.dart';
@@ -16,7 +17,7 @@ class _OnboardingState extends ConsumerState<OnboardingScreen> {
   int _page = 0;
 
   static const _pages = [
-    (Icons.description_outlined, 'Create Professional CVs & Resumes with AI', 'Build a job-winning resume in minutes with 100+ templates, ATS analysis and more.'),
+    (Icons.description_outlined, 'Create Professional Resumes in Seconds', 'Let AI craft your perfect resume with modern templates, ATS analysis and job matching.'),
     (Icons.public, 'Made for your country', 'CV conventions for 30 countries — page size, photo and section order — always your choice to change.'),
     (Icons.shield_outlined, 'AI that never invents facts', 'Suggestions use only what you entered. You accept, edit or reject every change.'),
     (Icons.ios_share, 'Export anywhere', 'Download PDF or editable Word files and share them straight from your phone.'),
@@ -35,7 +36,7 @@ class _OnboardingState extends ConsumerState<OnboardingScreen> {
         child: Padding(
           padding: const EdgeInsets.all(Tokens.gutter),
           child: Column(children: [
-            Align(alignment: AlignmentDirectional.centerEnd, child: TextButton(onPressed: _done, child: const Text('Skip'))),
+            Row(children: [const RimbersLogo(size: 30), const Spacer(), TextButton(onPressed: _done, child: const Text('Skip'))]),
             Expanded(
               child: PageView.builder(
                 controller: _controller,

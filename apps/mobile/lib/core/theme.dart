@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
-/// Design tokens from docs/design/MOBILE_DESIGN_SYSTEM.md.
+/// Rimbers design tokens (blue palette from the 2026-11-24 UI reference: images/Rimbers AI Resume Maker UI.png).
 class Tokens {
-  static const canvas = Color(0xFFF7F5FF);
+  static const canvas = Color(0xFFEEF4FF);
   static const surface = Colors.white;
-  static const subtle = Color(0xFFEFEBFF);
-  static const navy = Color(0xFF151A45);
-  static const textPrimary = Color(0xFF141A3C);
-  static const textSecondary = Color(0xFF5B6178);
-  static const brand = Color(0xFF6D3BEF);
-  static const gradientA = Color(0xFF5B2EE8);
-  static const gradientB = Color(0xFF8A55F7);
-  static const border = Color(0xFFE4E1F2);
+  static const subtle = Color(0xFFE1ECFF);
+  static const navy = Color(0xFF0B1F5C);
+  static const textPrimary = Color(0xFF0D1B4B);
+  static const textSecondary = Color(0xFF55638A);
+  static const brand = Color(0xFF1F5FE0);
+  static const gradientA = Color(0xFF0E43B8);
+  static const gradientB = Color(0xFF3B82FF);
+  static const border = Color(0xFFD6E2F8);
   static const success = Color(0xFF22C55E);
   static const warning = Color(0xFFF59E0B);
   static const danger = Color(0xFFE5484D);
@@ -19,7 +19,7 @@ class Tokens {
   static const gradient = LinearGradient(colors: [gradientA, gradientB]);
   static const rCard = 16.0, rInput = 12.0, rButton = 14.0;
   static const gutter = 16.0;
-  static List<BoxShadow> get shadow => [BoxShadow(color: const Color(0xFF281E6E).withOpacity(0.08), blurRadius: 16, offset: const Offset(0, 4))];
+  static List<BoxShadow> get shadow => [BoxShadow(color: const Color(0xFF0B2A7A).withOpacity(0.08), blurRadius: 16, offset: const Offset(0, 4))];
 }
 
 ThemeData buildTheme() {

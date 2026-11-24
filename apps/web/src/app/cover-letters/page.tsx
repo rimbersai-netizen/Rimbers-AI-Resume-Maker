@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-export const metadata = { title: "Cover letters · Global AI Resume Studio" };
+export const metadata = { title: "Cover letters · Rimbers AI Resume Maker" };
 
 export default async function CoverLettersPage() {
   const supabase = await createClient();

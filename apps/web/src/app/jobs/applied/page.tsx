@@ -5,7 +5,7 @@ import { listPipeline, pipelineCounts } from "@/lib/services/jobs";
 import { JobsNav } from "../bits";
 import { PipelineList } from "../pipeline-list";
 
-export const metadata = { title: "Applications · Global AI Resume Studio" };
+export const metadata = { title: "Applications · Rimbers AI Resume Maker" };
 export const dynamic = "force-dynamic";
 
 export default async function AppliedPage() {

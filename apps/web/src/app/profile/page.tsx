@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { loadPrimaryProfile } from "./actions";
 import { ProfileBuilder } from "./builder";
 
-export const metadata = { title: "Your profile · Global AI Resume Studio" };
+export const metadata = { title: "Your profile · Rimbers AI Resume Maker" };
 
 export default async function ProfilePage() {
   const supabase = await createClient();

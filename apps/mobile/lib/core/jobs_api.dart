@@ -24,13 +24,14 @@ class JobMatch {
 class Job {
   final String key, source, title, company, location, url, description;
   final String? logo, salaryText, jobType;
+  final String workMode;
   final DateTime postedAt;
   final JobMatch? match;
-  Job(this.key, this.source, this.title, this.company, this.location, this.url, this.description, this.logo, this.salaryText, this.jobType, this.postedAt, this.match);
+  Job(this.key, this.source, this.title, this.company, this.location, this.url, this.description, this.logo, this.salaryText, this.jobType, this.postedAt, this.match, [this.workMode = 'unknown']);
   factory Job.fromJson(Map<String, dynamic> j) => Job(
       j['key'] as String, j['source'] as String, j['title'] as String, j['company'] as String, (j['location'] as String?) ?? '', j['url'] as String,
       (j['description'] as String?) ?? '', j['logo'] as String?, j['salaryText'] as String?, j['jobType'] as String?, DateTime.parse(j['postedAt'] as String),
-      j['match'] == null ? null : JobMatch.fromJson(Map<String, dynamic>.from(j['match'] as Map)));
+      j['match'] == null ? null : JobMatch.fromJson(Map<String, dynamic>.from(j['match'] as Map)), (j['workMode'] as String?) ?? 'unknown');
   String get sourceName => source == 'remotive' ? 'Remotive' : 'Arbeitnow';
 }
 
