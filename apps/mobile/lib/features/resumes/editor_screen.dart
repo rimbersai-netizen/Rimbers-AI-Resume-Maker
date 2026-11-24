@@ -14,7 +14,6 @@ import '../../core/config.dart';
 import '../../core/data.dart';
 import '../../core/theme.dart';
 import '../../core/widgets.dart';
-import '../home/shell.dart';
 
 const _sectionNames = {
   'summary': 'Professional Summary', 'experience': 'Work Experience', 'education': 'Education', 'skills': 'Skills', 'certifications': 'Certifications',

@@ -6,6 +6,8 @@ import '../../core/api.dart';
 import '../../core/data.dart';
 import '../../core/theme.dart';
 import '../../core/widgets.dart';
+import '../community/community_screens.dart';
+import '../jobs/jobs_screen.dart';
 
 class ResumeSummary {
   final String id, title, country, locale, templateId;
@@ -43,11 +45,11 @@ class AppShell extends ConsumerStatefulWidget {
 }
 
 class _AppShellState extends ConsumerState<AppShell> {
-  late int _index = widget.tab.clamp(0, 3);
+  late int _index = widget.tab.clamp(0, 4);
 
   @override
   Widget build(BuildContext context) {
-    final pages = [const _HomeTab(), const _ResumesTab(), const _ToolsTab(), const _ProfileTab()];
+    final pages = [const _HomeTab(), const JobsTab(), const _ResumesTab(), const CommunityTab(), const _ProfileTab()];
     return Scaffold(
       body: SafeArea(child: IndexedStack(index: _index, children: pages)),
       bottomNavigationBar: NavigationBar(
@@ -55,8 +57,9 @@ class _AppShellState extends ConsumerState<AppShell> {
         onDestinationSelected: (i) => setState(() => _index = i),
         destinations: const [
           NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Home'),
+          NavigationDestination(icon: Icon(Icons.work_outline), selectedIcon: Icon(Icons.work), label: 'Jobs'),
           NavigationDestination(icon: Icon(Icons.description_outlined), selectedIcon: Icon(Icons.description), label: 'Resumes'),
-          NavigationDestination(icon: Icon(Icons.grid_view_outlined), selectedIcon: Icon(Icons.grid_view), label: 'Tools'),
+          NavigationDestination(icon: Icon(Icons.forum_outlined), selectedIcon: Icon(Icons.forum), label: 'Community'),
           NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
@@ -101,7 +104,7 @@ class _HomeTab extends ConsumerWidget {
         _toolGrid(context, resumes.value),
         Section(
           title: 'My Resumes${resumes.value == null ? '' : ' (${resumes.value!.length})'}',
-          action: TextButton(onPressed: () => context.go('/home?tab=1'), child: const Text('See All')),
+          action: TextButton(onPressed: () => context.go('/home?tab=2'), child: const Text('See All')),
           children: [
             resumes.when(
               loading: () => const Padding(padding: EdgeInsets.all(24), child: Loading()),
@@ -127,6 +130,8 @@ class _HomeTab extends ConsumerWidget {
       (Icons.verified_outlined, 'ATS Analysis', () => withResume('/ats')),
       (Icons.mail_outline, 'Cover Letter', () => context.push('/cover-letters')),
       (Icons.gps_fixed, 'Job Match', () => withResume('/ats')),
+      (Icons.swipe, 'Find Jobs', () => context.go('/home?tab=1')),
+      (Icons.grid_view, 'All Tools', () => context.push('/tools')),
     ];
     return GridView.count(
       crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: 2.1,
@@ -237,8 +242,14 @@ class _ResumesTabState extends ConsumerState<_ResumesTab> {
   }
 }
 
-class _ToolsTab extends StatelessWidget {
-  const _ToolsTab();
+class ToolsScreen extends StatelessWidget {
+  const ToolsScreen({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Tools')), body: const _ToolsList());
+}
+
+class _ToolsList extends StatelessWidget {
+  const _ToolsList();
   @override
   Widget build(BuildContext context) {
     final items = [
@@ -248,8 +259,6 @@ class _ToolsTab extends StatelessWidget {
       (Icons.workspace_premium_outlined, 'Plans & Billing', 'See what your plan includes', '/plans'),
     ];
     return ListView(padding: const EdgeInsets.all(Tokens.gutter), children: [
-      Text('Tools', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
-      const SizedBox(height: 12),
       for (final i in items)
         Padding(
           padding: const EdgeInsets.only(bottom: 10),

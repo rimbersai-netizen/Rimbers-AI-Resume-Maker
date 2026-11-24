@@ -7,6 +7,7 @@ import type { MasterProfile } from "@gars/resume-schema";
 import { extractKeywords, matchKeywords, type KeywordMatch } from "./keywords";
 
 export * from "./keywords";
+export * from "./job-match";
 
 export const ENGINE_VERSION = "ats-heuristic-1.0.0";
 export const DISCLAIMER =

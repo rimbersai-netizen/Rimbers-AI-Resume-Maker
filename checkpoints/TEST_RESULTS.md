@@ -171,3 +171,13 @@
   Rendered letter reviewed visually.
 - Regression: unit 473/473, pgTAP 85/85, storage 16/16, integration 21/21 (+3 live), worker 366/366, web typecheck OK.
 - Note: local test user 57aa79ec… now has an active STANDARD subscription (manual, local only).
+
+## 2026-11-24 (Windows) — Phase 12D/12E + Flutter app, REAL output
+- `pnpm check`: vitest 17 files passed / 9 skipped; **493 passed, 280 skipped** (skips = need Chromium/Supabase/Ollama env); `tsc -b` exit 0.
+- New unit tests: `packages/ats-engine/src/job-match.test.ts` (10), `apps/web/src/lib/services/jobs.test.ts` (7). A test found "go" in plain English matching the Go language → ambiguous words now need exact casing.
+- Live public feeds (`JOBS_LIVE=1 vitest run apps/web/src/lib/services/jobs.live.test.ts`): 315 jobs (remotive + arbeitnow), HTML fully stripped, 109 engineer listings scored; first run showed unrealistically low scores (best 44) because generic words counted like tools and TypeScript didn't imply JavaScript → added implied skills + generic down-weighting → best 55 "good", realistic spread.
+- `next build` (cloud env vars): compiled; all new pages/routes present. Required making the route wrapper's 2nd arg non-optional for Next's route type check.
+- `flutter analyze`: 0 errors, 0 warnings (81 infos: SDK deprecations). `flutter test`: **12/12** (a layout test found an overflow in the match bar → fixed with Flexible).
+- Cloud Supabase: `supabase db push --remote` applied 11 migrations (dry run first). Anonymous REST check: `resume_templates` readable; `job_pipeline`, `community_posts`, `community_reports`, `master_profiles` → `[]` (RLS).
+- NOT run: pgTAP/storage/SUPABASE_IT (no Docker), signed-in E2E (no account, B11), live Ollama tailoring on the new flow.
+- `flutter build apk --debug` after the jobs/community screens: built OK (2026-11-24).

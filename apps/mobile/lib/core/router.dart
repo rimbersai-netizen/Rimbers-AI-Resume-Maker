@@ -8,7 +8,10 @@ import '../features/ai/ai_writer_screen.dart';
 import '../features/ats/ats_screen.dart';
 import '../features/auth/auth_screens.dart';
 import '../features/cover_letters/cover_letter_screens.dart';
+import '../features/community/community_screens.dart';
 import '../features/home/shell.dart';
+import '../features/jobs/preferences_screen.dart';
+import '../features/jobs/tailor_screen.dart';
 import '../features/linkedin/linkedin_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/profile/profile_screen.dart';
@@ -67,6 +70,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/cover-letters/new', builder: (_, __) => const NewCoverLetterScreen()),
       GoRoute(path: '/cover-letters/:id', builder: (_, s) => CoverLetterEditorScreen(id: s.pathParameters['id']!)),
       GoRoute(path: '/linkedin', builder: (_, __) => const LinkedInScreen()),
+      GoRoute(path: '/jobs/preferences', builder: (_, __) => const JobPreferencesScreen()),
+      GoRoute(path: '/jobs/tailor', builder: (_, s) => TailorScreen(jobKey: s.uri.queryParameters['key'] ?? '')),
+      GoRoute(path: '/community/new', builder: (_, __) => const NewPostScreen()),
+      GoRoute(path: '/community/:id', builder: (_, s) => PostScreen(id: s.pathParameters['id']!)),
+      GoRoute(path: '/tools', builder: (_, __) => const ToolsScreen()),
       GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
       GoRoute(path: '/plans', builder: (_, __) => const PlansScreen()),
     ],

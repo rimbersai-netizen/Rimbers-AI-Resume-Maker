@@ -281,6 +281,18 @@
      "title": "Interview prep + tailoring",
      "status": "NOT_STARTED",
      "notes": "Job-specific tailoring (summary) delivered in 8B via Job Match panel. Pending: interview preparation suggestions, bullet-level tailoring."
+    },
+    {
+     "id": "12D",
+     "title": "Job discovery, swipe feed + match score, saved, application tracker, job tailoring",
+     "status": "IMPLEMENTED",
+     "notes": "2026-11-24. ats-engine job-match (10 tests), services/jobs+community (7 tests), /api/v1/jobs/* and /community/*, web pages /jobs /community, Flutter Jobs+Community tabs. Live feeds: 315 listings parsed+scored. NOT verified E2E with a signed-in user. No auto-submit by design."
+    },
+    {
+     "id": "12E",
+     "title": "Community (anonymous posts, replies, likes, reports)",
+     "status": "IMPLEMENTED",
+     "notes": "2026-11-24. Migration 0011 applied to cloud; pgTAP 005 written but NOT run (no Docker). Anonymous RLS check on cloud OK."
     }
    ]
   },

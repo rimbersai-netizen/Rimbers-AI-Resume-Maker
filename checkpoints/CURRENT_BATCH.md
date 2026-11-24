@@ -1,10 +1,14 @@
-# Current Batch: 12B — LinkedIn assistant (IMPLEMENTED, awaiting verification)
+# Current Batch: 12D/12E — Job discovery, applications, tailoring, community (IMPLEMENTED, awaiting E2E verification)
 
-Code complete + unit tests pass (2026-11-24, Windows). To VERIFY: run migration 0010 (`supabase db reset`), `SUPABASE_IT=1 pnpm vitest run tests/integration/ai.test.ts`, live `OLLAMA_LIVE=1`, browser E2E of /linkedin. Needs Docker + Ollama (B10).
-28/60 VERIFIED. Audit docs written: docs/EXISTING_PROJECT_AUDIT.md, REZI_FEATURE_RESEARCH.md, FEATURE_COMPARISON.md, API_REQUIREMENTS.md.
+28/60 VERIFIED. (12B LinkedIn, 12D, 12E and the Flutter app are IMPLEMENTED, not verified.)
 
-## 2026-11-24 — Mobile started (Flutter, per user decision; replaces the Expo plan)
-apps/mobile = Flutter app (Riverpod, go_router, supabase_flutter). Talks to web backend `/api/v1/*` (bearer JWT) so plan limits + Zod validation stay server-side.
-Done: flutter analyze 0 errors/warnings; `flutter test` 8/8; `flutter build apk --debug` OK (needs kotlin.incremental=false because project is on D: and pub cache on C:).
-NOT verified: any screen against a live backend. User's cloud Supabase (kexkcfqcfwclmtmzprif) has NO tables yet; pushing migrations needs user approval + DB password; workers need service_role key (user-provided, .env.local only). anon key stored in apps/mobile/.env.cloud (git-ignored).
-iOS: code is shared; iOS binaries cannot be built on Windows.
+## 2026-11-24 — what was built (from the user's reference screenshots in `D:\flutter projects\Resume Maker\images`)
+- `packages/ats-engine/src/job-match.ts`: skill detection, `scoreJob` (0–100 estimate: 65% skills, 20% role title, 15% years), `tailorPlan` (strengths/optimizations/gaps). 10 tests.
+- `apps/web/src/lib/services/{jobs,community}.ts` + `lib/api-route.ts`; `/api/v1/jobs{,/prefs,/pipeline,/pipeline/:id,/tailor,/tailor/apply,/tailor/finish}`, `/api/v1/community/{posts,posts/:id,…/comments,…/like,comments/:id,report}`.
+- Web: `/jobs` (Discover swipe, Saved, Applications, Preferences, Tailor), `/community`, `/community/:id`.
+- Flutter: Jobs tab (Discover/Saved/Applications), preferences, tailor, Community tab, All-tools page; 5-tab shell.
+- Migration `20261124000011_jobs_community.sql` (+ pgTAP 005, not run). **Applied to the cloud project.**
+- Evidence: `pnpm check` 493 passed / 280 skipped; `next build` OK; `flutter test` 12/12; live feeds 315 listings parsed + scored. Not verified: any signed-in flow (see BLOCKERS B11).
+
+## Earlier today
+Flutter app first pass (auth, home, resumes, editor+preview, profile builder, ATS, AI writer, cover letters, LinkedIn, settings, plans). `kotlin.incremental=false` needed (project on D:, pub cache on C:). iOS binaries cannot be built on Windows.

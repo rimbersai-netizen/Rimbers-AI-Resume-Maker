@@ -23,7 +23,7 @@ export default async function Dashboard() {
           <ul className="resume-list">{resumes.map((r) => <li key={r.id}><Link href={`/resumes/${r.id}`}><strong>{r.title}</strong></Link> <span className="muted">· {r.country_code} · {r.locale}</span></li>)}</ul>
         ) : <p className="muted">No resumes yet. Start by completing your profile — you enter it once and reuse it for every resume.</p>}
         <Link className="btn" href="/resumes/new">+ Create new resume</Link>
-        <div className="row"><Link href="/profile">Edit my profile</Link><Link href="/cover-letters">Cover letters</Link><Link href="/linkedin">LinkedIn</Link><Link href="/account">Account settings</Link></div>
+        <div className="row"><Link href="/profile">Edit my profile</Link><Link href="/jobs">Jobs</Link><Link href="/community">Community</Link><Link href="/cover-letters">Cover letters</Link><Link href="/linkedin">LinkedIn</Link><Link href="/account">Account settings</Link></div>
         <form action={signOut}><Submit variant="secondary">Sign out</Submit></form>
       </section>
     </main>

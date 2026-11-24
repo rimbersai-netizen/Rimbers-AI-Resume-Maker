@@ -233,7 +233,8 @@ class _LetterEditorState extends State<CoverLetterEditorScreen> {
         final s = await Api.instance.exportState(id);
         if (s['status'] == 'succeeded' && s['url'] != null) {
           setState(() => _exportState = 'idle');
-          return _share(Config.fixHost(s['url'] as String), format);
+          await _share(Config.fixHost(s['url'] as String), format);
+          return;
         }
         if (s['status'] == 'failed') throw ApiException((s['error'] as String?) ?? 'The export failed.');
       }
