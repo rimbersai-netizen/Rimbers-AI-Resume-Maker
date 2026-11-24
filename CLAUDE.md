@@ -1,7 +1,7 @@
 # CLAUDE.md — Global AI Resume Studio
 
 ## Identity
-Global AI-powered CV/resume platform: web (Next.js), mobile (Expo RN), admin (Next.js), Supabase backend,
+Global AI-powered CV/resume platform: web (Next.js), mobile (Flutter, Android + iOS), admin (Next.js), Supabase backend,
 local-first AI via Ollama. Working name is provisional. Full spec: 20 phases / 60 batches (see `checkpoints/PHASE_STATUS.json`).
 Docs: `docs/PRODUCT_REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, `docs/ACCEPTANCE_CRITERIA.md`.
 Mobile UI: `docs/design/MOBILE_UI_REFERENCE.md` (+ `reference/*.png`), `docs/design/MOBILE_DESIGN_SYSTEM.md`.

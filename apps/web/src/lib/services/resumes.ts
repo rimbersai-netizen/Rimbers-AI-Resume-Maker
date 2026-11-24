@@ -66,10 +66,27 @@ export async function createResumeCore(supabase: SupabaseClient, user: User, inp
   return { ok: true, value: { id: ins.data.id } };
 }
 
+/** Validate and save a resume layout (optimistic concurrency; premium templates need the plan). */
+export async function saveLayoutCore(supabase: SupabaseClient, id: string, input: unknown, expectedUpdatedAt: string | null): Promise<ActionResult<{ updatedAt: string }>> {
+  const parsed = LayoutSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, kind: "invalid", message: parsed.error.issues[0]?.message ?? "Invalid settings" };
+  if (isPremiumTemplate(parsed.data.templateId) && !(await entitlement(supabase, "premium_template")).allowed) {
+    return { ok: false, kind: "entitlement", upgradeTo: "PROFESSIONAL", message: "That template is part of the Professional plan." };
+  }
+  const { data, error } = await supabase.rpc("save_resume_layout", { p_id: id, p_layout: parsed.data, p_expected_updated_at: expectedUpdatedAt });
+  if (error?.code === "40001") return { ok: false, kind: "conflict", message: "This resume was changed on another device. Reload to see the latest." };
+  if (error) return { ok: false, kind: "error", message: "Could not save. Please try again." };
+  return { ok: true, value: { updatedAt: data.updatedAt } };
+}
+
 export interface ExportState { id: string; status: "queued" | "running" | "succeeded" | "failed"; url?: string; error?: string; format?: "pdf" | "docx" }
 
-export async function requestExportCore(supabase: SupabaseClient, user: User, resumeId: string, format: "pdf" | "docx"): Promise<ActionResult<{ id: string }>> {
-  if (!z.string().uuid().safeParse(resumeId).success || (format !== "pdf" && format !== "docx")) return { ok: false, kind: "invalid", message: "Unknown resume" };
+export async function requestExportCore(supabase: SupabaseClient, user: User, subject: { resumeId?: string; coverLetterId?: string } | string, format: "pdf" | "docx"): Promise<ActionResult<{ id: string }>> {
+  const sub = typeof subject === "string" ? { resumeId: subject } : subject;
+  const uuid = z.string().uuid();
+  // Exactly one subject (the DB enforces the same rule).
+  const valid = (Boolean(sub.resumeId) !== Boolean(sub.coverLetterId)) && uuid.safeParse(sub.resumeId ?? sub.coverLetterId).success;
+  if (!valid || (format !== "pdf" && format !== "docx")) return { ok: false, kind: "invalid", message: "Unknown document" };
   const quota = await entitlement(supabase, format === "docx" ? "export_docx" : "export_pdf");
   if (!quota.allowed) {
     return { ok: false, kind: "entitlement", upgradeTo: quota.upgradeTo,
@@ -77,7 +94,7 @@ export async function requestExportCore(supabase: SupabaseClient, user: User, re
         ? `Editable Word (DOCX) downloads are included from the ${quota.upgradeTo ? PLAN_NAMES[quota.upgradeTo] : "Standard"} plan.`
         : `You have used this month's downloads on the ${quota.plan === "FREE" ? "Free" : quota.plan} plan. Upgrade${quota.upgradeTo ? ` to ${PLAN_NAMES[quota.upgradeTo]}` : ""} for more.` };
   }
-  const ins = await supabase.from("document_exports").insert({ user_id: user.id, resume_id: resumeId, format }).select("id").single();
+  const ins = await supabase.from("document_exports").insert({ user_id: user.id, resume_id: sub.resumeId ?? null, cover_letter_id: sub.coverLetterId ?? null, format }).select("id").single();
   if (ins.error || !ins.data) return { ok: false, kind: "error", message: "Could not start the export." };
   return { ok: true, value: { id: ins.data.id } };
 }
@@ -85,13 +102,15 @@ export async function requestExportCore(supabase: SupabaseClient, user: User, re
 /** Poll an export; when ready, returns a short-lived signed download URL (private bucket). */
 export async function getExportCore(supabase: SupabaseClient, exportId: string): Promise<ExportState | null> {
   if (!z.string().uuid().safeParse(exportId).success) return null;
-  const { data } = await supabase.from("document_exports").select("id,status,storage_path,error,resume_id,format").eq("id", exportId).maybeSingle();
+  const { data } = await supabase.from("document_exports").select("id,status,storage_path,error,resume_id,cover_letter_id,format").eq("id", exportId).maybeSingle();
   if (!data) return null;
   if (data.status !== "succeeded" || !data.storage_path) {
     return { id: data.id, status: data.status, error: data.status === "failed" ? "The export failed. Please try again." : undefined };
   }
-  const { data: doc } = await supabase.from("resume_documents").select("title").eq("id", data.resume_id).maybeSingle();
-  const name = `${(doc?.title ?? "resume").replace(/[^\p{L}\p{N} _-]+/gu, "").trim().slice(0, 80) || "resume"}.${data.format}`;
+  const { data: doc } = data.cover_letter_id
+    ? await supabase.from("cover_letters").select("title").eq("id", data.cover_letter_id).maybeSingle()
+    : await supabase.from("resume_documents").select("title").eq("id", data.resume_id).maybeSingle();
+  const name = `${(doc?.title ?? (data.cover_letter_id ? "cover-letter" : "resume")).replace(/[^\p{L}\p{N} _-]+/gu, "").trim().slice(0, 80) || "resume"}.${data.format}`;
   const { data: signed } = await supabase.storage.from("resume-exports").createSignedUrl(data.storage_path, 300, { download: name });
   return { id: data.id, status: "succeeded", url: signed?.signedUrl, format: data.format };
 }

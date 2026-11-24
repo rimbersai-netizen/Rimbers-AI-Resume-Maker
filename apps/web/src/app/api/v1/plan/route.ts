@@ -1,4 +1,5 @@
 import { bearerAuth, json, preflight, unauthorized } from "@/lib/api-auth";
+import { DEFAULT_PLAN_LIMITS } from "@gars/subscriptions";
 import { entitlement } from "@/lib/entitlements";
 
 export const OPTIONS = preflight;
@@ -9,5 +10,5 @@ export async function GET(req: Request) {
   if (!auth) return unauthorized();
   const [resume, ai, pdf, docx, premium] = await Promise.all(
     (["create_resume", "ai_request", "export_pdf", "export_docx", "premium_template"] as const).map((f) => entitlement(auth.supabase, f)));
-  return json({ plan: resume.plan, canCreateResume: resume.allowed, canUseAi: ai.allowed, canExportPdf: pdf.allowed, canExportDocx: docx.allowed, premiumTemplates: premium.allowed });
+  return json({ plan: resume.plan, canCreateResume: resume.allowed, canUseAi: ai.allowed, canExportPdf: pdf.allowed, canExportDocx: docx.allowed, premiumTemplates: premium.allowed, limits: DEFAULT_PLAN_LIMITS });
 }

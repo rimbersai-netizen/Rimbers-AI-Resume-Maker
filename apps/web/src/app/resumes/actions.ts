@@ -1,10 +1,10 @@
 "use server";
 
 import { z } from "zod";
-import { createResumeCore, getExportCore, LayoutSchema, requestExportCore, type ActionResult, type ExportState } from "@/lib/services/resumes";
+import { createResumeCore, getExportCore, requestExportCore, saveLayoutCore, type ActionResult, type ExportState } from "@/lib/services/resumes";
 import { createClient } from "@/lib/supabase/server";
-import { entitlement, PLAN_NAMES } from "@/lib/entitlements";
-import { isPremiumTemplate, type ResumeLayout } from "@/lib/resume-settings";
+import { entitlement } from "@/lib/entitlements";
+import type { ResumeLayout } from "@/lib/resume-settings";
 import { loadPrimaryProfile, type Loaded } from "../profile/actions";
 
 export type { ActionResult, ExportState };
@@ -58,17 +58,9 @@ export async function loadResume(id: string): Promise<LoadedResume | null> {
 }
 
 export async function saveLayout(id: string, input: ResumeLayout, expectedUpdatedAt: string | null): Promise<ActionResult<{ updatedAt: string }>> {
-  const parsed = LayoutSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, kind: "invalid", message: parsed.error.issues[0]?.message ?? "Invalid settings" };
   const { supabase, user } = await ctx();
   if (!user) return { ok: false, kind: "auth", message: "Please sign in again." };
-  if (isPremiumTemplate(parsed.data.templateId) && !(await entitlement(supabase, "premium_template")).allowed) {
-    return { ok: false, kind: "entitlement", upgradeTo: "PROFESSIONAL", message: "That template is part of the Professional plan." };
-  }
-  const { data, error } = await supabase.rpc("save_resume_layout", { p_id: id, p_layout: parsed.data, p_expected_updated_at: expectedUpdatedAt });
-  if (error?.code === "40001") return { ok: false, kind: "conflict", message: "This resume was changed in another tab. Reload to see the latest." };
-  if (error) return { ok: false, kind: "error", message: "Could not save. Please try again." };
-  return { ok: true, value: { updatedAt: data.updatedAt } };
+  return saveLayoutCore(supabase, id, input, expectedUpdatedAt);
 }
 
 export async function deleteResume(id: string): Promise<ActionResult> {
