@@ -14,6 +14,10 @@ export type AiJobState =
 export async function requestAi(supabase: SupabaseClient, user: User, input: unknown): Promise<AiRequestResult> {
   const parsed = AiJobInput.safeParse(input);
   if (!parsed.success) return { ok: false, message: "Invalid request." };
+  if (parsed.data.kind === "interview_prep") {
+    const pro = await entitlement(supabase, "interview_prep");
+    if (!pro.allowed && pro.reason === "plan_feature") return { ok: false, upgrade: true, message: "Interview Prep is part of the Professional plan. Upgrade to practise with questions tailored to your profile and the job." };
+  }
   const quota = await entitlement(supabase, "ai_request");
   if (!quota.allowed) {
     return { ok: false, upgrade: true, message: `You've used this month's AI requests on the ${quota.plan === "FREE" ? "Free" : quota.plan} plan.${quota.upgradeTo ? ` Upgrade to ${PLAN_NAMES[quota.upgradeTo]} for more.` : ""}` };
@@ -35,6 +39,7 @@ export async function getAiJobState(supabase: SupabaseClient, jobId: string): Pr
   }
   const code = data.error_code ?? "unknown";
   const ui = code === "unverified_facts" ? userFacingAiError(new AiError("invalid_output", "unverified_facts", false))
+    : code === "plan_required" ? { message: "Interview Prep is part of the Professional plan.", canRetry: false }
     : code === "nothing_found" ? { message: "We couldn't find resume details in that file. Try a text-based PDF or Word file (not a scan or photo).", canRetry: false }
     : code === "profile_incomplete" ? { message: "Complete and save your profile first (name is required).", canRetry: false }
     : userFacingAiError(new AiError(code as never, code, code === "timeout" || code === "provider_unavailable"));

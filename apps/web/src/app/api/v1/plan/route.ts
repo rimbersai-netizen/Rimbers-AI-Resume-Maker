@@ -9,8 +9,8 @@ export const OPTIONS = preflight;
 export async function GET(req: Request) {
   const auth = await bearerAuth(req);
   if (!auth) return unauthorized();
-  const features = ["create_resume", "ai_request", "export_pdf", "export_docx", "premium_template"] as const;
-  const [resume, ai, pdf, docx, premium] = await Promise.all(features.map((f) => entitlement(auth.supabase, f)));
+  const features = ["create_resume", "ai_request", "export_pdf", "export_docx", "premium_template", "interview_prep"] as const;
+  const [resume, ai, pdf, docx, premium, interview] = await Promise.all(features.map((f) => entitlement(auth.supabase, f)));
   const prices = await loadPlanPrices(auth.supabase);
-  return json({ plan: resume!.plan, canCreateResume: resume!.allowed, canUseAi: ai!.allowed, canExportPdf: pdf!.allowed, canExportDocx: docx!.allowed, premiumTemplates: premium!.allowed, limits: DEFAULT_PLAN_LIMITS, prices });
+  return json({ plan: resume!.plan, canCreateResume: resume!.allowed, canUseAi: ai!.allowed, canExportPdf: pdf!.allowed, canExportDocx: docx!.allowed, premiumTemplates: premium!.allowed, interviewPrep: interview!.allowed || interview!.reason === "quota_exhausted", limits: DEFAULT_PLAN_LIMITS, prices });
 }

@@ -55,3 +55,18 @@ describe("helpers", () => {
     expect(applyCoupon(1000, { amount_off_minor: 5000 })).toBe(0);
   });
 });
+
+describe("interview_prep (Professional and above)", () => {
+  it("FREE and STANDARD are blocked and pointed at Professional", () => {
+    expect(evaluate("interview_prep", { ...base, subscriptions: [] })).toMatchObject({ allowed: false, reason: "plan_feature", upgradeTo: "PROFESSIONAL" });
+    expect(evaluate("interview_prep", { ...base, subscriptions: [sub({ plan_id: "STANDARD" })] })).toMatchObject({ allowed: false, upgradeTo: "PROFESSIONAL" });
+  });
+  it("PROFESSIONAL and PREMIUM are allowed, and still limited by the monthly AI quota", () => {
+    expect(evaluate("interview_prep", { ...base, subscriptions: [sub({})] }).allowed).toBe(true);
+    expect(evaluate("interview_prep", { ...base, subscriptions: [sub({ plan_id: "PREMIUM" })] }).allowed).toBe(true);
+    expect(evaluate("interview_prep", { ...base, subscriptions: [sub({})], usage: { ...base.usage, ai_requests_month: 200 } })).toMatchObject({ allowed: false, reason: "quota_exhausted" });
+  });
+  it("a lapsed Professional plan loses access", () => {
+    expect(evaluate("interview_prep", { ...base, subscriptions: [sub({ status: "expired" })] }).allowed).toBe(false);
+  });
+});

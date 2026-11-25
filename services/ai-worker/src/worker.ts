@@ -5,6 +5,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { AiError, AiJobInput, GeminiProvider, OllamaProvider, runAiJob, userFacingAiError, type AiProvider, type RouteConfig } from "@gars/ai-engine";
 import { MasterProfile } from "@gars/resume-schema";
+import { DEFAULT_PLAN_LIMITS, effectivePlan, type SubscriptionRow } from "@gars/subscriptions";
 
 export interface AiJobRow { id: string; user_id: string; kind: string; input: unknown; attempts: number; max_attempts: number; cloud_consent: boolean }
 
@@ -35,6 +36,15 @@ export async function processAiJob(db: SupabaseClient, job: AiJobRow, deps: Work
   const finish = async (fields: Record<string, unknown>) => { await db.from("ai_jobs").update({ ...fields, locked_at: null, completed_at: new Date().toISOString() }).eq("id", job.id); };
   if (!parsed.success) { await finish({ status: "failed", error_code: "invalid_input" }); return { ok: false, code: "invalid_input" }; }
   const input = parsed.data;
+
+  // Plan gate (second line of defence — the API checks too, but a client could insert a job row directly).
+  if (input.kind === "interview_prep") {
+    const { data: subs } = await db.from("subscriptions").select("plan_id,status,current_period_end,cancel_at_period_end").eq("user_id", job.user_id);
+    if (!DEFAULT_PLAN_LIMITS[effectivePlan((subs ?? []) as SubscriptionRow[], new Date())].interview_prep) {
+      await finish({ status: "failed", error_code: "plan_required" });
+      return { ok: false, code: "plan_required" };
+    }
+  }
 
   // Importing a CV needs no profile (the text is in the job input); every other kind works on the user's own saved profile.
   let profile: MasterProfile | null = null;

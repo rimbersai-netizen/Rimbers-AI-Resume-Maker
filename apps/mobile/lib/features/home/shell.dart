@@ -194,7 +194,7 @@ class _HomeTab extends ConsumerWidget {
     final tiles = <(IconData, String, VoidCallback?, String?)>[
       (Icons.bar_chart_rounded, 'ATS Analyzer', () => withResume('/ats'), null),
       (Icons.mail_outline, 'Cover Letter', () => context.push('/cover-letters'), null),
-      (Icons.forum_outlined, 'Interview Prep', null, 'Soon'),
+      (Icons.forum_outlined, 'Interview Prep', () => context.push('/interview-prep'), 'PRO'),
       (Icons.work_outline, 'Job Search', () => context.go('/home?tab=2'), null),
     ];
     return GridView.count(
@@ -203,17 +203,19 @@ class _HomeTab extends ConsumerWidget {
         for (final t in tiles)
           Opacity(
             opacity: t.$3 == null ? .6 : 1,
-            child: InkWell(
+            child: Stack(children: [Positioned.fill(child: InkWell(
               borderRadius: BorderRadius.circular(Tokens.rCard), onTap: t.$3,
               child: Ink(
                 decoration: BoxDecoration(color: Tokens.surface, borderRadius: BorderRadius.circular(Tokens.rCard), border: Border.all(color: Tokens.border), boxShadow: Tokens.shadow),
                 child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                   Icon(t.$1, color: Tokens.brand, size: 30),
                   const SizedBox(height: 6),
-                  Text(t.$4 == null ? t.$2 : '${t.$2} · ${t.$4}', style: const TextStyle(fontWeight: FontWeight.w600, color: Tokens.navy), overflow: TextOverflow.ellipsis),
+                  Text(t.$2, style: const TextStyle(fontWeight: FontWeight.w600, color: Tokens.navy), overflow: TextOverflow.ellipsis),
                 ]),
               ),
-            ),
+            )),
+              if (t.$4 != null) Positioned(top: 10, right: 12, child: Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), decoration: BoxDecoration(gradient: Tokens.gradient, borderRadius: BorderRadius.circular(10)), child: Text(t.$4!, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: .5)))),
+            ]),
           ),
       ],
     );
@@ -325,6 +327,7 @@ class _ToolsList extends StatelessWidget {
     final items = [
       (Icons.auto_fix_high, 'AI Writing Assistant', 'Write or polish your professional summary', '/ai-writer'),
       (Icons.mail_outline, 'Cover Letters', 'Generate, edit and export letters', '/cover-letters'),
+      (Icons.forum_outlined, 'Interview Prep · PRO', 'Likely questions, tips and talking points', '/interview-prep'),
       (Icons.forum_outlined, 'Community', 'Wins, questions and resume feedback', '/community'),
       (Icons.work_outline, 'LinkedIn Assistant', 'Headline and About section', '/linkedin'),
       (Icons.workspace_premium_outlined, 'Plans & Billing', 'See what your plan includes', '/plans'),

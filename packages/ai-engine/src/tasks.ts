@@ -246,3 +246,48 @@ ${facts.text}
     check: (out: z.infer<typeof AboutOutput>) => factCheck({ output: out.about, sourceTexts: [facts.text], knownSkills: facts.skills }),
   };
 }
+
+// ---------------------------------------------------------------- Interview prep (Professional plan)
+
+export const InterviewQuestion = z.object({
+  question: z.string().min(8).max(300),
+  category: z.enum(["behavioral", "technical", "role", "situational", "motivation"]),
+  /** How to approach the answer — generic coaching, no claims about the candidate. */
+  tip: z.string().min(5).max(400),
+  /** Things the candidate could genuinely mention, drawn only from their own profile. */
+  talkingPoints: z.array(z.string().min(3).max(300)).max(3).default([]),
+});
+export const InterviewPrepOutput = z.object({ questions: z.array(InterviewQuestion).min(4).max(10) });
+
+/**
+ * Likely interview questions for a role, each with a coaching tip and talking points taken ONLY from the candidate's profile.
+ * Questions and tips are generic; talking points are claims about the candidate, so they are fact-checked (and may not
+ * mention job-description skills the candidate lacks).
+ */
+export function buildInterviewPrepTask(p: MasterProfile, opts: { jobTitle: string; company?: string; jobDescription?: string; count: number; forbidden: string[]; locale: string }) {
+  const facts = profileFacts(p);
+  const target = [`Role: ${opts.jobTitle}`, opts.company ? `Company: ${opts.company}` : "", opts.jobDescription ? `Job description:\n${opts.jobDescription.slice(0, 6000)}` : ""].filter(Boolean).join("\n");
+  const messages: ChatMessage[] = [
+    { role: "system", content: SYSTEM_RULES },
+    { role: "user", content: `Prepare a candidate for an interview in ${lang(opts.locale)}. Write ${opts.count} likely interview questions for the TARGET role, mixing behavioral, technical, role-specific, situational and motivation questions.
+For each question give:
+- "tip": one or two sentences on how to structure a strong answer (generic coaching; do not state facts about the candidate).
+- "talkingPoints": up to 3 short points the candidate could mention, using ONLY facts from CANDIDATE (their real roles, employers, bullets, skills). If CANDIDATE has nothing relevant, use an empty list. Never invent experience, numbers, tools or achievements.
+Return {"questions": [{"question": "...", "category": "behavioral|technical|role|situational|motivation", "tip": "...", "talkingPoints": ["..."]}]}.
+TARGET:
+<<<
+${target}
+>>>
+CANDIDATE:
+<<<
+${facts.text}
+>>>` },
+  ];
+  return {
+    messages, schema: InterviewPrepOutput,
+    jsonSchema: { type: "object", properties: { questions: { type: "array", items: { type: "object" } } }, required: ["questions"] },
+    check: (out: z.infer<typeof InterviewPrepOutput>) => factCheck({
+      output: out.questions.flatMap((q) => q.talkingPoints).join("\n"), sourceTexts: [facts.text, target, p.personal.fullName], knownSkills: facts.skills, forbiddenTerms: opts.forbidden,
+    }),
+  };
+}

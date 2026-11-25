@@ -129,6 +129,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> with WidgetsBindingOb
                         _line('Downloads / month', _n((limits[id] as Map)['exports_month'])),
                         _line('Editable Word (DOCX)', (limits[id] as Map)['docx'] == true ? 'Included' : '—'),
                         _line('Premium templates', (limits[id] as Map)['premium_templates'] == true ? 'Included' : '—'),
+                        _line('Interview Prep', (limits[id] as Map)['interview_prep'] == true ? 'Included' : '—'),
                         if (id != 'FREE' && prices[id] != null) ...[
                           const SizedBox(height: 10),
                           GradientButton(label: id == current ? 'Your plan' : 'Pay ${money((prices[id]![_period] as num), prices[id]!['currency'] as String)}', busy: _busy == id, onPressed: id == current || _busy != null ? null : () => _pay(id)),

@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 const TOOLS = [
   ["📊", "ATS Analyzer", "/resumes", "Open a resume → ATS"],
   ["✉️", "Cover Letter", "/cover-letters", null],
-  ["💬", "Interview Prep", null, "Soon"],
+  ["💬", "Interview Prep", "/interview-prep", "Pro"],
   ["💼", "Job Search", "/jobs", null],
   ["✨", "LinkedIn", "/linkedin", null],
   ["👥", "Community", "/community", null],

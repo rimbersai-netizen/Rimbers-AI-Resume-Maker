@@ -245,6 +245,9 @@ importers:
       '@gars/resume-schema':
         specifier: workspace:*
         version: link:../../packages/resume-schema
+      '@gars/subscriptions':
+        specifier: workspace:^
+        version: link:../../packages/subscriptions
       '@supabase/supabase-js':
         specifier: 2.47.10
         version: 2.47.10

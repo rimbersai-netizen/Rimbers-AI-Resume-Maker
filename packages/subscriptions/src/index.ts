@@ -10,14 +10,16 @@ export interface PlanLimits {
   exports_month: number | null;
   docx: boolean;
   premium_templates: boolean;
+  /** AI interview preparation — Professional and above. */
+  interview_prep: boolean;
 }
 
 /** Mirrors supabase/seed.sql (DB is the source of truth at runtime; these are defaults + tests). */
 export const DEFAULT_PLAN_LIMITS: Record<PlanId, PlanLimits> = {
-  FREE:         { resumes: 1,    ai_requests_month: 5,   exports_month: 2,    docx: false, premium_templates: false },
-  STANDARD:     { resumes: 5,    ai_requests_month: 50,  exports_month: 20,   docx: true,  premium_templates: false },
-  PROFESSIONAL: { resumes: 20,   ai_requests_month: 200, exports_month: 100,  docx: true,  premium_templates: true },
-  PREMIUM:      { resumes: null, ai_requests_month: 500, exports_month: null, docx: true,  premium_templates: true },
+  FREE:         { resumes: 1,    ai_requests_month: 5,   exports_month: 2,    docx: false, premium_templates: false, interview_prep: false },
+  STANDARD:     { resumes: 5,    ai_requests_month: 50,  exports_month: 20,   docx: true,  premium_templates: false, interview_prep: false },
+  PROFESSIONAL: { resumes: 20,   ai_requests_month: 200, exports_month: 100,  docx: true,  premium_templates: true,  interview_prep: true },
+  PREMIUM:      { resumes: null, ai_requests_month: 500, exports_month: null, docx: true,  premium_templates: true,  interview_prep: true },
 };
 
 export type SubscriptionStatus = "trialing" | "active" | "past_due" | "canceled" | "expired";
@@ -52,7 +54,7 @@ export function effectivePlan(subs: SubscriptionRow[], now: Date): PlanId {
   return "FREE";
 }
 
-export type Feature = "create_resume" | "ai_request" | "export_pdf" | "export_docx" | "premium_template";
+export type Feature = "create_resume" | "ai_request" | "export_pdf" | "export_docx" | "premium_template" | "interview_prep";
 
 export interface Decision {
   allowed: boolean;
@@ -79,6 +81,7 @@ function upgradeFor(feature: Feature, plan: PlanId, limits: Record<PlanId, PlanL
     const l = limits[p];
     if (feature === "export_docx") return l.docx;
     if (feature === "premium_template") return l.premium_templates;
+    if (feature === "interview_prep") return l.interview_prep;
     return true;
   });
 }
@@ -105,6 +108,9 @@ export function evaluate(feature: Feature, input: EvaluateInput): Decision {
       if (!d.allowed && activeEnt(input.entitlements, "export_download", input.now)) return { allowed: true, reason: "one_time_entitlement", plan, remaining: null };
       return d;
     }
+    case "interview_prep":
+      if (l.interview_prep) return quota(l.ai_requests_month, input.usage.ai_requests_month);
+      return { allowed: false, reason: "plan_feature", plan, remaining: 0, upgradeTo: upgradeFor(feature, plan, limits) };
     case "premium_template":
       if (l.premium_templates || activeEnt(input.entitlements, "premium_templates", input.now)) return { allowed: true, reason: "ok", plan, remaining: null };
       return { allowed: false, reason: "plan_feature", plan, remaining: 0, upgradeTo: upgradeFor(feature, plan, limits) };

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { scoreJob, tailorPlan, skillLabel, type JobMatch, type TailorPlan } from "@gars/ats-engine";
 import { AiJobOutput } from "@gars/ai-engine";
 import { loadPrimaryProfileCore, saveProfileCore } from "./profile";
-import { createResumeCore, type ActionResult } from "./resumes";
+import { createResumeCore, resumeQuotaFailure, type ActionResult } from "./resumes";
 import { requestAi } from "./ai";
 import { defaultLayout } from "../resume-settings";
 import { newId } from "../profile-draft";
@@ -321,6 +321,9 @@ const ApplyInput = z.object({
 export async function applyTailoring(supabase: SupabaseClient, user: User, input: unknown): Promise<ActionResult<{ resumeId: string; aiJobId?: string; added: string[]; aiMessage?: string }>> {
   const p = ApplyInput.safeParse(input);
   if (!p.success) return { ok: false, kind: "invalid", message: "Invalid request." };
+  // Free plan: one resume in total. Decide BEFORE adding skills to the profile so a blocked request changes nothing.
+  const blocked = await resumeQuotaFailure(supabase);
+  if (blocked) return blocked;
   const analysis = await tailorAnalysis(supabase, user, p.data.key);
   if (!analysis.ok) return analysis;
   const { job, plan } = analysis.value;

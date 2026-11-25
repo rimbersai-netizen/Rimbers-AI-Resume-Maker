@@ -36,15 +36,20 @@ async function primaryProfileId(supabase: SupabaseClient, user: User): Promise<s
   return row?.id ?? null;
 }
 
+/** The Free plan includes ONE resume (made from a template or tailored for a job). Returns the failure to show, or null when allowed. */
+export async function resumeQuotaFailure(supabase: SupabaseClient): Promise<Extract<ActionResult<never>, { ok: false }> | null> {
+  const quota = await entitlement(supabase, "create_resume");
+  if (quota.allowed) return null;
+  return { ok: false, kind: "entitlement", upgradeTo: quota.upgradeTo,
+    message: `Your ${quota.plan === "FREE" ? "Free" : quota.plan} plan includes ${quota.plan === "FREE" ? "1 resume — made from a template or tailored for a job" : "a limited number of resumes"}. Upgrade${quota.upgradeTo ? ` to ${PLAN_NAMES[quota.upgradeTo]}` : ""} for more, or edit your existing resume.` };
+}
+
 /** Create a resume after the server-side plan checks. Shared by web server actions and the mobile API. */
 export async function createResumeCore(supabase: SupabaseClient, user: User, input: ResumeLayout): Promise<ActionResult<{ id: string }>> {
   const parsed = LayoutSchema.safeParse(input);
   if (!parsed.success) return { ok: false, kind: "invalid", message: parsed.error.issues[0]?.message ?? "Invalid settings" };
-  const quota = await entitlement(supabase, "create_resume");
-  if (!quota.allowed) {
-    return { ok: false, kind: "entitlement", upgradeTo: quota.upgradeTo,
-      message: `Your ${quota.plan === "FREE" ? "Free" : quota.plan} plan includes ${quota.plan === "FREE" ? "1 resume" : "a limited number of resumes"}. Upgrade${quota.upgradeTo ? ` to ${PLAN_NAMES[quota.upgradeTo]}` : ""} for more, or edit an existing resume.` };
-  }
+  const blocked = await resumeQuotaFailure(supabase);
+  if (blocked) return blocked;
   const l = parsed.data;
   if (isPremiumTemplate(l.templateId) && !(await entitlement(supabase, "premium_template")).allowed) {
     return { ok: false, kind: "entitlement", upgradeTo: "PROFESSIONAL", message: "That template is part of the Professional plan." };

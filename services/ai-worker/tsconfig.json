@@ -3,5 +3,5 @@
   "compilerOptions": { "rootDir": "src", "outDir": "dist", "lib": ["ES2022", "DOM"], "types": ["node"] },
   "include": ["src"],
   "exclude": ["src/**/*.test.ts"],
-  "references": [{ "path": "../../packages/ai-engine" }, { "path": "../../packages/resume-schema" }]
+  "references": [{ "path": "../../packages/ai-engine" }, { "path": "../../packages/resume-schema" }, { "path": "../../packages/subscriptions" }]
 }

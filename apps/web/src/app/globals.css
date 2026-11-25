@@ -307,3 +307,10 @@ input[type=email], input[type=password], input[type=text], textarea, select { bo
 .tpl-gallery { grid-template-columns: repeat(auto-fill, 180px); justify-content: center; }
 .tpl-card .paper-thumb { width: 180px; height: 255px; aspect-ratio: auto; padding: 0; overflow: hidden; display: block; }
 .tpl-card .paper-thumb iframe { width: 820px; height: 1160px; border: 0; transform: scale(0.2195); transform-origin: top left; pointer-events: none; background: #fff; }
+
+/* Interview Prep */
+.pro-badge { display: inline-block; vertical-align: middle; margin-inline-start: 8px; padding: 2px 9px; border-radius: 10px; background: var(--brand-gradient); color: #fff; font-size: .68rem; font-weight: 800; letter-spacing: .5px; }
+.iq { border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; margin: 10px 0; background: var(--bg-surface); }
+.iq summary { cursor: pointer; list-style: none; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.iq h3 { margin: 12px 0 2px; font-size: .9rem; color: var(--brand-500); }
+.iq .chip { padding: 2px 10px; border-radius: 20px; background: var(--bg-subtle); color: var(--brand-500); font-size: .75rem; font-weight: 700; }

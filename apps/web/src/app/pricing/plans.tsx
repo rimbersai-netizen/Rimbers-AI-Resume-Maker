@@ -32,7 +32,7 @@ export function Plans({ prices, current, limits }: { prices: Price[]; current: s
             <div key={p.id} className="tool" style={{ justifyItems: "start", textAlign: "start", borderColor: mine ? "var(--brand-500)" : undefined, borderWidth: mine ? 2 : 1 }}>
               <strong style={{ fontSize: "1.2rem" }}>{p.name}{mine && <span className="badge" style={{ marginInlineStart: 8 }}>Current</span>}</strong>
               <span style={{ fontSize: "1.6rem", fontWeight: 800 }}>{price ? fmt(price, p.currency) : "Free"}<small> {price ? `/ ${period === "monthly" ? "month" : "year"}` : ""}</small></span>
-              <small>Resumes: {n(l.resumes)} · AI requests/month: {n(l.ai_requests_month)} · Downloads/month: {n(l.exports_month)}<br />Editable Word: {l.docx ? "Yes" : "No"} · Premium templates: {l.premium_templates ? "Yes" : "No"}</small>
+              <small>Resumes: {n(l.resumes)} · AI requests/month: {n(l.ai_requests_month)} · Downloads/month: {n(l.exports_month)}<br />Editable Word: {l.docx ? "Yes" : "No"} · Premium templates: {l.premium_templates ? "Yes" : "No"} · Interview Prep: {l.interview_prep ? "Yes" : "No"}</small>
               {p.id !== "FREE" && <button type="button" className="btn" disabled={busy !== null || mine} onClick={() => buy(p.id)}>{busy === p.id ? "Opening payment…" : mine ? "Your plan" : `Pay ${fmt(price, p.currency)}`}</button>}
             </div>
           );

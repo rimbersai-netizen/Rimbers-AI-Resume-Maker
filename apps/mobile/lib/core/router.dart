@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../features/interview/interview_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -70,6 +71,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/resumes/:id', builder: (_, s) => EditorScreen(resumeId: s.pathParameters['id']!, initialTab: int.tryParse(s.uri.queryParameters['tab'] ?? '') ?? 0)),
       GoRoute(path: '/resumes/:id/ats', builder: (_, s) => AtsScreen(resumeId: s.pathParameters['id']!)),
       GoRoute(path: '/profile/edit', builder: (_, s) => ProfileScreen(initialStep: int.tryParse(s.uri.queryParameters['step'] ?? '') ?? 0)),
+      GoRoute(path: '/interview-prep', builder: (_, s) => InterviewPrepScreen(role: s.uri.queryParameters['role'], company: s.uri.queryParameters['company'])),
       GoRoute(path: '/ai-writer', builder: (_, __) => const AiWriterScreen()),
       GoRoute(path: '/cover-letters', builder: (_, __) => const CoverLettersScreen()),
       GoRoute(path: '/cover-letters/new', builder: (_, __) => const NewCoverLetterScreen()),

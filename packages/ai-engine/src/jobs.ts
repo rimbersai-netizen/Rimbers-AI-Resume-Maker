@@ -10,7 +10,7 @@ import { extractKeywords, matchKeywords, profileToText } from "@gars/ats-engine"
 import { isSkillLikeTerm } from "./factcheck";
 import { withSignature } from "./tasks";
 import { buildLinkedInAboutTask, buildLinkedInHeadlineTask } from "./tasks";
-import { buildCoverLetterTask, buildPolishTask, buildRewriteBulletsTask, buildSummaryTask, buildTailorSummaryTask, Length, Tone } from "./tasks";
+import { buildCoverLetterTask, buildInterviewPrepTask, buildPolishTask, buildRewriteBulletsTask, buildSummaryTask, buildTailorSummaryTask, Length, Tone } from "./tasks";
 import type { Violation } from "./factcheck";
 import { buildImportTask, extractedToProfile, IMPORT_MAX_CHARS } from "./import";
 
@@ -26,6 +26,9 @@ export const AiJobInput = z.discriminatedUnion("kind", [
     keyPoints: z.string().trim().max(1000).optional(), jobDescription: z.string().trim().max(20000).optional() }),
   z.object({ kind: z.literal("linkedin_headline"), ...base, tone: Tone, targetRole: z.string().max(120).optional() }),
   z.object({ kind: z.literal("linkedin_about"), ...base, tone: Tone }),
+  /** Professional plan only (enforced server-side before queueing and again in the worker). */
+  z.object({ kind: z.literal("interview_prep"), ...base, jobTitle: z.string().trim().min(2).max(200), company: z.string().trim().max(200).optional(),
+    jobDescription: z.string().trim().max(20000).optional(), count: z.number().int().min(4).max(10).default(8) }),
   /** Import an existing CV: the text was extracted server-side from the user's upload. No profile is needed (or read). */
   z.object({ kind: z.literal("import_extract"), locale: z.enum(SUPPORTED_LOCALES), text: z.string().trim().min(80).max(IMPORT_MAX_CHARS) }),
 ]);
@@ -42,6 +45,8 @@ export const AiJobOutput = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("cover_letter"), letter: z.string(), matched: z.array(z.string()), missingRequired: z.array(z.string()), ...meta }),
   z.object({ kind: z.literal("linkedin_headline"), headline: z.string(), ...meta }),
   z.object({ kind: z.literal("linkedin_about"), about: z.string(), ...meta }),
+  /** Questions + coaching; `gaps` are job skills the user lacks (deterministic, never model-written) so they can prepare to discuss them honestly. */
+  z.object({ kind: z.literal("interview_prep"), questions: z.array(z.object({ question: z.string(), category: z.string(), tip: z.string(), talkingPoints: z.array(z.string()) })), gaps: z.array(z.string()), ...meta }),
   /** Extracted + grounded profile draft. The user reviews it, then /profile/import/apply saves it. */
   z.object({ kind: z.literal("imported_profile"), profile: z.record(z.any()), dropped: z.number(),
     counts: z.object({ experience: z.number(), education: z.number(), skills: z.number(), certifications: z.number(), languages: z.number(), projects: z.number() }) }),
@@ -66,7 +71,7 @@ const describe = (v: Violation[]) => v.filter((x) => x.severity === "block").map
  */
 type Built = { messages: import("./provider").ChatMessage[]; schema: unknown; jsonSchema: Record<string, unknown>; check: (v: unknown) => { ok: boolean; violations: Violation[] } };
 
-type Value = { summary?: string; bullets?: string[]; letter?: string; headline?: string; about?: string };
+type Value = { summary?: string; bullets?: string[]; letter?: string; headline?: string; about?: string; questions?: { question: string; category: string; tip: string; talkingPoints: string[] }[] };
 function plan(input: ProfileJobInput, profile: MasterProfile): { task: Built; toOutput: (value: Value, violations: Violation[]) => AiJobOutput } {
   const allIds = [...profile.experience.map((w) => w.id), ...profile.education.map((e) => e.id), ...profile.skills.map((s) => s.id)];
   switch (input.kind) {
@@ -99,6 +104,13 @@ function plan(input: ProfileJobInput, profile: MasterProfile): { task: Built; to
     case "linkedin_about": {
       const task = buildLinkedInAboutTask(profile, { tone: input.tone, locale: input.locale }) as unknown as Built;
       return { task, toOutput: (v, violations) => ({ kind: "linkedin_about", about: v.about!.trim(), violations, sourceFieldIds: allIds }) };
+    }
+    case "interview_prep": {
+      const jd = input.jobDescription ?? "";
+      const km = jd ? matchKeywords(extractKeywords(jd), profileToText(profile)) : { matched: [], missing: [], missingRequired: [] };
+      const forbidden = km.missing.map((k) => k.term).filter((t) => isSkillLikeTerm(t, jd));
+      const task = buildInterviewPrepTask(profile, { jobTitle: input.jobTitle, company: input.company, jobDescription: jd, count: input.count, forbidden, locale: input.locale }) as unknown as Built;
+      return { task, toOutput: (v, violations) => ({ kind: "interview_prep", questions: v.questions!, gaps: km.missing.map((k) => k.term).filter((t) => isSkillLikeTerm(t, jd)).slice(0, 8), violations, sourceFieldIds: allIds }) };
     }
     case "cover_letter": {
       const jd = input.jobDescription ?? "";
