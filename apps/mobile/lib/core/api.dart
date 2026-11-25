@@ -120,6 +120,21 @@ class Api {
   // ---- AI (queue → poll → result; quotas enforced by the server)
   Future<String> requestAi(Map<String, dynamic> input) async => (await post('/ai-jobs', {'input': input}))['jobId'] as String;
   Future<Map<String, dynamic>> aiJob(String id) => get('/ai-jobs/$id');
+
+  // ---- import an existing resume (PDF / Word): upload → AI extraction job (poll with [aiJob]) → apply to the profile
+  /// Uploads the file; the server reads its text and queues the extraction. Returns the AI job id.
+  Future<String> importResume(String filename, List<int> bytes) async {
+    final req = http.MultipartRequest('POST', _uri('/profile/import'))
+      ..headers.addAll({..._headers}..remove('Content-Type'))
+      ..files.add(http.MultipartFile.fromBytes('file', bytes, filename: filename));
+    final r = await _send(() async => http.Response.fromStream(await req.send()));
+    return r['jobId'] as String;
+  }
+
+  /// Saves the extracted data as the user's profile ([replace]: take the resume's data; otherwise only fill what is empty).
+  Future<void> applyImport(String jobId, {bool replace = true}) async {
+    await post('/profile/import/apply', {'jobId': jobId, 'mode': replace ? 'replace' : 'fill'});
+  }
   Future<void> cancelAi(String id) async {
     try {
       await delete('/ai-jobs/$id');

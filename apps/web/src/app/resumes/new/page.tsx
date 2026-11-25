@@ -22,6 +22,7 @@ export default async function NewResumePage({ searchParams }: { searchParams: Pr
         initialCountry={prefs?.country_code ?? profile?.profile.personal.location.country ?? null}
         hasPhoto={Boolean(profile?.profile.personal.photoPath)}
         profileReady={Boolean(profile?.profile.personal.fullName)}
+        hasProfileData={Boolean(profile && (profile.profile.experience.length || profile.profile.education.length || profile.profile.skills.length))}
       />
     </main>
   );

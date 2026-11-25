@@ -7,8 +7,9 @@ import { listCountryRules } from "@gars/country-rules";
 import { getTemplate } from "@gars/template-engine";
 import { countryLabel, defaultLayout, flag, localeLabel, override, recommendationNotes, RESUME_LOCALES, type ResumeLayout } from "@/lib/resume-settings";
 import { createResume } from "../actions";
+import { ImportResumeCard } from "./import-card";
 
-export function NewResumeWizard(p: { initialTemplate?: string | null; appLocale: string; initialCountry: string | null; hasPhoto: boolean; profileReady: boolean }) {
+export function NewResumeWizard(p: { initialTemplate?: string | null; appLocale: string; initialCountry: string | null; hasPhoto: boolean; profileReady: boolean; hasProfileData?: boolean }) {
   const router = useRouter();
   const countries = useMemo(() => listCountryRules().map((r) => ({ code: r.countryCode, name: countryLabel(r.countryCode), native: r.name }))
     .sort((a, b) => a.name.localeCompare(b.name)), []);
@@ -47,6 +48,8 @@ export function NewResumeWizard(p: { initialTemplate?: string | null; appLocale:
       {!p.profileReady && (
         <div className="alert error" role="status">Your profile is empty. <Link href="/profile">Complete your profile</Link> first so the preview has content.</div>
       )}
+
+      <ImportResumeCard hasProfileData={Boolean(p.hasProfileData)} />
 
       <section className="card wide" aria-labelledby="c-title">
         <h2 id="c-title"><span className="step-dot">1</span> Target country</h2>

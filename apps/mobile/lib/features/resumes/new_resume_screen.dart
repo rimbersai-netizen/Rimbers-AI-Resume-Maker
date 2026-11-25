@@ -5,6 +5,7 @@ import '../../core/api.dart';
 import '../../core/data.dart';
 import '../../core/theme.dart';
 import '../../core/widgets.dart';
+import 'import_card.dart';
 
 /// Create a resume: country (suggests conventions) → language (independent!) → template → name.
 class NewResumeScreen extends ConsumerStatefulWidget {
@@ -60,6 +61,8 @@ class _NewResumeState extends ConsumerState<NewResumeScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('New Resume')),
       body: ListView(padding: const EdgeInsets.all(Tokens.gutter), children: [
+        const ImportResumeCard(),
+        const SizedBox(height: 8),
         TextField(controller: _title, maxLength: 200, decoration: const InputDecoration(labelText: 'Resume name', counterText: '')),
         Section(title: '1. Where are you applying?', children: [
           const Text('Country suggests the page size, photo and section order. These are conventions, not rules — you can change everything.', style: TextStyle(color: Tokens.textSecondary)),

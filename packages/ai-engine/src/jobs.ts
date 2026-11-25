@@ -12,6 +12,7 @@ import { withSignature } from "./tasks";
 import { buildLinkedInAboutTask, buildLinkedInHeadlineTask } from "./tasks";
 import { buildCoverLetterTask, buildPolishTask, buildRewriteBulletsTask, buildSummaryTask, buildTailorSummaryTask, Length, Tone } from "./tasks";
 import type { Violation } from "./factcheck";
+import { buildImportTask, extractedToProfile, IMPORT_MAX_CHARS } from "./import";
 
 const Target = z.discriminatedUnion("type", [z.object({ type: z.literal("summary") }), z.object({ type: z.literal("bullets"), experienceId: z.string().min(1).max(64) })]);
 const base = { masterProfileId: z.string().uuid(), locale: z.enum(SUPPORTED_LOCALES) };
@@ -25,8 +26,11 @@ export const AiJobInput = z.discriminatedUnion("kind", [
     keyPoints: z.string().trim().max(1000).optional(), jobDescription: z.string().trim().max(20000).optional() }),
   z.object({ kind: z.literal("linkedin_headline"), ...base, tone: Tone, targetRole: z.string().max(120).optional() }),
   z.object({ kind: z.literal("linkedin_about"), ...base, tone: Tone }),
+  /** Import an existing CV: the text was extracted server-side from the user's upload. No profile is needed (or read). */
+  z.object({ kind: z.literal("import_extract"), locale: z.enum(SUPPORTED_LOCALES), text: z.string().trim().min(80).max(IMPORT_MAX_CHARS) }),
 ]);
 export type AiJobInput = z.infer<typeof AiJobInput>;
+type ProfileJobInput = Exclude<AiJobInput, { kind: "import_extract" }>;
 
 const meta = { violations: z.array(z.any()), sourceFieldIds: z.array(z.string()) };
 export const AiJobOutput = z.discriminatedUnion("kind", [
@@ -38,6 +42,9 @@ export const AiJobOutput = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("cover_letter"), letter: z.string(), matched: z.array(z.string()), missingRequired: z.array(z.string()), ...meta }),
   z.object({ kind: z.literal("linkedin_headline"), headline: z.string(), ...meta }),
   z.object({ kind: z.literal("linkedin_about"), about: z.string(), ...meta }),
+  /** Extracted + grounded profile draft. The user reviews it, then /profile/import/apply saves it. */
+  z.object({ kind: z.literal("imported_profile"), profile: z.record(z.any()), dropped: z.number(),
+    counts: z.object({ experience: z.number(), education: z.number(), skills: z.number(), certifications: z.number(), languages: z.number(), projects: z.number() }) }),
 ]);
 export type AiJobOutput = z.infer<typeof AiJobOutput>;
 
@@ -60,7 +67,7 @@ const describe = (v: Violation[]) => v.filter((x) => x.severity === "block").map
 type Built = { messages: import("./provider").ChatMessage[]; schema: unknown; jsonSchema: Record<string, unknown>; check: (v: unknown) => { ok: boolean; violations: Violation[] } };
 
 type Value = { summary?: string; bullets?: string[]; letter?: string; headline?: string; about?: string };
-function plan(input: AiJobInput, profile: MasterProfile): { task: Built; toOutput: (value: Value, violations: Violation[]) => AiJobOutput } {
+function plan(input: ProfileJobInput, profile: MasterProfile): { task: Built; toOutput: (value: Value, violations: Violation[]) => AiJobOutput } {
   const allIds = [...profile.experience.map((w) => w.id), ...profile.education.map((e) => e.id), ...profile.skills.map((s) => s.id)];
   switch (input.kind) {
     case "summary": {
@@ -108,7 +115,15 @@ function plan(input: AiJobInput, profile: MasterProfile): { task: Built; toOutpu
  * Run one AI job. Blocking fact violations (invented numbers/skills, or JD skills the user lacks) trigger ONE corrective
  * retry; if the model still invents facts the job fails with `unverified_facts` — invented content is never returned.
  */
-export async function runAiJob(input: AiJobInput, profile: MasterProfile, provider: AiProvider, cfg: RouteConfig, ctx: { cloudConsent: boolean }): Promise<AiRunResult> {
+export async function runAiJob(input: AiJobInput, profile: MasterProfile | null, provider: AiProvider, cfg: RouteConfig, ctx: { cloudConsent: boolean }): Promise<AiRunResult> {
+  if (input.kind === "import_extract") {
+    const t = buildImportTask(input.text);
+    const r = await routeGenerate(provider, cfg, ctx, { messages: t.messages, schema: t.schema as never, jsonSchema: t.jsonSchema, temperature: 0, maxTokens: 6000, timeoutMs: 180_000 });
+    const imp = extractedToProfile(r.value as never, input.text);
+    if (!String((imp.profile.personal as { fullName?: string }).fullName ?? "").trim() && !imp.counts.experience && !imp.counts.education) throw new AiError("invalid_output", "nothing_found", false);
+    return { output: { kind: "imported_profile", profile: imp.profile, counts: imp.counts, dropped: imp.dropped }, provider: r.provider, model: r.model, promptTokens: r.promptTokens, completionTokens: r.completionTokens, durationMs: r.durationMs, attempts: r.attempts };
+  }
+  if (!profile) throw new AiError("invalid_output", "profile_required", false);
   const { task, toOutput } = plan(input, profile);
   let messages = task.messages;
   let totals = { promptTokens: 0, completionTokens: 0, durationMs: 0, attempts: 0 };

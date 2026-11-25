@@ -35,6 +35,7 @@ export async function getAiJobState(supabase: SupabaseClient, jobId: string): Pr
   }
   const code = data.error_code ?? "unknown";
   const ui = code === "unverified_facts" ? userFacingAiError(new AiError("invalid_output", "unverified_facts", false))
+    : code === "nothing_found" ? { message: "We couldn't find resume details in that file. Try a text-based PDF or Word file (not a scan or photo).", canRetry: false }
     : code === "profile_incomplete" ? { message: "Complete and save your profile first (name is required).", canRetry: false }
     : userFacingAiError(new AiError(code as never, code, code === "timeout" || code === "provider_unavailable"));
   return { status: data.status === "cancelled" ? "cancelled" : "failed", message: ui.message, canRetry: ui.canRetry };

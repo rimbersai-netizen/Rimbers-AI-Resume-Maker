@@ -36,14 +36,18 @@ export async function processAiJob(db: SupabaseClient, job: AiJobRow, deps: Work
   if (!parsed.success) { await finish({ status: "failed", error_code: "invalid_input" }); return { ok: false, code: "invalid_input" }; }
   const input = parsed.data;
 
-  const { data: mp } = await db.from("master_profiles").select("id,user_id").eq("id", input.masterProfileId).maybeSingle();
-  if (!mp || mp.user_id !== job.user_id) { await finish({ status: "failed", error_code: "not_found" }); return { ok: false, code: "not_found" }; }
-  const { data: loaded } = await db.rpc("get_master_profile", { p_id: input.masterProfileId });
-  const profile = MasterProfile.safeParse(loaded?.profile);
-  if (!profile.success) { await finish({ status: "failed", error_code: "profile_incomplete" }); return { ok: false, code: "profile_incomplete" }; }
-
+  // Importing a CV needs no profile (the text is in the job input); every other kind works on the user's own saved profile.
+  let profile: MasterProfile | null = null;
+  if (input.kind !== "import_extract") {
+    const { data: mp } = await db.from("master_profiles").select("id,user_id").eq("id", input.masterProfileId).maybeSingle();
+    if (!mp || mp.user_id !== job.user_id) { await finish({ status: "failed", error_code: "not_found" }); return { ok: false, code: "not_found" }; }
+    const { data: loaded } = await db.rpc("get_master_profile", { p_id: input.masterProfileId });
+    const parsedProfile = MasterProfile.safeParse(loaded?.profile);
+    if (!parsedProfile.success) { await finish({ status: "failed", error_code: "profile_incomplete" }); return { ok: false, code: "profile_incomplete" }; }
+    profile = parsedProfile.data;
+  }
   try {
-    const r = await runAiJob(input, profile.data, deps.provider, deps.route, { cloudConsent: job.cloud_consent });
+    const r = await runAiJob(input, profile, deps.provider, deps.route, { cloudConsent: job.cloud_consent });
     await finish({ status: "succeeded", output: r.output, provider: r.provider, model: r.model, error_code: null });
     await db.from("ai_usage").insert({
       user_id: job.user_id, ai_job_id: job.id, provider: r.provider, model: r.model,

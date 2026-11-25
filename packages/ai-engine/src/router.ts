@@ -86,6 +86,7 @@ export function userFacingAiError(e: unknown): { code: string; message: string; 
     quota_exceeded: "You have reached your AI usage limit for this period.",
     unknown: "Something went wrong with the AI assistant. Please try again.",
   };
+  if (err.message === "nothing_found") return { code: "nothing_found", message: "We couldn't find resume details in that file. Try a text-based PDF or Word file (not a scan or photo).", canRetry: false };
   if (err.message === "unverified_facts") return { code: "unverified_facts", message: messages.unverified_facts!, canRetry: true };
   return { code: err.code, message: messages[err.code]!, canRetry: err.retryable || err.code === "provider_unavailable" };
 }

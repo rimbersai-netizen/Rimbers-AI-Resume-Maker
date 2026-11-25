@@ -44,6 +44,7 @@ export function useAiJob(prepare: () => Promise<boolean>) {
 }
 
 export function Violations({ output }: { output: AiJobOutput }) {
+  if (output.kind === "imported_profile") return null;
   const review = (output.violations as { kind: string; value: string; severity: string }[]).filter((v) => v.severity === "review");
   if (!review.length) return null;
   return (
