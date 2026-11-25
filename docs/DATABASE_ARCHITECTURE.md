@@ -1,6 +1,6 @@
 # Database Architecture (updated 2026-11-24)
 
-Supabase Postgres. 11 migrations in `supabase/migrations`, applied to the user's cloud project `kexkcfqcfwclmtmzprif` on 2026-11-24 (CLI `db push`, dry-run reviewed first). pgTAP tests in `supabase/tests/database` (5 files) – **not yet run** against any database in this environment (Docker unavailable, B10).
+Supabase Postgres. 13 migrations in `supabase/migrations`, applied to the user's cloud project `kexkcfqcfwclmtmzprif` (11 on 2026-11-24, 013 `interview_prep_plan_gate` on 2026-11-25) (CLI `db push`, dry-run reviewed first). pgTAP tests in `supabase/tests/database` (6 files, incl. 006 interview-prep plan gate) – **not yet run** against any database in this environment (Docker unavailable, B10).
 
 ## Tables (public)
 | Area | Tables |
