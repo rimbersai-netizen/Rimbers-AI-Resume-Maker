@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:flutter/material.dart';
 
 /// Rimbers design tokens (blue palette from the 2026-11-24 UI reference: images/Rimbers AI Resume Maker UI.png).
@@ -30,7 +31,7 @@ ThemeData buildTheme() {
     scaffoldBackgroundColor: Colors.transparent,
     textTheme: text,
     appBarTheme: AppBarTheme(
-      backgroundColor: Colors.transparent, surfaceTintColor: Colors.transparent, foregroundColor: Tokens.textPrimary, elevation: 0, scrolledUnderElevation: 0, centerTitle: true,
+      backgroundColor: Colors.transparent, surfaceTintColor: Colors.transparent, foregroundColor: Tokens.textPrimary, elevation: 0, scrolledUnderElevation: 0, centerTitle: true, systemOverlayStyle: SystemUiOverlayStyle.dark,
       titleTextStyle: text.titleMedium?.copyWith(fontWeight: FontWeight.w600, fontSize: 18)),
     inputDecorationTheme: InputDecorationTheme(
       filled: true, fillColor: Tokens.surface, contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),

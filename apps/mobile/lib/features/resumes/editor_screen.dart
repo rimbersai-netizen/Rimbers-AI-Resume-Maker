@@ -20,10 +20,15 @@ const _sectionNames = {
   'languages': 'Languages', 'projects': 'Projects', 'publications': 'Publications', 'awards': 'Awards', 'volunteer': 'Volunteer', 'references': 'References', 'custom': 'Custom',
 };
 
+/// Test / preview seam for the profile card; the app uses the backend.
+Future<LoadedProfile> Function()? debugProfileLoader;
+
 class EditorScreen extends ConsumerStatefulWidget {
   final String resumeId;
   final int initialTab;
-  const EditorScreen({super.key, required this.resumeId, this.initialTab = 0});
+  /// Test / preview seam; the app loads the resume from the backend.
+  final Future<LoadedResume> Function(String id)? loader;
+  const EditorScreen({super.key, required this.resumeId, this.initialTab = 0, this.loader});
   @override
   ConsumerState<EditorScreen> createState() => _EditorState();
 }
@@ -53,7 +58,7 @@ class _EditorState extends ConsumerState<EditorScreen> with SingleTickerProvider
   Future<void> _load() async {
     setState(() => _loadError = null);
     try {
-      final r = await Api.instance.loadResume(widget.resumeId);
+      final r = await (widget.loader ?? Api.instance.loadResume)(widget.resumeId);
       if (mounted) setState(() => _resume = r);
     } on ApiException catch (e) {
       if (mounted) setState(() => _loadError = e.status == 404 ? 'This resume no longer exists.' : e.message);
@@ -94,7 +99,7 @@ class _EditorState extends ConsumerState<EditorScreen> with SingleTickerProvider
         actions: [
           IconButton(tooltip: 'ATS analysis', icon: const Icon(Icons.verified_outlined), onPressed: () => context.push('/resumes/${r.id}/ats')),
         ],
-        bottom: TabBar(controller: _tabs, labelColor: Tokens.brand, unselectedLabelColor: Tokens.textSecondary, indicatorColor: Tokens.brand, tabs: const [Tab(icon: Icon(Icons.article_outlined), text: 'Content', height: 62), Tab(icon: Icon(Icons.palette_outlined), text: 'Design', height: 62), Tab(icon: Icon(Icons.ios_share), text: 'Export', height: 62), Tab(icon: Icon(Icons.visibility_outlined), text: 'Preview', height: 62)]),
+        bottom: TabBar(controller: _tabs, labelColor: Tokens.brand, unselectedLabelColor: Tokens.textSecondary, indicatorColor: Tokens.brand, tabs: const [Tab(icon: Icon(Icons.article_outlined), text: 'Content', height: 62), Tab(icon: Icon(Icons.palette_outlined), text: 'Design', height: 62), Tab(icon: Icon(Icons.settings_outlined), text: 'Settings', height: 62), Tab(icon: Icon(Icons.visibility_outlined), text: 'Preview', height: 62)]),
       ),
       bottomNavigationBar: AnimatedBuilder(
         animation: _tabs,
@@ -106,7 +111,7 @@ class _EditorState extends ConsumerState<EditorScreen> with SingleTickerProvider
           child: TabBarView(controller: _tabs, physics: const NeverScrollableScrollPhysics(), children: [
             _SectionsTab(layout: r.layout, onChange: _edit),
             _StyleTab(layout: r.layout, onChange: _edit),
-            _ExportTab(resumeId: r.id, saving: _status == 'saving', title: r.layout['title'] as String),
+            _ExportTab(resumeId: r.id, saving: _status == 'saving', title: r.layout['title'] as String, layout: r.layout, onChange: _edit),
             _PreviewTab(key: ValueKey('p$_previewKey'), resumeId: r.id, onEditProfile: () => context.push('/profile/edit').then((_) => setState(() => _previewKey++))),
           ]),
         ),
@@ -267,47 +272,191 @@ class _SectionsTab extends StatelessWidget {
     _set(s);
   }
 
+  static const _icons = {
+    'summary': Icons.edit_note, 'experience': Icons.work_outline, 'education': Icons.school_outlined, 'skills': Icons.star_outline,
+    'certifications': Icons.workspace_premium_outlined, 'languages': Icons.translate, 'projects': Icons.folder_outlined,
+    'publications': Icons.menu_book_outlined, 'awards': Icons.emoji_events_outlined, 'volunteer': Icons.volunteer_activism_outlined,
+    'references': Icons.people_outline, 'custom': Icons.tune,
+  };
+  /// Profile-editor step that edits each section's content.
+  static const _steps = {'summary': 0, 'experience': 1, 'education': 2, 'skills': 3};
+
   @override
   Widget build(BuildContext context) {
     final s = _sections;
-    return Column(children: [
-      const Padding(padding: EdgeInsets.all(16), child: Text('Drag to reorder, toggle to show or hide, tap the pencil to rename a heading.', style: TextStyle(color: Tokens.textSecondary))),
-      Expanded(
-        child: ReorderableListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: s.length,
-          onReorder: (a, b) {
-            final list = _sections;
-            if (b > a) b -= 1;
-            list.insert(b, list.removeAt(a));
-            _set(list);
-          },
-          itemBuilder: (_, i) {
-            final x = s[i];
-            final name = (x['heading'] as String?) ?? _sectionNames[x['key']] ?? '${x['key']}';
-            return Card(
-              key: ValueKey(x['key']),
-              margin: const EdgeInsets.only(bottom: 8),
-              child: ListTile(
-                leading: const Icon(Icons.drag_indicator),
-                title: Text(name, style: TextStyle(fontWeight: FontWeight.w600, color: x['visible'] == true ? Tokens.textPrimary : Tokens.textSecondary)),
-                trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                  IconButton(tooltip: 'Rename heading', icon: const Icon(Icons.edit_outlined, size: 20), onPressed: () => _rename(context, i)),
-                  Switch(value: x['visible'] == true, onChanged: (v) { final list = _sections; list[i]['visible'] = v; _set(list); }),
-                ]),
+    return ReorderableListView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      header: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const _PersonalCard(),
+        const SizedBox(height: 16),
+        const Text('Sections', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+        const SizedBox(height: 2),
+        const Padding(padding: EdgeInsets.only(bottom: 10), child: Text('Tap to edit · toggle to show or hide · hold and drag to reorder.', style: TextStyle(color: Tokens.textSecondary, fontSize: 13))),
+      ]),
+      itemCount: s.length,
+      onReorder: (a, b) {
+        final list = _sections;
+        if (b > a) b -= 1;
+        list.insert(b, list.removeAt(a));
+        _set(list);
+      },
+      itemBuilder: (_, i) {
+        final x = s[i];
+        final key = x['key'] as String;
+        final visible = x['visible'] == true;
+        final name = (x['heading'] as String?) ?? _sectionNames[key] ?? key;
+        final step = _steps[key];
+        return Container(
+          key: ValueKey(key),
+          margin: const EdgeInsets.only(bottom: 10),
+          decoration: BoxDecoration(color: Tokens.surface, borderRadius: BorderRadius.circular(Tokens.rInput + 2), border: Border.all(color: Tokens.border), boxShadow: Tokens.shadow),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(Tokens.rInput + 2),
+            onTap: step == null ? () => _rename(context, i) : () => context.push('/profile/edit?step=$step'),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(14, 6, 6, 6),
+              child: Row(children: [
+                Icon(_icons[key] ?? Icons.article_outlined, color: visible ? Tokens.brand : Tokens.textSecondary),
+                const SizedBox(width: 12),
+                Expanded(child: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: visible ? Tokens.textPrimary : Tokens.textSecondary))),
+                IconButton(tooltip: 'Rename heading', visualDensity: VisualDensity.compact, icon: const Icon(Icons.edit_outlined, size: 19), onPressed: () => _rename(context, i)),
+                Switch(value: visible, onChanged: (v) { final list = _sections; list[i]['visible'] = v; _set(list); }),
+                Icon(step == null ? Icons.drag_indicator : Icons.chevron_right, color: Tokens.textSecondary),
+                const SizedBox(width: 4),
+              ]),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// "Personal Information" card (mockup): avatar + Change Photo, then label/value rows from the master profile.
+/// Rows open the profile editor — the one place details are edited, so nothing is typed twice.
+class _PersonalCard extends StatefulWidget {
+  const _PersonalCard();
+  @override
+  State<_PersonalCard> createState() => _PersonalCardState();
+}
+
+class _PersonalCardState extends State<_PersonalCard> {
+  Map<String, dynamic>? _p;
+  bool _failed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final p = await (debugProfileLoader ?? Api.instance.loadProfile)();
+      if (mounted) setState(() { _p = p.data; _failed = false; });
+    } catch (_) {
+      if (mounted) setState(() => _failed = true);
+    }
+  }
+
+  Future<void> _edit([int step = 0]) async {
+    await context.push('/profile/edit?step=$step');
+    _load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final personal = (_p?['personal'] as Map?)?.cast<String, dynamic>() ?? const {};
+    final loc = (personal['location'] as Map?)?.cast<String, dynamic>() ?? const {};
+    final location = [loc['city'], loc['country']].where((e) => e != null && '$e'.trim().isNotEmpty).join(', ');
+    Widget row(String label, String? value) => Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Row(children: [
+            SizedBox(width: 86, child: Text(label, style: const TextStyle(fontWeight: FontWeight.w500))),
+            Expanded(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(Tokens.rInput - 4),
+                onTap: _edit,
+                child: Container(
+                  height: 46, alignment: AlignmentDirectional.centerStart, padding: const EdgeInsets.symmetric(horizontal: 14),
+                  decoration: BoxDecoration(color: Tokens.surface, borderRadius: BorderRadius.circular(Tokens.rInput - 4), border: Border.all(color: Tokens.border)),
+                  child: Text((value == null || value.trim().isEmpty) ? 'Add' : value, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: (value == null || value.trim().isEmpty) ? Tokens.textSecondary : Tokens.textPrimary)),
+                ),
               ),
-            );
-          },
+            ),
+          ]),
+        );
+    final name = personal['fullName'] as String?;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: Tokens.surface, borderRadius: BorderRadius.circular(Tokens.rCard), border: Border.all(color: Tokens.border), boxShadow: Tokens.shadow),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Text('Personal Information', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18)),
+        const SizedBox(height: 14),
+        Row(children: [
+          CircleAvatar(radius: 40, backgroundColor: Tokens.subtle, child: Text(initialOf(name), style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w700, color: Tokens.brand))),
+          const Spacer(),
+          FilledButton.tonalIcon(onPressed: _edit, icon: const Icon(Icons.photo_camera_outlined, size: 20), label: const Text('Change Photo')),
+        ]),
+        const SizedBox(height: 16),
+        if (_failed) ErrorBanner('Could not load your details.', onRetry: _load) else ...[
+          row('Full Name', name),
+          row('Job Title', personal['professionalTitle'] as String?),
+          row('Email', personal['email'] as String?),
+          row('Phone', personal['phone'] as String?),
+          row('Location', location),
+        ],
+      ]),
+    );
+  }
+}
+
+/// Resume name, page size and photo — the settings that belong to this one resume.
+class _SettingsCard extends StatefulWidget {
+  final Map<String, dynamic> layout;
+  final void Function(Map<String, dynamic> Function(Map<String, dynamic>)) onChange;
+  const _SettingsCard({required this.layout, required this.onChange});
+  @override
+  State<_SettingsCard> createState() => _SettingsCardState();
+}
+
+class _SettingsCardState extends State<_SettingsCard> {
+  late final _name = TextEditingController(text: widget.layout['title'] as String? ?? '');
+  @override
+  void dispose() { _name.dispose(); super.dispose(); }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = widget.layout;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(color: Tokens.surface, borderRadius: BorderRadius.circular(Tokens.rCard), border: Border.all(color: Tokens.border), boxShadow: Tokens.shadow),
+      child: Column(children: [
+        TextField(
+          controller: _name, maxLength: 200, decoration: const InputDecoration(labelText: 'Resume name', counterText: ''),
+          onChanged: (v) { if (v.trim().isNotEmpty) widget.onChange((x) => {...x, 'title': v.trim()}); },
         ),
-      ),
-    ]);
+        const SizedBox(height: 12),
+        DropdownButtonFormField<String>(
+          value: (l['pageSize'] as String?) == 'Letter' ? 'Letter' : 'A4', decoration: const InputDecoration(labelText: 'Page size'),
+          items: const [DropdownMenuItem(value: 'A4', child: Text('A4')), DropdownMenuItem(value: 'Letter', child: Text('US Letter'))],
+          onChanged: (v) => widget.onChange((x) => {...x, 'pageSize': v}),
+        ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero, title: const Text('Include a photo'), subtitle: const Text('Optional. Many countries expect none.'),
+          value: l['includePhoto'] == true, onChanged: (v) => widget.onChange((x) => {...x, 'includePhoto': v}),
+        ),
+      ]),
+    );
   }
 }
 
 class _ExportTab extends StatefulWidget {
   final String resumeId, title;
   final bool saving;
-  const _ExportTab({required this.resumeId, required this.title, required this.saving});
+  final Map<String, dynamic> layout;
+  final void Function(Map<String, dynamic> Function(Map<String, dynamic>)) onChange;
+  const _ExportTab({required this.resumeId, required this.title, required this.saving, required this.layout, required this.onChange});
   @override
   State<_ExportTab> createState() => _ExportTabState();
 }
@@ -361,6 +510,10 @@ class _ExportTabState extends State<_ExportTab> {
 
   @override
   Widget build(BuildContext context) => ListView(padding: const EdgeInsets.all(Tokens.gutter), children: [
+        const Text('Resume settings', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+        const SizedBox(height: 10),
+        _SettingsCard(layout: widget.layout, onChange: widget.onChange),
+        const SizedBox(height: 22),
         const Text('Choose Format', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
         const SizedBox(height: 10),
         for (final f in const [('pdf', 'PDF', 'Best for job applications', Icons.picture_as_pdf_outlined), ('docx', 'DOCX (Word)', 'Editable and customizable', Icons.description_outlined)])

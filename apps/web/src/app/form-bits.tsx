@@ -26,5 +26,5 @@ export function Alerts({ state }: { state: FormState }) {
 }
 
 export function Brand() {
-  return <div className="brand"><span className="brand-r" aria-hidden>R</span>Rimbers <span className="brand-sub">AI Resume Maker</span></div>;
+  return <div className="brand">{/* eslint-disable-next-line @next/next/no-img-element */}<img src="/brand/r-logo.png" alt="" className="brand-r" width={46} height={34} />Rimbers <span className="brand-sub">AI Resume Maker</span></div>;
 }

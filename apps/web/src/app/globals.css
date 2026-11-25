@@ -250,7 +250,7 @@ button.chip:disabled { opacity: .5; cursor: not-allowed; }
 @media (max-width: 520px) { .jobs-card { padding: 16px; } }
 
 /* ---- Rimbers shell: brand, top nav, home, templates ---- */
-.brand-r { font-weight: 900; font-style: italic; font-size: 1.9rem; line-height: 1; letter-spacing: -2px; background: var(--brand-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; padding-inline-end: 2px; }
+.brand-r { height: 34px; width: auto; display: block; flex: none; }
 .brand-sub { font-weight: 600; font-size: .72rem; color: var(--brand-500); margin-inline-start: 2px; align-self: flex-end; padding-bottom: 3px; }
 .sitenav { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg-surface) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); }
 .sitenav-in { max-width: 1040px; margin: 0 auto; padding: 8px 16px; display: flex; align-items: center; gap: 18px; }

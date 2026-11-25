@@ -17,7 +17,7 @@ export function SiteNav({ signedIn }: { signedIn: boolean }) {
   const path = usePathname() ?? "";
   const brand = (
     <Link href={signedIn ? "/dashboard" : "/"} className="brand" aria-label="Rimbers AI Resume Maker home">
-      <span className="brand-r" aria-hidden>R</span>Rimbers <span className="brand-sub">AI Resume Maker</span>
+      {/* eslint-disable-next-line @next/next/no-img-element */}<img src="/brand/r-logo.png" alt="" className="brand-r" width={46} height={34} />Rimbers <span className="brand-sub">AI Resume Maker</span>
     </Link>
   );
   return (

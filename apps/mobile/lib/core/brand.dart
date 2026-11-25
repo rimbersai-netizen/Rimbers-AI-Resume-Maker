@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'theme.dart';
 
-/// Rimbers "R" mark + wordmark (drawn in code so it scales and needs no asset).
+/// The Rimbers ribbon-"R" mark (assets/brand/r_logo.png, transparent) + wordmark.
 class RimbersLogo extends StatelessWidget {
   final double size;
   final bool stacked; // mark above wordmark + tagline
@@ -10,11 +10,10 @@ class RimbersLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mark = ShaderMask(
-      blendMode: BlendMode.srcIn,
-      shaderCallback: (r) => (onDark ? const LinearGradient(colors: [Colors.white, Colors.white]) : Tokens.gradient).createShader(r),
-      child: Text('R', style: TextStyle(fontSize: size * 1.25, height: 1, fontWeight: FontWeight.w900, fontStyle: FontStyle.italic, letterSpacing: -2)),
-    );
+    // The mark is 768×569 (with its sparkle). Stacked: big mark; inline: sized like the cap height of the wordmark.
+    final h = stacked ? size * 1.5 : size * 1.05;
+    Widget mark = Image.asset('assets/brand/r_logo.png', height: h, fit: BoxFit.contain, semanticLabel: 'Rimbers logo', filterQuality: FilterQuality.high);
+    if (onDark) mark = ColorFiltered(colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn), child: mark);
     final color = onDark ? Colors.white : Tokens.navy;
     if (stacked) {
       return Semantics(
